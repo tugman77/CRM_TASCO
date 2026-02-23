@@ -97,8 +97,9 @@
   .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .person-name { font-size: 14px; font-weight: 600; }
   .person-dept { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .person-contacts { font-size: 12px; color: var(--muted); line-height: 1.8; }
+  .person-contacts { font-size: 12px; color: var(--text); line-height: 2; }
   .person-contacts span { display: block; }
+  .pc-label { display: inline-block; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0 5px; margin-right: 5px; vertical-align: middle; }
   .person-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 7px; }
   .add-card { background: transparent; border: 1px dashed var(--border); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--muted); font-size: 12px; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
   .add-card:hover { border-color: var(--accent); color: var(--accent); }
@@ -180,15 +181,82 @@
   /* List view */
   .list-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
   .list-table { width: 100%; border-collapse: collapse; }
-  .list-table th { text-align: left; padding: 9px 13px; font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-  .list-table td { padding: 11px 13px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .list-table th { text-align: left; padding: 9px 13px; font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap; }
+  .list-table td { padding: 10px 13px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   .list-table tr:last-child td { border-bottom: none; }
-  .list-table tbody tr:hover td { background: var(--surface2); cursor: pointer; }
-  .co-row td { background: rgba(79,124,255,0.05); font-weight: 600; font-size: 13px; }
+  .list-table tbody tr:not(.co-row):hover td { background: var(--surface2); }
+  .co-row td { background: rgba(79,124,255,0.06); font-weight: 600; font-size: 13px; cursor: pointer; }
+  .co-row:hover td { background: rgba(79,124,255,0.12) !important; }
 
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Company tabs */
+  .co-tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:0; }
+  .co-tab { padding:8px 18px; border:none; background:transparent; color:var(--muted); font-family:'Noto Sans KR',sans-serif; font-size:13px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.15s; }
+  .co-tab:hover { color:var(--text); }
+  .co-tab.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+  .co-panel { }
+
+  /* Finance table */
+  .fin-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .fin-table th { text-align:center; padding:8px 6px; font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; border-bottom:1px solid var(--border); background:var(--surface2); white-space:nowrap; }
+  .fin-table td { padding:5px 4px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .fin-table tr:last-child td { border-bottom:none; }
+  .fin-input { width:100%; padding:5px 7px; background:var(--bg); border:1px solid var(--border); border-radius:5px; color:var(--text); font-size:12px; font-family:'IBM Plex Mono',monospace; outline:none; text-align:right; }
+  .fin-input:focus { border-color:var(--accent); }
+  .fin-year { width:72px; padding:5px 7px; background:var(--bg); border:1px solid var(--border); border-radius:5px; color:var(--accent); font-size:12px; font-family:'IBM Plex Mono',monospace; outline:none; text-align:center; font-weight:600; }
+  .fin-year:focus { border-color:var(--accent); }
+  .fin-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:2px 6px; border-radius:4px; transition:all 0.1s; }
+  .fin-del:hover { background:var(--danger); color:#fff; }
+
+  /* CEO history */
+  .ceo-row { display:grid; grid-template-columns:100px 1fr 1fr 1fr 32px; gap:8px; align-items:center; margin-bottom:8px; }
+  .ceo-input { padding:7px 9px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:100%; }
+  .ceo-input:focus { border-color:var(--accent); }
+  .ceo-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; transition:all 0.1s; width:32px; }
+  .ceo-del:hover { background:var(--danger); color:#fff; }
+  .ceo-header { display:grid; grid-template-columns:100px 1fr 1fr 1fr 32px; gap:8px; margin-bottom:6px; font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; }
+
+  /* Finance summary in company card */
+  .fin-summary { padding:8px 18px; background:rgba(67,233,123,0.04); border-bottom:1px solid var(--border); display:flex; gap:20px; flex-wrap:wrap; font-size:12px; align-items:center; }
+  .fin-chip { display:flex; flex-direction:column; gap:1px; }
+  .fin-chip-label { font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+  .fin-chip-value { font-size:13px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+  .fin-chip-value.pos { color:var(--accent3); }
+  .fin-chip-value.neg { color:var(--accent2); }
+  .fin-chip-value.neu { color:var(--text); }
+
+  /* PDF Import */
+  .pdf-dropzone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 36px 20px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .pdf-dropzone:hover, .pdf-dropzone.drag { border-color: var(--accent); background: rgba(79,124,255,0.05); }
+  .pdf-drop-icon { font-size: 36px; margin-bottom: 10px; }
+  .pdf-drop-text { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .pdf-drop-sub { font-size: 12px; color: var(--muted); }
+  .pdf-spinner {
+    width: 44px; height: 44px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .pdf-contact-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .pdf-contact-card.checked { border-color: var(--accent); }
+  .pdf-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .pdf-card-check { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  .pdf-card-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .pdf-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pdf-field { display: flex; flex-direction: column; gap: 3px; }
+  .pdf-field label { font-size: 10px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; }
+  .pdf-field input { padding: 6px 9px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; font-family: 'Noto Sans KR', sans-serif; outline: none; }
+  .pdf-field input:focus { border-color: var(--accent); }
+  .pdf-field.full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
@@ -210,9 +278,11 @@
       <input type="text" id="searchInput" placeholder="이름, 회사, 이메일 검색..." oninput="renderContacts()">
     </div>
     <div class="view-toggle">
-      <button class="toggle-btn active" id="vBtn-group" title="회사별 그룹" onclick="setViewMode('group')">⊞</button>
-      <button class="toggle-btn" id="vBtn-list" title="목록" onclick="setViewMode('list')">☰</button>
+      <button class="toggle-btn active" id="vBtn-group" title="회사별 카드" onclick="setViewMode('group')">⊞</button>
+      <button class="toggle-btn" id="vBtn-glist" title="회사별 목록" onclick="setViewMode('glist')">▤</button>
+      <button class="toggle-btn" id="vBtn-list" title="전체 목록" onclick="setViewMode('list')">☰</button>
     </div>
+    <button class="btn btn-outline" onclick="openPdfModal()" title="PDF에서 연락처 자동 추출">📄 PDF 가져오기</button>
     <button class="btn btn-primary" onclick="openAddContact(null)">＋ 연락처</button>
   </div>
 
@@ -307,28 +377,97 @@
 
 <!-- Company Modal -->
 <div class="modal-overlay" id="companyModal">
-  <div class="modal" style="width:480px">
+  <div class="modal" style="width:680px">
     <button class="modal-close" onclick="closeModal('companyModal')">✕</button>
-    <div class="modal-title" id="coModalTitle">회사 공통 정보</div>
-    <div class="form-section">
-      <div class="form-section-title">대표 연락처</div>
-      <div class="form-row">
-        <div class="form-group"><label>대표 전화</label><input type="tel" id="co_phone" placeholder="02-0000-0000"></div>
-        <div class="form-group"><label>팩스</label><input type="tel" id="co_fax" placeholder="02-0000-0001"></div>
+    <div class="modal-title" id="coModalTitle">회사 정보</div>
+
+    <!-- 탭 -->
+    <div class="co-tabs">
+      <button class="co-tab active" id="coTab-basic" onclick="switchCoTab('basic')">기본 정보</button>
+      <button class="co-tab" id="coTab-finance" onclick="switchCoTab('finance')">재무 현황</button>
+      <button class="co-tab" id="coTab-ceo" onclick="switchCoTab('ceo')">대표이사 이력</button>
+    </div>
+
+    <!-- 탭: 기본 정보 -->
+    <div id="coPanel-basic" class="co-panel">
+      <div class="form-section">
+        <div class="form-section-title">회사명</div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>회사명 (수정 시 소속 직원 전체에 자동 반영)</label>
+            <input type="text" id="co_name" placeholder="회사명">
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">다른 회사와 병합</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">같은 회사가 다른 이름으로 등록된 경우 병합합니다. 병합 대상의 모든 직원이 현재 회사로 이동됩니다.</p>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>병합할 회사 선택 (없애고 싶은 쪽)</label>
+            <select id="co_merge_target" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:8px 10px;font-size:13px;font-family:inherit;outline:none;width:100%">
+              <option value="">— 병합 안 함 —</option>
+            </select>
+          </div>
+        </div>
+        <div id="co_merge_preview" style="display:none;font-size:12px;color:var(--accent);margin-top:6px;padding:8px 12px;background:rgba(79,124,255,0.08);border-radius:6px;border:1px solid rgba(79,124,255,0.2)"></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">대표 연락처</div>
+        <div class="form-row">
+          <div class="form-group"><label>대표 전화</label><input type="tel" id="co_phone" placeholder="02-0000-0000"></div>
+          <div class="form-group"><label>팩스</label><input type="tel" id="co_fax" placeholder="02-0000-0001"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">주소</div>
+        <div class="form-row single">
+          <div class="form-group"><label>주소</label><input type="text" id="co_address" placeholder="서울시 강남구 테헤란로 123"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">메모</div>
+        <div class="form-row single">
+          <div class="form-group"><textarea id="co_memo" placeholder="회사 관련 메모"></textarea></div>
+        </div>
       </div>
     </div>
-    <div class="form-section">
-      <div class="form-section-title">주소</div>
-      <div class="form-row single">
-        <div class="form-group"><label>주소</label><input type="text" id="co_address" placeholder="서울시 강남구 테헤란로 123"></div>
+
+    <!-- 탭: 재무 현황 -->
+    <div id="coPanel-finance" class="co-panel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <p style="font-size:12px;color:var(--muted)">연도별 재무 데이터를 입력하세요. 단위: 백만원</p>
+        <button class="btn btn-primary btn-sm" onclick="addFinanceRow()">＋ 연도 추가</button>
       </div>
-    </div>
-    <div class="form-section">
-      <div class="form-section-title">메모</div>
-      <div class="form-row single">
-        <div class="form-group"><textarea id="co_memo" placeholder="회사 관련 메모"></textarea></div>
+      <div style="overflow-x:auto">
+        <table class="fin-table" id="finTable">
+          <thead>
+            <tr>
+              <th style="width:80px">연도</th>
+              <th>인원(명)</th>
+              <th>매출</th>
+              <th>영업이익</th>
+              <th>순이익</th>
+              <th>자산</th>
+              <th>부채</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="finBody"></tbody>
+        </table>
       </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px">* 금액 단위: 백만원 / 빈칸은 미입력으로 처리</p>
     </div>
+
+    <!-- 탭: 대표이사 이력 -->
+    <div id="coPanel-ceo" class="co-panel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <p style="font-size:12px;color:var(--muted)">대표이사 변경 이력을 최신순으로 관리합니다.</p>
+        <button class="btn btn-primary btn-sm" onclick="addCeoRow()">＋ 추가</button>
+      </div>
+      <div id="ceoList"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('companyModal')">취소</button>
       <button class="btn btn-primary" onclick="saveCompany()">저장</button>
@@ -370,6 +509,95 @@
       <button class="btn btn-outline" onclick="closeModal('activityModal')">취소</button>
       <button class="btn btn-primary" onclick="saveActivity()">저장</button>
     </div>
+  </div>
+</div>
+
+<!-- PDF Import Modal -->
+<div class="modal-overlay" id="pdfModal">
+  <div class="modal" style="width:640px">
+    <button class="modal-close" onclick="closeModal('pdfModal')">✕</button>
+    <div class="modal-title">📄 PDF에서 연락처 자동 추출</div>
+
+    <!-- Step 1: API Key -->
+    <div id="pdfStep0" class="pdf-step">
+      <div class="form-section">
+        <div class="form-section-title">Claude API 키 설정 (최초 1회)</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+          PDF 분석에는 Claude API가 사용됩니다.<br>
+          <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a>에서 API 키를 발급받아 입력해주세요.<br>
+          키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다.
+        </p>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>Anthropic API Key</label>
+            <input type="password" id="pdfApiKey" placeholder="sk-ant-api03-...">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal('pdfModal')">취소</button>
+        <button class="btn btn-primary" onclick="pdfSaveKey()">저장 후 계속</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Upload -->
+    <div id="pdfStep1" class="pdf-step" style="display:none">
+      <div class="form-section">
+        <div class="form-section-title">명함 / 연락처 PDF 업로드</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
+          명함, 직원 소개, 거래처 정보가 담긴 PDF를 올려주세요.<br>
+          여러 사람이 한 파일에 있어도 자동으로 분리해서 추출합니다.
+        </p>
+        <div id="pdfDropzone" class="pdf-dropzone" onclick="document.getElementById('pdfFileInput').click()">
+          <div class="pdf-drop-icon">📄</div>
+          <div class="pdf-drop-text">클릭하거나 PDF를 드래그하여 업로드</div>
+          <div class="pdf-drop-sub">PDF 파일 (최대 5MB)</div>
+          <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="onPdfSelected(this)">
+        </div>
+        <div id="pdfFileName" style="font-size:12px;color:var(--accent);margin-top:8px;display:none"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="pdfChangeKey()">🔑 키 변경</button>
+        <button class="btn btn-outline" onclick="closeModal('pdfModal')">취소</button>
+        <button class="btn btn-primary" id="pdfAnalyzeBtn" onclick="pdfAnalyze()" disabled>🔍 분석 시작</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Loading -->
+    <div id="pdfStep2" class="pdf-step" style="display:none">
+      <div style="text-align:center;padding:48px 20px">
+        <div class="pdf-spinner"></div>
+        <div style="font-size:15px;font-weight:600;margin-top:20px">PDF 분석 중...</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px">Claude AI가 연락처 정보를 추출하고 있습니다</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Results -->
+    <div id="pdfStep3" class="pdf-step" style="display:none">
+      <div class="form-section">
+        <div class="form-section-title">추출된 연락처 확인 및 수정</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">내용을 확인하고 필요하면 수정 후 저장하세요. 체크된 항목만 CRM에 추가됩니다.</p>
+      </div>
+      <div id="pdfResults"></div>
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn btn-outline" onclick="pdfRetry()">← 다시 업로드</button>
+        <button class="btn btn-primary" onclick="pdfImportAll()">✅ 선택 항목 모두 저장</button>
+      </div>
+    </div>
+
+    <!-- Step 5: Error -->
+    <div id="pdfStep4" class="pdf-step" style="display:none">
+      <div style="text-align:center;padding:40px 20px">
+        <div style="font-size:40px;margin-bottom:16px">⚠️</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px">분석 실패</div>
+        <div id="pdfErrorMsg" style="font-size:13px;color:var(--muted);line-height:1.7"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="pdfRetry()">← 다시 시도</button>
+        <button class="btn btn-outline" onclick="closeModal('pdfModal')">닫기</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -450,7 +678,8 @@ function renderContacts(){
   });
   if(curFilter!=='all') list = list.filter(c=>activities.some(a=>a.contactId===c.id&&a.type===curFilter));
   document.getElementById('viewSub').textContent = `총 ${list.length}명`;
-  if(viewMode==='list'){ renderListView(list); return; }
+  if(viewMode==='list')  { renderFlatList(list); return; }
+  if(viewMode==='glist') { renderGroupList(list); return; }
   renderGroupView(list);
 }
 
@@ -492,8 +721,27 @@ function renderGroupView(list){
           ${ci.phone?`<span>☎ ${ci.phone}</span>`:'<span style="opacity:.4">대표전화 없음</span>'}
           ${ci.fax?`<span>📠 ${ci.fax}</span>`:''}
           ${ci.address?`<span>📍 ${ci.address}</span>`:'<span style="opacity:.4">주소 없음</span>'}
+          ${(()=>{const ceos=ci.ceoHistory||[];const cur=ceos.find(c=>!c.to||c.to==='현재')||ceos[0];return cur?`<span>👔 대표 ${cur.name}${cur.from?' ('+cur.from+'~'+(cur.to&&cur.to!=='현재'?cur.to:'현재')+')':''}</span>`:''})()}
           <button class="shared-edit-btn" onclick="openCompanyModal('${esc(co)}')">✏ 수정</button>
         </div>
+        <!-- finance summary (최신 연도) -->
+        ${(()=>{
+          const fin=(ci.finance||[]).sort((a,b)=>Number(b.year)-Number(a.year));
+          if(!fin.length) return '';
+          const r=fin[0];
+          const fmtFin=v=>v?(Number(v.toString().replace(/[^0-9.-]/g,''))||0).toLocaleString()+'백만':'—';
+          const profitVal=Number((r.net_profit||'').toString().replace(/[^0-9.-]/g,'')||0);
+          return `<div class="fin-summary">
+            <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${r.year}년</span>
+            ${r.headcount?`<div class="fin-chip"><span class="fin-chip-label">인원</span><span class="fin-chip-value neu">${r.headcount}명</span></div>`:''}
+            ${r.revenue?`<div class="fin-chip"><span class="fin-chip-label">매출</span><span class="fin-chip-value neu">${fmtFin(r.revenue)}</span></div>`:''}
+            ${r.op_profit?`<div class="fin-chip"><span class="fin-chip-label">영업이익</span><span class="fin-chip-value ${Number((r.op_profit||'').toString().replace(/[^0-9.-]/g,''))||0 >= 0?'pos':'neg'}">${fmtFin(r.op_profit)}</span></div>`:''}
+            ${r.net_profit?`<div class="fin-chip"><span class="fin-chip-label">순이익</span><span class="fin-chip-value ${profitVal>=0?'pos':'neg'}">${fmtFin(r.net_profit)}</span></div>`:''}
+            ${r.assets?`<div class="fin-chip"><span class="fin-chip-label">자산</span><span class="fin-chip-value neu">${fmtFin(r.assets)}</span></div>`:''}
+            ${r.liabilities?`<div class="fin-chip"><span class="fin-chip-label">부채</span><span class="fin-chip-value neg">${fmtFin(r.liabilities)}</span></div>`:''}
+            ${fin.length>1?`<span style="font-size:11px;color:var(--muted)">외 ${fin.length-1}년 데이터</span>`:''}
+          </div>`;
+        })()}
         <!-- members -->
         <div class="members-row">
           ${members.map(c=>personCard(c)).join('')}
@@ -533,15 +781,19 @@ function personCard(c, standalone=false){
   const types=[...new Set(acts.map(a=>a.type))];
   const init=(c.last||c.first||'?')[0];
   const bg=ac(c.last+c.first);
+  const title=[c.dept,c.position].filter(Boolean).join(' / ');
   return `<div class="person-card" onclick="showDetail('${c.id}')">
     <div class="person-head">
       <div class="avatar" style="background:${bg}">${init}</div>
-      <div><div class="person-name">${c.last}${c.first}</div><div class="person-dept">${[c.dept,c.position].filter(Boolean).join(' / ')||'—'}</div></div>
+      <div>
+        <div class="person-name">${c.last}${c.first}</div>
+        <div class="person-dept">${title||'&mdash;'}</div>
+      </div>
     </div>
     <div class="person-contacts">
-      ${c.email?`<span>✉ ${c.email}</span>`:''}
-      ${c.mobile?`<span>📱 ${c.mobile}</span>`:''}
-      ${c.office?`<span>☎ ${c.office}</span>`:''}
+      ${c.office?`<span><span class="pc-label">직통</span>${c.office}</span>`:''}
+      ${c.mobile?`<span><span class="pc-label">핸드폰</span>${c.mobile}</span>`:''}
+      ${!c.office&&!c.mobile?`<span style="opacity:.4">연락처 없음</span>`:''}
     </div>
     ${types.length?`<div class="person-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${acts.filter(a=>a.type===t).length}</span>`).join('')}</div>`:''}
   </div>`;
@@ -582,46 +834,149 @@ function toggleCo(co){
   else { el.classList.add('collapsed'); expanded.delete(co); }
 }
 
-// ── LIST VIEW ────────────────────────────────────────────
-function renderListView(list){
+// ── GROUP LIST VIEW (회사별 목록) ──────────────────────────
+function renderGroupList(list){
   const groups={};
   for(const c of list){ const k=(c.company||'').trim()||'__none__'; (groups[k]=groups[k]||[]).push(c); }
   const named=Object.keys(groups).filter(k=>k!=='__none__').sort();
   const none=groups['__none__']||[];
-  let rows='';
+  let html='';
+
   for(const co of named){
-    const ca=coActivities(co);
-    rows+=`<tr class="co-row"><td colspan="5" style="padding-left:13px">🏢 ${co} <span style="font-size:11px;color:var(--muted);font-weight:400">· ${groups[co].length}명 · 액티비티 ${ca.length}건</span></td></tr>`;
-    for(const c of groups[co]){
-      const acts=activities.filter(a=>a.contactId===c.id);
-      const types=[...new Set(acts.map(a=>a.type))];
-      rows+=`<tr onclick="showDetail('${c.id}')">
-        <td style="padding-left:26px">${c.last}${c.first}</td>
-        <td style="color:var(--muted)">${[c.dept,c.position].filter(Boolean).join('/')}</td>
-        <td>${c.mobile||c.office||'—'}</td>
-        <td>${c.email||'—'}</td>
-        <td>${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]}${acts.filter(a=>a.type===t).length}</span>`).join(' ')}</td>
+    const members=groups[co];
+    const ci=companies[co]||{};
+    const coActs=coActivities(co);
+    const types=[...new Set(coActs.map(a=>a.type))];
+    const isExp=expanded.has(co);
+    const col=ac(co);
+
+    html+=`
+    <div class="company-group${isExp?'':' collapsed'}" id="cg-${CSS.escape(co)}">
+      <div class="company-header" onclick="toggleCo('${esc(co)}')">
+        <div class="company-logo" style="background:linear-gradient(135deg,${col},${col}bb)">${co[0]}</div>
+        <div class="company-info">
+          <div class="company-name">${co}</div>
+          <div class="company-meta">
+            <span>👤 ${members.length}명</span>
+            ${ci.phone?`<span>☎ ${ci.phone}</span>`:''}
+            ${coActs.length?`<span>📋 ${coActs.length}건</span>`:''}
+          </div>
+        </div>
+        <div class="company-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${coActs.filter(a=>a.type===t).length}</span>`).join('')}</div>
+        <button class="shared-edit-btn" style="margin-right:4px" onclick="event.stopPropagation();openCompanyModal('${esc(co)}')">✏</button>
+        <span class="company-toggle">▾</span>
+      </div>
+      <div class="company-body">
+        <div class="shared-bar">
+          <span class="shared-tag">공통</span>
+          ${ci.phone?`<span>☎ ${ci.phone}</span>`:'<span style="opacity:.4">대표전화 없음</span>'}
+          ${ci.fax?`<span>📠 ${ci.fax}</span>`:''}
+          ${ci.address?`<span>📍 ${ci.address}</span>`:'<span style="opacity:.4">주소 없음</span>'}
+          <button class="shared-edit-btn" onclick="openAddContact('${esc(co)}')">＋ 담당자</button>
+        </div>
+        <div class="list-wrap" style="margin:0;border-radius:0;border-left:none;border-right:none;border-bottom:none">
+          <table class="list-table">
+            <thead><tr>
+              <th style="width:130px">이름</th>
+              <th style="width:160px">직함</th>
+              <th style="width:150px">직통</th>
+              <th style="width:150px">핸드폰</th>
+              <th style="width:110px">액티비티</th>
+            </tr></thead>
+            <tbody>
+              ${members.map(c=>personListRow(c)).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if(none.length){
+    html+=`<div style="margin-top:16px">
+      <div class="ungrouped-label">── 회사 미지정 (${none.length}명)</div>
+      <div class="list-wrap">
+        <table class="list-table">
+          <thead><tr><th style="width:130px">이름</th><th style="width:160px">직함</th><th style="width:150px">직통</th><th style="width:150px">핸드폰</th><th style="width:110px">액티비티</th></tr></thead>
+          <tbody>${none.map(c=>personListRow(c)).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>연락처가 없습니다.</p></div>`;
+  document.getElementById('mainGrid').innerHTML=html;
+}
+
+// ── FLAT LIST VIEW (전체 목록) ────────────────────────────
+function renderFlatList(list){
+  // sort by company then name
+  const sorted=[...list].sort((a,b)=>{
+    const ca=(a.company||'ㅿ').localeCompare(b.company||'ㅿ','ko');
+    if(ca!==0) return ca;
+    return (a.last+a.first).localeCompare(b.last+b.first,'ko');
+  });
+
+  if(!sorted.length){
+    document.getElementById('mainGrid').innerHTML=`<div class="empty-state"><div class="empty-icon">👥</div><p>연락처가 없습니다.</p></div>`;
+    return;
+  }
+
+  // Group header rows mixed in
+  let rows=''; let lastCo=null;
+  for(const c of sorted){
+    const co=(c.company||'').trim();
+    if(co && co!==lastCo){
+      const ci=companies[co]||{};
+      const cnt=list.filter(x=>x.company===co).length;
+      rows+=`<tr class="co-row" onclick="setViewMode('group');setTimeout(()=>{expanded.add('${esc(co)}');const el=document.getElementById('cg-'+CSS.escape('${esc(co)}'));if(el){el.classList.remove('collapsed');el.scrollIntoView({behavior:'smooth',block:'start'});}},80)">
+        <td colspan="6" style="padding:9px 16px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:26px;height:26px;border-radius:6px;background:${ac(co)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${co[0]}</div>
+            <span>${co}</span>
+            <span style="font-size:11px;color:var(--muted);font-weight:400">${cnt}명${ci.phone?' · ☎ '+ci.phone:''}</span>
+          </div>
+        </td>
       </tr>`;
+      lastCo=co;
     }
+    rows+=personListRow(c, co?true:false);
   }
-  for(const c of none){
-    const acts=activities.filter(a=>a.contactId===c.id);
-    const types=[...new Set(acts.map(a=>a.type))];
-    rows+=`<tr onclick="showDetail('${c.id}')">
-      <td>${c.last}${c.first}</td>
-      <td style="color:var(--muted)">${[c.dept,c.position].filter(Boolean).join('/')}</td>
-      <td>${c.mobile||c.office||'—'}</td>
-      <td>${c.email||'—'}</td>
-      <td>${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]}${acts.filter(a=>a.type===t).length}</span>`).join(' ')}</td>
-    </tr>`;
-  }
+
   document.getElementById('mainGrid').innerHTML=`
     <div class="list-wrap">
       <table class="list-table">
-        <thead><tr><th>이름</th><th>부서/직책</th><th>연락처</th><th>이메일</th><th>액티비티</th></tr></thead>
-        <tbody>${rows||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">연락처 없음</td></tr>'}</tbody>
+        <thead><tr>
+          <th style="width:130px">이름</th>
+          <th style="width:160px">직함</th>
+          <th style="width:150px">직통</th>
+          <th style="width:150px">핸드폰</th>
+          <th style="width:110px">액티비티</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
       </table>
     </div>`;
+}
+
+// ── PERSON LIST ROW ──────────────────────────────────────
+function personListRow(c, indented=true){
+  const acts=activities.filter(a=>a.contactId===c.id);
+  const types=[...new Set(acts.map(a=>a.type))];
+  const bg=ac(c.last+c.first);
+  const init=(c.last||c.first||'?')[0];
+  const title=[c.dept,c.position].filter(Boolean).join(' / ')||'—';
+  return `<tr onclick="showDetail('${c.id}')" style="cursor:pointer">
+    <td style="padding-left:${indented?26:14}px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${init}</div>
+        <span style="font-weight:500">${c.last}${c.first}</span>
+      </div>
+    </td>
+    <td style="color:var(--muted);font-size:12px">${title}</td>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${c.office||'<span style="opacity:.3">—</span>'}</td>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${c.mobile||'<span style="opacity:.3">—</span>'}</td>
+    <td>${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]}${acts.filter(a=>a.type===t).length}</span>`).join(' ')||'<span style="color:var(--border);font-size:11px">—</span>'}</td>
+  </tr>`;
 }
 
 // ── DETAIL ──────────────────────────────────────────────
@@ -787,25 +1142,142 @@ function delContact(id){
 }
 
 // ── COMPANY MODAL ─────────────────────────────────────────
+let _finRows=[];  // [{year,headcount,revenue,op_profit,net_profit,assets,liabilities}]
+let _ceoRows=[];  // [{from,to,name,memo}]
+
+function switchCoTab(tab){
+  ['basic','finance','ceo'].forEach(t=>{
+    document.getElementById('coTab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('coPanel-'+t).style.display=t===tab?'':'none';
+  });
+}
+
+function addFinanceRow(data={}){
+  const yr=data.year||(new Date().getFullYear());
+  _finRows.push({...{year:yr,headcount:'',revenue:'',op_profit:'',net_profit:'',assets:'',liabilities:''},...data});
+  renderFinTable();
+}
+function renderFinTable(){
+  // sort by year desc
+  _finRows.sort((a,b)=>Number(b.year)-Number(a.year));
+  const tbody=document.getElementById('finBody');
+  tbody.innerHTML=_finRows.map((r,i)=>`
+    <tr>
+      <td><input class="fin-year" value="${r.year}" onchange="_finRows[${i}].year=this.value" placeholder="2024"></td>
+      <td><input class="fin-input" value="${r.headcount}" onchange="_finRows[${i}].headcount=this.value" placeholder="—"></td>
+      <td><input class="fin-input" value="${r.revenue}" onchange="_finRows[${i}].revenue=this.value" placeholder="—"></td>
+      <td><input class="fin-input" value="${r.op_profit}" onchange="_finRows[${i}].op_profit=this.value" placeholder="—"></td>
+      <td><input class="fin-input" value="${r.net_profit}" onchange="_finRows[${i}].net_profit=this.value" placeholder="—"></td>
+      <td><input class="fin-input" value="${r.assets}" onchange="_finRows[${i}].assets=this.value" placeholder="—"></td>
+      <td><input class="fin-input" value="${r.liabilities}" onchange="_finRows[${i}].liabilities=this.value" placeholder="—"></td>
+      <td><button class="fin-del" onclick="_finRows.splice(${i},1);renderFinTable()">✕</button></td>
+    </tr>`).join('');
+}
+
+function addCeoRow(data={}){
+  _ceoRows.unshift({...{from:'',to:'',name:'',memo:''},...data});
+  renderCeoList();
+}
+function renderCeoList(){
+  const div=document.getElementById('ceoList');
+  if(!_ceoRows.length){
+    div.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">등록된 대표이사 이력이 없습니다.</div>`;
+    return;
+  }
+  div.innerHTML=`
+    <div class="ceo-header"><span>취임연도</span><span>이름</span><span>퇴임연도</span><span>비고</span><span></span></div>
+    ${_ceoRows.map((r,i)=>`
+    <div class="ceo-row">
+      <input class="ceo-input" value="${r.from}" onchange="_ceoRows[${i}].from=this.value" placeholder="2020">
+      <input class="ceo-input" value="${r.name}" onchange="_ceoRows[${i}].name=this.value" placeholder="홍길동">
+      <input class="ceo-input" value="${r.to}" onchange="_ceoRows[${i}].to=this.value" placeholder="현재">
+      <input class="ceo-input" value="${r.memo}" onchange="_ceoRows[${i}].memo=this.value" placeholder="메모">
+      <button class="ceo-del" onclick="_ceoRows.splice(${i},1);renderCeoList()">✕</button>
+    </div>`).join('')}`;
+}
+
 function openCompanyModal(co){
   editCoName=co;
   const ci=companies[co]||{};
-  document.getElementById('coModalTitle').textContent=co+' — 공통 정보';
+  document.getElementById('coModalTitle').textContent=co;
+  document.getElementById('co_name').value=co;
   document.getElementById('co_phone').value=ci.phone||'';
   document.getElementById('co_fax').value=ci.fax||'';
   document.getElementById('co_address').value=ci.address||'';
   document.getElementById('co_memo').value=ci.memo||'';
+
+  // 재무 데이터 로드
+  _finRows=(ci.finance||[]).map(r=>({...r}));
+  renderFinTable();
+  if(!_finRows.length) addFinanceRow({year:new Date().getFullYear()});
+
+  // 대표이사 이력 로드
+  _ceoRows=(ci.ceoHistory||[]).map(r=>({...r}));
+  renderCeoList();
+
+  // 병합 대상 목록
+  const sel=document.getElementById('co_merge_target');
+  const allCos=[...new Set(contacts.map(c=>c.company).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">— 병합 안 함 —</option>'
+    +allCos.filter(n=>n!==co).map(n=>{
+      const cnt=contacts.filter(c=>c.company===n).length;
+      return `<option value="${n.replace(/"/g,'&quot;')}">${n} (${cnt}명)</option>`;
+    }).join('');
+  sel.value='';
+  document.getElementById('co_merge_preview').style.display='none';
+  sel.onchange=()=>{
+    const target=sel.value;
+    const prev=document.getElementById('co_merge_preview');
+    if(!target){ prev.style.display='none'; return; }
+    const cnt=contacts.filter(c=>c.company===target).length;
+    prev.style.display='';
+    prev.textContent=`⚠ "${target}" 소속 ${cnt}명이 "${co}"로 이동됩니다. 저장 시 적용됩니다.`;
+  };
+
+  switchCoTab('basic');
   document.getElementById('companyModal').classList.add('open');
 }
+
 function saveCompany(){
   if(!editCoName) return;
-  companies[editCoName]={
-    phone:document.getElementById('co_phone').value.trim(),
-    fax:document.getElementById('co_fax').value.trim(),
-    address:document.getElementById('co_address').value.trim(),
-    memo:document.getElementById('co_memo').value.trim(),
-  };
-  persist(); closeModal('companyModal'); renderContacts();
+  const newName=document.getElementById('co_name').value.trim();
+  const mergeTarget=document.getElementById('co_merge_target').value;
+  if(!newName){ alert('회사명을 입력하세요.'); return; }
+
+  // ① 병합
+  if(mergeTarget){
+    if(!confirm(`"${mergeTarget}" 소속 직원을 모두 "${newName}"으로 병합할까요?\n이 작업은 되돌릴 수 없습니다.`)) return;
+    contacts.forEach(c=>{ if(c.company===mergeTarget) c.company=newName; });
+    delete companies[mergeTarget];
+  }
+
+  // ② 회사명 변경
+  if(newName!==editCoName){
+    contacts.forEach(c=>{ if(c.company===editCoName) c.company=newName; });
+    const oldInfo=companies[editCoName]||{};
+    delete companies[editCoName];
+    if(!companies[newName]) companies[newName]={};
+    companies[newName]={...oldInfo,...companies[newName]};
+  }
+
+  // ③ 공통 정보 + 재무 + 대표이사 저장
+  if(!companies[newName]) companies[newName]={};
+  companies[newName].phone     = document.getElementById('co_phone').value.trim();
+  companies[newName].fax       = document.getElementById('co_fax').value.trim();
+  companies[newName].address   = document.getElementById('co_address').value.trim();
+  companies[newName].memo      = document.getElementById('co_memo').value.trim();
+  // 재무: 빈 행 제거 후 저장
+  companies[newName].finance   = _finRows.filter(r=>r.year).map(r=>({
+    year:r.year, headcount:r.headcount, revenue:r.revenue,
+    op_profit:r.op_profit, net_profit:r.net_profit,
+    assets:r.assets, liabilities:r.liabilities
+  }));
+  // 대표이사: 빈 이름 제거 후 저장
+  companies[newName].ceoHistory= _ceoRows.filter(r=>r.name);
+
+  persist();
+  closeModal('companyModal');
+  renderContacts();
 }
 
 // ── ACTIVITY MODAL ────────────────────────────────────────
@@ -870,6 +1342,209 @@ function renderStats(){
     <div class="stat-row"><span>발주</span><span>${activities.filter(a=>a.type==='order').length}</span></div>
     <div class="stat-row"><span>견적</span><span>${activities.filter(a=>a.type==='quote').length}</span></div>
     <div class="stat-row"><span>총 액티비티</span><span>${activities.length}</span></div>`;
+}
+
+// ── PDF IMPORT ────────────────────────────────────────────
+let pdfBase64 = null;
+let pdfExtracted = [];
+
+function pdfShowStep(n){
+  for(let i=0;i<=4;i++) document.getElementById('pdfStep'+i).style.display = i===n ? '' : 'none';
+}
+
+function openPdfModal(){
+  pdfBase64 = null;
+  pdfExtracted = [];
+  document.getElementById('pdfFileInput').value='';
+  document.getElementById('pdfFileName').style.display='none';
+  document.getElementById('pdfAnalyzeBtn').disabled=true;
+  const key = localStorage.getItem('crm_api_key');
+  pdfShowStep(key ? 1 : 0);
+  document.getElementById('pdfModal').classList.add('open');
+}
+
+function pdfSaveKey(){
+  const key = document.getElementById('pdfApiKey').value.trim();
+  if(!key.startsWith('sk-')){ alert('올바른 API 키를 입력해주세요. (sk- 로 시작)'); return; }
+  localStorage.setItem('crm_api_key', key);
+  pdfShowStep(1);
+}
+
+function pdfChangeKey(){
+  document.getElementById('pdfApiKey').value = localStorage.getItem('crm_api_key')||'';
+  pdfShowStep(0);
+}
+
+function onPdfSelected(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){ alert('파일 크기가 5MB를 초과합니다.'); return; }
+  const nameEl = document.getElementById('pdfFileName');
+  nameEl.textContent = '📄 ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+  nameEl.style.display = '';
+  document.getElementById('pdfAnalyzeBtn').disabled = false;
+
+  const reader = new FileReader();
+  reader.onload = e => { pdfBase64 = e.target.result.split(',')[1]; };
+  reader.readAsDataURL(file);
+}
+
+// Drag & drop support
+(function(){
+  const dz = document.getElementById('pdfDropzone');
+  if(!dz) return;
+  dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', ()=> dz.classList.remove('drag'));
+  dz.addEventListener('drop', e=>{
+    e.preventDefault(); dz.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if(file && file.type==='application/pdf'){
+      const fi = document.getElementById('pdfFileInput');
+      // manually trigger
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fi.files = dt.files;
+      onPdfSelected(fi);
+    }
+  });
+})();
+
+async function pdfAnalyze(){
+  if(!pdfBase64){ alert('PDF 파일을 먼저 선택해주세요.'); return; }
+  const apiKey = localStorage.getItem('crm_api_key');
+  if(!apiKey){ alert('API 키가 없습니다.'); pdfShowStep(0); return; }
+
+  pdfShowStep(2); // loading
+
+  const prompt = `이 PDF에서 연락처 정보를 모두 추출해주세요.
+여러 사람이 있으면 각각 분리해서 추출하세요.
+반드시 아래 JSON 형식으로만 응답하세요. 다른 설명 텍스트 없이 JSON만:
+
+[
+  {
+    "company": "회사명",
+    "dept": "부서",
+    "position": "직책",
+    "last": "성",
+    "first": "이름",
+    "email": "이메일",
+    "office": "사무실전화",
+    "mobile": "휴대폰",
+    "extra": "팩스 등 추가연락처",
+    "address": "주소",
+    "memo": "기타정보"
+  }
+]
+
+- 한국 이름은 성(last)과 이름(first)을 분리하세요. 예: 김철수 → last:"김", first:"철수"
+- 외국 이름은 last에 성, first에 이름을 넣으세요.
+- 없는 항목은 빈 문자열("")로 두세요.
+- JSON 외 다른 텍스트는 절대 포함하지 마세요.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      const msg = data?.error?.message || JSON.stringify(data);
+      throw new Error(msg);
+    }
+
+    const raw = data.content?.find(b=>b.type==='text')?.text || '';
+    // Extract JSON array from response
+    const match = raw.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error('연락처 정보를 찾을 수 없습니다. PDF에 연락처 정보가 포함되어 있는지 확인해주세요.');
+
+    pdfExtracted = JSON.parse(match[0]);
+    if(!pdfExtracted.length) throw new Error('추출된 연락처가 없습니다.');
+
+    renderPdfResults();
+    pdfShowStep(3);
+
+  } catch(err) {
+    document.getElementById('pdfErrorMsg').innerHTML =
+      err.message + '<br><br><span style="font-size:11px">• API 키가 올바른지 확인해주세요<br>• PDF에 텍스트가 포함되어 있는지 확인해주세요<br>• 스캔된 이미지 PDF는 인식이 어려울 수 있습니다</span>';
+    pdfShowStep(4);
+  }
+}
+
+function renderPdfResults(){
+  const div = document.getElementById('pdfResults');
+  div.innerHTML = pdfExtracted.map((p,i)=>{
+    const name = (p.last||'')+(p.first||'') || '이름 없음';
+    return `<div class="pdf-contact-card checked" id="pdfCard${i}">
+      <div class="pdf-card-header">
+        <input type="checkbox" class="pdf-card-check" id="pdfCheck${i}" checked onchange="document.getElementById('pdfCard${i}').classList.toggle('checked',this.checked)">
+        <div class="pdf-card-name">${name} ${p.company?'<span style="font-size:12px;color:var(--muted);font-weight:400">· '+p.company+'</span>':''}</div>
+      </div>
+      <div class="pdf-fields">
+        <div class="pdf-field"><label>회사</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
+        <div class="pdf-field"><label>부서</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
+        <div class="pdf-field"><label>직책</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
+        <div class="pdf-field"><label>성</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
+        <div class="pdf-field"><label>이름</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
+        <div class="pdf-field"><label>이메일</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
+        <div class="pdf-field"><label>사무실</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
+        <div class="pdf-field"><label>휴대폰</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
+        <div class="pdf-field"><label>추가연락처</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
+        <div class="pdf-field full"><label>주소</label><input id="pr${i}_address" value="${esc2(p.address)}"></div>
+        <div class="pdf-field full"><label>메모</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc2(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function pdfImportAll(){
+  let added = 0;
+  for(let i=0; i<pdfExtracted.length; i++){
+    const chk = document.getElementById('pdfCheck'+i);
+    if(!chk || !chk.checked) continue;
+    const get = id => document.getElementById(`pr${i}_${id}`)?.value?.trim()||'';
+    const last = get('last'), first = get('first');
+    if(!last && !first) continue;
+    const co = get('company');
+    const addr = get('address');
+    if(co && addr){ if(!companies[co]) companies[co]={}; if(!companies[co].address) companies[co].address=addr; }
+    contacts.unshift({ id:uid(), createdAt:new Date().toISOString(),
+      company:co, dept:get('dept'), position:get('position'), last, first,
+      email:get('email'), office:get('office'), mobile:get('mobile'),
+      extra:get('extra'), address:addr, memo:get('memo') });
+    added++;
+  }
+  persist();
+  closeModal('pdfModal');
+  renderContacts();
+  if(added) alert(`✅ ${added}개의 연락처가 추가되었습니다!`);
+}
+
+function pdfRetry(){
+  pdfBase64=null; pdfExtracted=[];
+  document.getElementById('pdfFileInput').value='';
+  document.getElementById('pdfFileName').style.display='none';
+  document.getElementById('pdfAnalyzeBtn').disabled=true;
+  pdfShowStep(1);
 }
 
 // ── INIT ──────────────────────────────────────────────────
