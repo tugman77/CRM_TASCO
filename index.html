@@ -38,6 +38,13 @@
   }
   .sidebar-btn:hover { background: var(--surface2); }
   .sidebar-btn.active { background: var(--accent); color: #fff; }
+  .today-badge {
+    margin-left: auto; background: #ff6b6b; color: #fff;
+    font-size: 10px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+    padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center;
+    line-height: 16px; height: 16px; display: inline-block;
+  }
+  .sidebar-btn.active .today-badge { background: rgba(255,255,255,0.3); color: #fff; }
   .sidebar-stats { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
   .stat-row { display: flex; justify-content: space-between; margin: 4px 0; }
   .stat-row span:last-child { color: var(--accent); }
@@ -104,15 +111,7 @@
   .add-card { background: transparent; border: 1px dashed var(--border); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--muted); font-size: 12px; transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif; }
   .add-card:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* Activity badge */
-  .activity-badge { font-size: 10px; padding: 1px 7px; border-radius: 10px; font-family: 'IBM Plex Mono', monospace; }
-  .badge-order { background: rgba(67,233,123,0.15); color: var(--accent3); }
-  .badge-quote { background: rgba(247,151,30,0.15); color: var(--accent4); }
-  .badge-visit { background: rgba(255,107,107,0.15); color: var(--accent2); }
-  .badge-call { background: rgba(79,124,255,0.15); color: var(--accent); }
-  .badge-other { background: rgba(121,134,203,0.15); color: var(--muted); }
-
-  /* Company Timeline */
+  /* Activity badge - dynamically injected via JS */
   .co-timeline-section { padding: 14px 18px; }
   .co-timeline-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .co-timeline-label { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -120,11 +119,7 @@
   .timeline::before { content: ''; position: absolute; left: 14px; top: 6px; bottom: 6px; width: 1px; background: var(--border); }
   .timeline-item { display: flex; gap: 12px; margin-bottom: 12px; }
   .timeline-dot { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; position: relative; z-index: 1; }
-  .dot-order { background: rgba(67,233,123,0.15); color: var(--accent3); border: 1px solid var(--accent3); }
-  .dot-quote { background: rgba(247,151,30,0.15); color: var(--accent4); border: 1px solid var(--accent4); }
-  .dot-visit { background: rgba(255,107,107,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
   .dot-call { background: rgba(79,124,255,0.15); color: var(--accent); border: 1px solid var(--accent); }
-  .dot-other { background: rgba(121,134,203,0.15); color: var(--muted); border: 1px solid var(--muted); }
   .tl-body { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; flex: 1; }
   .tl-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
   .tl-type { font-size: 12px; font-weight: 600; }
@@ -266,8 +261,9 @@
     <h1>▸ CRM</h1>
     <span>고객관리 시스템</span>
   </div>
-  <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> 연락처</button>
-  <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> 전체 액티비티</button>
+  <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> 연락처 <span class="today-badge" id="todayContacts" style="display:none"></span></button>
+  <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> 전체 활동 <span class="today-badge" id="todayActivities" style="display:none"></span></button>
+  <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> 활동 유형 관리</button>
   <div class="sidebar-stats" id="sidebarStats"></div>
 </aside>
 
@@ -282,7 +278,7 @@
       <button class="toggle-btn" id="vBtn-glist" title="회사별 목록" onclick="setViewMode('glist')">▤</button>
       <button class="toggle-btn" id="vBtn-list" title="전체 목록" onclick="setViewMode('list')">☰</button>
     </div>
-    <button class="btn btn-outline" onclick="openPdfModal()" title="PDF에서 연락처 자동 추출">📄 PDF 가져오기</button>
+    <button class="btn btn-outline" onclick="openPdfModal()" title="파일에서 연락처 자동 추출">🗂 파일 가져오기</button>
     <button class="btn btn-primary" onclick="openAddContact(null)">＋ 연락처</button>
   </div>
 
@@ -290,14 +286,7 @@
   <div class="content" id="contactsView">
     <div class="section-title">연락처</div>
     <div class="section-sub" id="viewSub"></div>
-    <div class="filter-bar">
-      <button class="filter-chip active" onclick="setFilter('all',this)">전체</button>
-      <button class="filter-chip" onclick="setFilter('order',this)">📦 발주</button>
-      <button class="filter-chip" onclick="setFilter('quote',this)">📄 견적</button>
-      <button class="filter-chip" onclick="setFilter('visit',this)">🤝 방문</button>
-      <button class="filter-chip" onclick="setFilter('call',this)">📞 통화</button>
-      <button class="filter-chip" onclick="setFilter('other',this)">📌 기타</button>
-    </div>
+    <div class="filter-bar" id="filterBar"></div>
     <div id="mainGrid"></div>
   </div>
 
@@ -312,7 +301,7 @@
 
   <!-- Activities View -->
   <div class="content" id="activitiesView" style="display:none">
-    <div class="section-title">전체 액티비티</div>
+    <div class="section-title">전체 활동</div>
     <div class="section-sub">모든 활동 내역 (최신순)</div>
     <div id="allActsContent"></div>
   </div>
@@ -400,6 +389,18 @@
         </div>
       </div>
       <div class="form-section">
+        <div class="form-section-title">우리 팀 담당자</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">이 회사를 담당하는 우리 팀 정보를 기록합니다.</p>
+        <div class="form-row">
+          <div class="form-group"><label>팀명</label><input type="text" id="co_our_team" placeholder="영업1팀"></div>
+          <div class="form-group"><label>담당자 이름</label><input type="text" id="co_our_name" placeholder="홍길동"></div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group"><label>메모</label><input type="text" id="co_our_memo" placeholder="주담당자 / 2024.01 인수인계"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
         <div class="form-section-title">다른 회사와 병합</div>
         <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">같은 회사가 다른 이름으로 등록된 경우 병합합니다. 병합 대상의 모든 직원이 현재 회사로 이동됩니다.</p>
         <div class="form-row single">
@@ -479,20 +480,14 @@
 <div class="modal-overlay" id="activityModal">
   <div class="modal" style="width:480px">
     <button class="modal-close" onclick="closeModal('activityModal')">✕</button>
-    <div class="modal-title">액티비티 추가</div>
-    <div class="form-section">
+    <div class="modal-title" id="actModalTitle">활동 추가</div>
+    <div class="form-section" id="actWhoSection">
       <div class="form-section-title">담당자</div>
       <div id="actWho" style="font-size:14px;font-weight:600;color:var(--accent);padding:4px 0"></div>
     </div>
     <div class="form-row single">
       <div class="form-group"><label>유형 *</label>
-        <select id="a_type">
-          <option value="order">📦 발주</option>
-          <option value="quote">📄 견적</option>
-          <option value="visit">🤝 방문</option>
-          <option value="call">📞 통화</option>
-          <option value="other">📌 기타</option>
-        </select>
+        <select id="a_type"></select>
       </div>
     </div>
     <div class="form-row">
@@ -507,7 +502,47 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('activityModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveActivity()">저장</button>
+      <button class="btn btn-primary" id="actSaveBtn" onclick="saveActivity()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Type Manager Modal -->
+<div class="modal-overlay" id="typeModal">
+  <div class="modal" style="width:480px">
+    <button class="modal-close" onclick="closeModal('typeModal')">✕</button>
+    <div class="modal-title">활동 유형 관리</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7">유형을 추가하거나 순서를 변경할 수 있습니다.<br>기본 유형(발주·견적·방문·통화·기타)은 삭제할 수 없습니다.</p>
+    <div id="typeList"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div class="form-section-title" style="margin-bottom:10px">새 유형 추가</div>
+      <div style="display:grid;grid-template-columns:60px 1fr 120px auto;gap:8px;align-items:center">
+        <input id="newTypeEmoji" placeholder="🔖" maxlength="2" style="padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:18px;text-align:center;outline:none;width:100%">
+        <input id="newTypeLabel" placeholder="유형 이름" style="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="color" id="newTypeColor" value="#4f7cff" style="width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;padding:2px">
+          <span style="font-size:11px;color:var(--muted)">색상</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addCustomType()">추가</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('typeModal')">취소</button>
+      <button class="btn btn-primary" onclick="saveTypes_modal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="delActModal">
+  <div class="modal" style="width:400px;text-align:center">
+    <div style="font-size:40px;margin-bottom:14px">🗑</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px">활동 삭제</div>
+    <div id="delActInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px;text-align:left;font-size:13px;line-height:1.8"></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">이 활동을 삭제하면 복구할 수 없습니다.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="closeModal('delActModal')" style="min-width:100px">취소</button>
+      <button class="btn btn-danger" id="delActConfirmBtn" style="min-width:100px">삭제</button>
     </div>
   </div>
 </div>
@@ -516,21 +551,28 @@
 <div class="modal-overlay" id="pdfModal">
   <div class="modal" style="width:640px">
     <button class="modal-close" onclick="closeModal('pdfModal')">✕</button>
-    <div class="modal-title">📄 PDF에서 연락처 자동 추출</div>
+    <div class="modal-title">🗂 파일에서 연락처 자동 추출</div>
 
     <!-- Step 1: API Key -->
     <div id="pdfStep0" class="pdf-step">
       <div class="form-section">
-        <div class="form-section-title">Claude API 키 설정 (최초 1회)</div>
+        <div class="form-section-title">Claude API 키 설정</div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
-          PDF 분석에는 Claude API가 사용됩니다.<br>
-          <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a>에서 API 키를 발급받아 입력해주세요.<br>
+          파일 분석에는 Claude API가 사용됩니다.<br>
+          <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> → API Keys 메뉴에서 발급하세요.<br>
           키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다.
         </p>
         <div class="form-row single">
           <div class="form-group">
-            <label>Anthropic API Key</label>
-            <input type="password" id="pdfApiKey" placeholder="sk-ant-api03-...">
+            <label>Anthropic API Key <span id="keyPreview" style="font-size:10px;color:var(--accent3);font-family:'IBM Plex Mono',monospace"></span></label>
+            <div style="position:relative">
+              <input type="password" id="pdfApiKey" placeholder="sk-ant-api03-..."
+                style="padding-right:44px"
+                oninput="const v=this.value.trim();document.getElementById('pdfKeyValidMsg').textContent=v&&!v.startsWith('sk-')?'⚠ sk- 로 시작해야 합니다':''">
+              <button onclick="const i=document.getElementById('pdfApiKey');i.type=i.type==='password'?'text':'password'"
+                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px">👁</button>
+            </div>
+            <div id="pdfKeyValidMsg" style="font-size:11px;color:var(--accent2);margin-top:4px"></div>
           </div>
         </div>
       </div>
@@ -543,18 +585,24 @@
     <!-- Step 2: Upload -->
     <div id="pdfStep1" class="pdf-step" style="display:none">
       <div class="form-section">
-        <div class="form-section-title">명함 / 연락처 PDF 업로드</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
-          명함, 직원 소개, 거래처 정보가 담긴 PDF를 올려주세요.<br>
-          여러 사람이 한 파일에 있어도 자동으로 분리해서 추출합니다.
+        <div class="form-section-title">파일 업로드</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.8">
+          명함 사진, PDF, Word, 텍스트 파일 등 다양한 형식을 지원합니다.<br>
+          <span style="color:var(--accent)">📄 PDF</span> &nbsp;
+          <span style="color:var(--accent)">🖼 사진 (JPG·PNG·WEBP)</span> &nbsp;
+          <span style="color:var(--accent)">📝 텍스트 (TXT)</span> &nbsp;
+          <span style="color:var(--accent)">📋 CSV/Excel</span>
         </p>
         <div id="pdfDropzone" class="pdf-dropzone" onclick="document.getElementById('pdfFileInput').click()">
-          <div class="pdf-drop-icon">📄</div>
-          <div class="pdf-drop-text">클릭하거나 PDF를 드래그하여 업로드</div>
-          <div class="pdf-drop-sub">PDF 파일 (최대 5MB)</div>
-          <input type="file" id="pdfFileInput" accept=".pdf" style="display:none" onchange="onPdfSelected(this)">
+          <div class="pdf-drop-icon" id="dropIcon">🗂</div>
+          <div class="pdf-drop-text">클릭하거나 파일을 드래그하여 업로드</div>
+          <div class="pdf-drop-sub">PDF · JPG · PNG · WEBP · TXT · CSV (최대 10MB)</div>
+          <input type="file" id="pdfFileInput"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.xls,.xlsx,.doc,.docx"
+            style="display:none" onchange="onPdfSelected(this)">
         </div>
         <div id="pdfFileName" style="font-size:12px;color:var(--accent);margin-top:8px;display:none"></div>
+        <div id="pdfFileTypeNote" style="font-size:11px;color:var(--muted);margin-top:6px;display:none"></div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="pdfChangeKey()">🔑 키 변경</button>
@@ -567,7 +615,7 @@
     <div id="pdfStep2" class="pdf-step" style="display:none">
       <div style="text-align:center;padding:48px 20px">
         <div class="pdf-spinner"></div>
-        <div style="font-size:15px;font-weight:600;margin-top:20px">PDF 분석 중...</div>
+        <div style="font-size:15px;font-weight:600;margin-top:20px" id="pdfLoadingMsg">파일 분석 중...</div>
         <div style="font-size:13px;color:var(--muted);margin-top:8px">Claude AI가 연락처 정보를 추출하고 있습니다</div>
       </div>
     </div>
@@ -615,10 +663,53 @@ let curFilter = 'all';
 let viewMode = 'group';
 let expanded = new Set();
 
-const TL  = {order:'발주',quote:'견적',visit:'방문',call:'통화',other:'기타'};
-const TE  = {order:'📦',quote:'📄',visit:'🤝',call:'📞',other:'📌'};
-const TB  = {order:'badge-order',quote:'badge-quote',visit:'badge-visit',call:'badge-call',other:'badge-other'};
-const TD  = {order:'dot-order',quote:'dot-quote',visit:'dot-visit',call:'dot-call',other:'dot-other'};
+// ── 활동 유형 (사용자 정의 가능) ──────────────────────────
+const DEFAULT_TYPES = [
+  {id:'order', label:'발주', emoji:'📦', color:'#43e97b'},
+  {id:'quote', label:'견적', emoji:'📄', color:'#f7971e'},
+  {id:'visit', label:'방문', emoji:'🤝', color:'#ff6b6b'},
+  {id:'call',  label:'통화', emoji:'📞', color:'#4f7cff'},
+  {id:'other', label:'기타', emoji:'📌', color:'#7986cb'},
+];
+
+function loadTypes(){
+  try { return JSON.parse(localStorage.getItem('crm_types')) || DEFAULT_TYPES; }
+  catch(e){ return DEFAULT_TYPES; }
+}
+function saveTypes(types){ localStorage.setItem('crm_types',JSON.stringify(types)); }
+
+let actTypes = loadTypes();
+
+function buildTypeMaps(){
+  const TL={}, TE={}, TB={}, TD={};
+  actTypes.forEach(t=>{
+    TL[t.id] = t.label;
+    TE[t.id] = t.emoji;
+    TB[t.id] = 'badge-type-'+t.id;
+    TD[t.id] = 'dot-type-'+t.id;
+  });
+  return {TL,TE,TB,TD};
+}
+let {TL,TE,TB,TD} = buildTypeMaps();
+
+function rebuildTypeMaps(){
+  const maps = buildTypeMaps();
+  Object.assign(TL, maps.TL); Object.keys(TL).forEach(k=>{ if(!maps.TL[k]) delete TL[k]; });
+  Object.assign(TE, maps.TE); Object.keys(TE).forEach(k=>{ if(!maps.TE[k]) delete TE[k]; });
+  Object.assign(TB, maps.TB); Object.keys(TB).forEach(k=>{ if(!maps.TB[k]) delete TB[k]; });
+  Object.assign(TD, maps.TD); Object.keys(TD).forEach(k=>{ if(!maps.TD[k]) delete TD[k]; });
+}
+
+function injectTypeStyles(){
+  let s = document.getElementById('dynamicTypeStyles');
+  if(!s){ s=document.createElement('style'); s.id='dynamicTypeStyles'; document.head.appendChild(s); }
+  s.textContent = actTypes.map(t=>{
+    const hex = t.color||'#7986cb';
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return `.badge-type-${t.id}{background:rgba(${r},${g},${b},0.15);color:${hex}}
+.dot-type-${t.id}{background:rgba(${r},${g},${b},0.15);color:${hex};border:1px solid ${hex}}`;
+  }).join('\n');
+}
 
 function persist() {
   localStorage.setItem('crm_contacts',  JSON.stringify(contacts));
@@ -722,6 +813,7 @@ function renderGroupView(list){
           ${ci.fax?`<span>📠 ${ci.fax}</span>`:''}
           ${ci.address?`<span>📍 ${ci.address}</span>`:'<span style="opacity:.4">주소 없음</span>'}
           ${(()=>{const ceos=ci.ceoHistory||[];const cur=ceos.find(c=>!c.to||c.to==='현재')||ceos[0];return cur?`<span>👔 대표 ${cur.name}${cur.from?' ('+cur.from+'~'+(cur.to&&cur.to!=='현재'?cur.to:'현재')+')':''}</span>`:''})()}
+          ${ci.ourName?`<span style="color:var(--accent3)">👤 담당 ${ci.ourTeam?ci.ourTeam+' ':''}<strong>${ci.ourName}</strong></span>`:''}
           <button class="shared-edit-btn" onclick="openCompanyModal('${esc(co)}')">✏ 수정</button>
         </div>
         <!-- finance summary (최신 연도) -->
@@ -750,11 +842,11 @@ function renderGroupView(list){
         <!-- timeline -->
         <div class="co-timeline-section">
           <div class="co-timeline-head">
-            <span class="co-timeline-label">📋 회사 전체 액티비티 (${coActs.length}건)</span>
+            <span class="co-timeline-label">📋 회사 전체 활동 (${coActs.length}건)</span>
             <button class="btn btn-primary btn-xs" onclick="openActModal_co('${esc(co)}')">＋ 추가</button>
           </div>
           ${coActs.length===0
-            ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">액티비티 없음</div>`
+            ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">활동 없음</div>`
             : `<div class="timeline" id="tl-${CSS.escape(co)}">
                 ${preview.map(a=>tlItem(a,co)).join('')}
                </div>
@@ -807,9 +899,10 @@ function tlItem(a, co){
     <div class="tl-body">
       <div class="tl-meta">
         <span class="tl-type">${TL[a.type]}${a.title?' · '+a.title:''}</span>
-        <div style="display:flex;gap:5px;align-items:center">
+        <div style="display:flex;gap:4px;align-items:center">
           <span class="tl-date">${a.date}</span>
-          <button onclick="delAct('${a.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px">✕</button>
+          <button onclick="openEditAct('${a.id}')" title="수정" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
+          <button onclick="delAct('${a.id}')" title="삭제" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">🗑</button>
         </div>
       </div>
       <div class="tl-who" onclick="showDetail('${a.contactId}')">👤 ${who}</div>
@@ -881,7 +974,7 @@ function renderGroupList(list){
               <th style="width:160px">직함</th>
               <th style="width:150px">직통</th>
               <th style="width:150px">핸드폰</th>
-              <th style="width:110px">액티비티</th>
+              <th style="width:110px">활동</th>
             </tr></thead>
             <tbody>
               ${members.map(c=>personListRow(c)).join('')}
@@ -897,7 +990,7 @@ function renderGroupList(list){
       <div class="ungrouped-label">── 회사 미지정 (${none.length}명)</div>
       <div class="list-wrap">
         <table class="list-table">
-          <thead><tr><th style="width:130px">이름</th><th style="width:160px">직함</th><th style="width:150px">직통</th><th style="width:150px">핸드폰</th><th style="width:110px">액티비티</th></tr></thead>
+          <thead><tr><th style="width:130px">이름</th><th style="width:160px">직함</th><th style="width:150px">직통</th><th style="width:150px">핸드폰</th><th style="width:110px">활동</th></tr></thead>
           <tbody>${none.map(c=>personListRow(c)).join('')}</tbody>
         </table>
       </div>
@@ -951,7 +1044,7 @@ function renderFlatList(list){
           <th style="width:160px">직함</th>
           <th style="width:150px">직통</th>
           <th style="width:150px">핸드폰</th>
-          <th style="width:110px">액티비티</th>
+          <th style="width:110px">활동</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -1004,7 +1097,7 @@ function showDetail(id){
       </div>
       <div class="detail-actions">
         <button class="btn btn-outline btn-sm" onclick="openEditContact('${id}')">✏ 수정</button>
-        <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">＋ 액티비티</button>
+        <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">＋ 활동</button>
         <button class="btn btn-danger btn-sm" onclick="delContact('${id}')">🗑</button>
       </div>
     </div>
@@ -1012,19 +1105,20 @@ function showDetail(id){
       ${info.map(i=>`<div class="info-card"><div class="info-card-label">${i.l}</div><div class="info-card-value">${i.v}</div></div>`).join('')}
     </div>
     <div class="acts-section">
-      <div class="acts-head"><span class="acts-title">액티비티 (${acts.length})</span>
+      <div class="acts-head"><span class="acts-title">활동 (${acts.length})</span>
         <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">＋ 추가</button>
       </div>
-      ${acts.length===0?`<div class="empty-state"><div class="empty-icon">📋</div><p>아직 액티비티가 없습니다.</p></div>`
+      ${acts.length===0?`<div class="empty-state"><div class="empty-icon">📋</div><p>아직 활동이 없습니다.</p></div>`
         :`<div class="timeline">${acts.map(a=>`
           <div class="timeline-item">
             <div class="timeline-dot ${TD[a.type]}">${TE[a.type]}</div>
             <div class="tl-body">
               <div class="tl-meta">
                 <span class="tl-type">${TL[a.type]}${a.title?' · '+a.title:''}</span>
-                <div style="display:flex;gap:5px;align-items:center">
+                <div style="display:flex;gap:4px;align-items:center">
                   <span class="tl-date">${a.date}</span>
-                  <button onclick="delAct('${a.id}',true)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px">✕</button>
+                  <button onclick="openEditAct('${a.id}')" title="수정" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
+                  <button onclick="delAct('${a.id}',true)" title="삭제" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">🗑</button>
                 </div>
               </div>
               ${a.content?`<div class="tl-text">${a.content}</div>`:''}
@@ -1056,17 +1150,25 @@ function showDetail(id){
 function renderAllActs(){
   const acts=[...activities].sort((a,b)=>b.date.localeCompare(a.date));
   const div=document.getElementById('allActsContent');
-  if(!acts.length){ div.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>액티비티가 없습니다.</p></div>`; return; }
+  if(!acts.length){ div.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>활동이 없습니다.</p></div>`; return; }
   div.innerHTML=`<div class="timeline">${acts.map(a=>{
     const c=contacts.find(x=>x.id===a.contactId);
     return `<div class="timeline-item">
       <div class="timeline-dot ${TD[a.type]}">${TE[a.type]}</div>
-      <div class="tl-body" style="cursor:pointer" onclick="${c?`showDetail('${c.id}')`:''}">
+      <div class="tl-body">
         <div class="tl-meta">
-          <span class="tl-type">${TL[a.type]}${a.title?' · '+a.title:''}</span>
-          <span class="tl-date">${a.date}</span>
+          <span class="tl-type" style="cursor:pointer" onclick="${c?`showDetail('${c.id}')`:''}">
+            ${TL[a.type]}${a.title?' · '+a.title:''}
+          </span>
+          <div style="display:flex;gap:4px;align-items:center">
+            <span class="tl-date">${a.date}</span>
+            <button onclick="openEditAct('${a.id}')" title="수정" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
+            <button onclick="delAct('${a.id}')" title="삭제" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">🗑</button>
+          </div>
         </div>
-        <div class="tl-who">${c?c.last+c.first:'?'} ${c&&c.company?'· '+c.company:''}</div>
+        <div class="tl-who" style="cursor:pointer" onclick="${c?`showDetail('${c.id}')`:''}">
+          👤 ${c?c.last+c.first:'?'} ${c&&c.company?'<span style="color:var(--muted)">· '+c.company+'</span>':''}
+        </div>
         ${a.content?`<div class="tl-text">${a.content}</div>`:''}
         ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
       </div>
@@ -1135,7 +1237,7 @@ function saveContact(){
   else { contacts.unshift({id:uid(),createdAt:new Date().toISOString(),...data}); persist(); closeModal('contactModal'); renderContacts(); }
 }
 function delContact(id){
-  if(!confirm('이 연락처와 관련 액티비티를 삭제할까요?')) return;
+  if(!confirm('이 연락처와 관련 활동을 삭제할까요?')) return;
   contacts=contacts.filter(c=>c.id!==id);
   activities=activities.filter(a=>a.contactId!==id);
   persist(); backToList();
@@ -1205,6 +1307,9 @@ function openCompanyModal(co){
   document.getElementById('co_fax').value=ci.fax||'';
   document.getElementById('co_address').value=ci.address||'';
   document.getElementById('co_memo').value=ci.memo||'';
+  document.getElementById('co_our_team').value=ci.ourTeam||'';
+  document.getElementById('co_our_name').value=ci.ourName||'';
+  document.getElementById('co_our_memo').value=ci.ourMemo||'';
 
   // 재무 데이터 로드
   _finRows=(ci.finance||[]).map(r=>({...r}));
@@ -1266,6 +1371,9 @@ function saveCompany(){
   companies[newName].fax       = document.getElementById('co_fax').value.trim();
   companies[newName].address   = document.getElementById('co_address').value.trim();
   companies[newName].memo      = document.getElementById('co_memo').value.trim();
+  companies[newName].ourTeam   = document.getElementById('co_our_team').value.trim();
+  companies[newName].ourName   = document.getElementById('co_our_name').value.trim();
+  companies[newName].ourMemo   = document.getElementById('co_our_memo').value.trim();
   // 재무: 빈 행 제거 후 저장
   companies[newName].finance   = _finRows.filter(r=>r.year).map(r=>({
     year:r.year, headcount:r.headcount, revenue:r.revenue,
@@ -1281,21 +1389,33 @@ function saveCompany(){
 }
 
 // ── ACTIVITY MODAL ────────────────────────────────────────
+let editActId = null;
+
 function openActModal_contact(cid){
-  actCid=cid;
-  const c=contacts.find(x=>x.id===cid);
-  document.getElementById('actWho').innerHTML=`${c?c.last+c.first:''} ${c&&c.company?'<span style="font-size:12px;color:var(--muted)">· '+c.company+'</span>':''}`;
+  editActId = null;
+  actCid = cid;
+  const c = contacts.find(x=>x.id===cid);
+  document.getElementById('actModalTitle').textContent = '활동 추가';
+  document.getElementById('actWhoSection').style.display = '';
+  document.getElementById('actWho').innerHTML = `${c?c.last+c.first:''} ${c&&c.company?'<span style="font-size:12px;color:var(--muted)">· '+c.company+'</span>':''}`;
   _resetActForm();
   document.getElementById('activityModal').classList.add('open');
 }
+
 function openActModal_co(co){
-  const members=contacts.filter(c=>(c.company||'').trim()===co);
+  const members = contacts.filter(c=>(c.company||'').trim()===co);
   if(!members.length){ alert('먼저 담당자를 추가하세요.'); return; }
-  actCid=members[0].id;
+  editActId = null;
+  actCid = members[0].id;
+  document.getElementById('actModalTitle').textContent = '활동 추가';
+  document.getElementById('actWhoSection').style.display = '';
   if(members.length===1){
-    openActModal_contact(members[0].id);
+    const c = members[0];
+    document.getElementById('actWho').innerHTML = `${c.last+c.first} <span style="font-size:12px;color:var(--muted)">· ${co}</span>`;
+    _resetActForm();
+    document.getElementById('activityModal').classList.add('open');
   } else {
-    document.getElementById('actWho').innerHTML=
+    document.getElementById('actWho').innerHTML =
       `<select id="actPicker" onchange="actCid=this.value" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-family:inherit;font-size:13px;outline:none;width:100%">
         ${members.map(m=>`<option value="${m.id}">${m.last}${m.first} (${m.dept||m.position||''})</option>`).join('')}
       </select>`;
@@ -1303,31 +1423,80 @@ function openActModal_co(co){
     document.getElementById('activityModal').classList.add('open');
   }
 }
+
+function openEditAct(id){
+  const a = activities.find(x=>x.id===id);
+  if(!a) return;
+  editActId = id;
+  actCid = a.contactId;
+  const c = contacts.find(x=>x.id===a.contactId);
+  document.getElementById('actModalTitle').textContent = '활동 수정';
+  document.getElementById('actWhoSection').style.display = '';
+  document.getElementById('actWho').innerHTML = c ? `${c.last}${c.first} <span style="font-size:12px;color:var(--muted)">· ${c.company||''}</span>` : '';
+  document.getElementById('a_type').value   = a.type  || 'other';
+  document.getElementById('a_date').value   = a.date  || '';
+  document.getElementById('a_title').value  = a.title || '';
+  document.getElementById('a_content').value= a.content|| '';
+  document.getElementById('a_amount').value = a.amount || '';
+  document.getElementById('activityModal').classList.add('open');
+}
+
 function _resetActForm(){
-  document.getElementById('a_date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('a_type').value='order';
+  refreshTypeSelect();
+  document.getElementById('a_date').value   = new Date().toISOString().slice(0,10);
+  document.getElementById('a_type').value   = actTypes[0]?.id || 'order';
   ['a_title','a_content','a_amount'].forEach(id=>document.getElementById(id).value='');
 }
+
 function saveActivity(){
-  const picker=document.getElementById('actPicker');
-  if(picker) actCid=picker.value;
+  const picker = document.getElementById('actPicker');
+  if(picker) actCid = picker.value;
   if(!actCid){ alert('담당자를 선택하세요.'); return; }
-  const date=document.getElementById('a_date').value;
+  const date = document.getElementById('a_date').value;
   if(!date){ alert('날짜를 입력하세요.'); return; }
-  activities.push({id:uid(), contactId:actCid,
-    type:document.getElementById('a_type').value, date,
-    title:document.getElementById('a_title').value.trim(),
-    content:document.getElementById('a_content').value.trim(),
-    amount:document.getElementById('a_amount').value.trim(),
-    createdAt:new Date().toISOString()});
-  persist(); closeModal('activityModal');
+  const data = {
+    contactId: actCid,
+    type:    document.getElementById('a_type').value,
+    date,
+    title:   document.getElementById('a_title').value.trim(),
+    content: document.getElementById('a_content').value.trim(),
+    amount:  document.getElementById('a_amount').value.trim(),
+  };
+  if(editActId){
+    // 수정
+    const idx = activities.findIndex(a=>a.id===editActId);
+    if(idx>-1) activities[idx] = {...activities[idx], ...data};
+  } else {
+    // 신규
+    activities.push({id:uid(), createdAt:new Date().toISOString(), ...data});
+  }
+  editActId = null;
+  persist();
+  closeModal('activityModal');
   if(currentCid) showDetail(currentCid); else renderContacts();
 }
+
 function delAct(id, fromDetail=false){
-  if(!confirm('이 액티비티를 삭제할까요?')) return;
-  activities=activities.filter(a=>a.id!==id);
-  persist();
-  if(fromDetail&&currentCid) showDetail(currentCid); else renderContacts();
+  const a = activities.find(x=>x.id===id);
+  if(!a) return;
+  const c = contacts.find(x=>x.id===a.contactId);
+  const typeLabel = {visit:'🤝 방문', call:'📞 통화', quote:'📄 견적', order:'📦 발주', other:'📌 기타'};
+  document.getElementById('delActInfo').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">유형</span>&nbsp;&nbsp;${typeLabel[a.type]||a.type}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">날짜</span>&nbsp;&nbsp;${a.date}</div>
+      ${a.title?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">제목</span>&nbsp;&nbsp;${a.title}</div>`:''}
+      ${a.content?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">내용</span>&nbsp;&nbsp;<span style="color:var(--muted)">${a.content.length>50?a.content.slice(0,50)+'…':a.content}</span></div>`:''}
+      ${c?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">담당자</span>&nbsp;&nbsp;${c.last}${c.first}${c.company?' · '+c.company:''}</div>`:''}
+    </div>`;
+  document.getElementById('delActConfirmBtn').onclick = ()=>{
+    activities = activities.filter(x=>x.id!==id);
+    persist();
+    closeModal('delActModal');
+    if(fromDetail && currentCid) showDetail(currentCid);
+    else { renderContacts(); renderAllActs(); }
+  };
+  document.getElementById('delActModal').classList.add('open');
 }
 
 // ── UTILS ─────────────────────────────────────────────────
@@ -1335,18 +1504,46 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }); });
 
 function renderStats(){
-  const cos=[...new Set(contacts.map(c=>c.company).filter(Boolean))];
+  const today = new Date().toISOString().slice(0,10);
+  const cos = [...new Set(contacts.map(c=>c.company).filter(Boolean))];
+
+  // 당일 신규 연락처 (createdAt 기준)
+  const newContacts = contacts.filter(c=>(c.createdAt||'').slice(0,10)===today).length;
+  // 당일 신규 활동 (date 또는 createdAt 기준)
+  const newActs = activities.filter(a=>(a.createdAt||a.date||'').slice(0,10)===today).length;
+
+  // 사이드바 배지 업데이트
+  const cBadge = document.getElementById('todayContacts');
+  const aBadge = document.getElementById('todayActivities');
+  if(cBadge){ cBadge.textContent='+'+newContacts; cBadge.style.display=newContacts>0?'inline-block':'none'; }
+  if(aBadge){ aBadge.textContent='+'+newActs;     aBadge.style.display=newActs>0?'inline-block':'none'; }
+
   document.getElementById('sidebarStats').innerHTML=`
     <div class="stat-row"><span>회사</span><span>${cos.length}</span></div>
-    <div class="stat-row"><span>연락처</span><span>${contacts.length}</span></div>
-    <div class="stat-row"><span>발주</span><span>${activities.filter(a=>a.type==='order').length}</span></div>
-    <div class="stat-row"><span>견적</span><span>${activities.filter(a=>a.type==='quote').length}</span></div>
-    <div class="stat-row"><span>총 액티비티</span><span>${activities.length}</span></div>`;
+    <div class="stat-row">
+      <span>연락처</span>
+      <span>${contacts.length}${newContacts>0?` <span style="color:#ff6b6b;font-size:10px;font-weight:700">+${newContacts}오늘</span>`:''}</span>
+    </div>
+    <div class="stat-row">
+      <span>총 활동</span>
+      <span>${activities.length}${newActs>0?` <span style="color:#ff6b6b;font-size:10px;font-weight:700">+${newActs}오늘</span>`:''}</span>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:6px 0;opacity:.3"></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">활동 유형별</div>
+    ${actTypes.map(t=>{
+      const cnt = activities.filter(a=>a.type===t.id).length;
+      if(!cnt) return '';
+      return `<div class="stat-row"><span>${t.emoji} ${t.label}</span><span>${cnt}</span></div>`;
+    }).join('')}
+    <div style="border-top:1px solid var(--border);margin:6px 0;opacity:.3"></div>
+    <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-align:right">${today} 기준</div>`;
 }
 
 // ── PDF IMPORT ────────────────────────────────────────────
 let pdfBase64 = null;
+let pdfFileType = null;
 let pdfExtracted = [];
+let pdfActivities = [];
 
 function pdfShowStep(n){
   for(let i=0;i<=4;i++) document.getElementById('pdfStep'+i).style.display = i===n ? '' : 'none';
@@ -1354,39 +1551,92 @@ function pdfShowStep(n){
 
 function openPdfModal(){
   pdfBase64 = null;
+  pdfFileType = null;
   pdfExtracted = [];
+  pdfActivities = [];
   document.getElementById('pdfFileInput').value='';
   document.getElementById('pdfFileName').style.display='none';
+  document.getElementById('pdfFileTypeNote').style.display='none';
   document.getElementById('pdfAnalyzeBtn').disabled=true;
+  document.getElementById('dropIcon').textContent='🗂';
   const key = localStorage.getItem('crm_api_key');
+  // 키 미리보기 표시
+  const prev = document.getElementById('keyPreview');
+  if(prev && key) prev.textContent = '(현재: ' + key.slice(0,12) + '...)';
   pdfShowStep(key ? 1 : 0);
   document.getElementById('pdfModal').classList.add('open');
 }
 
 function pdfSaveKey(){
   const key = document.getElementById('pdfApiKey').value.trim();
-  if(!key.startsWith('sk-')){ alert('올바른 API 키를 입력해주세요. (sk- 로 시작)'); return; }
+  if(!key){ alert('API 키를 입력해주세요.'); return; }
+  if(!key.startsWith('sk-')){ alert('올바른 API 키를 입력해주세요.\n키는 sk- 로 시작해야 합니다.'); return; }
   localStorage.setItem('crm_api_key', key);
   pdfShowStep(1);
 }
 
 function pdfChangeKey(){
-  document.getElementById('pdfApiKey').value = localStorage.getItem('crm_api_key')||'';
+  const key = localStorage.getItem('crm_api_key')||'';
+  const input = document.getElementById('pdfApiKey');
+  input.value = key;
+  input.type = 'password';
+  const prev = document.getElementById('keyPreview');
+  if(prev && key) prev.textContent = '(현재: ' + key.slice(0,12) + '...)';
   pdfShowStep(0);
 }
+
+// 파일 유형 감지
+function detectFileType(file){
+  const name = file.name.toLowerCase();
+  const mime = file.type;
+  if(mime==='application/pdf' || name.endsWith('.pdf'))
+    return {kind:'pdf', mediaType:'application/pdf', icon:'📄', label:'PDF 문서'};
+  if(['image/jpeg','image/jpg','image/png','image/webp','image/gif'].includes(mime) ||
+     /\.(jpg|jpeg|png|webp|gif)$/.test(name))
+    return {kind:'image', mediaType: mime||'image/jpeg', icon:'🖼', label:'이미지 (명함·사진)'};
+  if(mime==='text/plain' || name.endsWith('.txt'))
+    return {kind:'text', mediaType:'text/plain', icon:'📝', label:'텍스트 파일'};
+  if(mime==='text/csv' || name.endsWith('.csv'))
+    return {kind:'text', mediaType:'text/csv', icon:'📊', label:'CSV 파일'};
+  if(/\.(xls|xlsx)$/.test(name))
+    return {kind:'text', mediaType:'text/plain', icon:'📊', label:'엑셀 파일'};
+  if(/\.(doc|docx)$/.test(name))
+    return {kind:'text', mediaType:'text/plain', icon:'📋', label:'Word 파일'};
+  return {kind:'text', mediaType:'text/plain', icon:'📎', label:'파일'};
+}
+
+
 
 function onPdfSelected(input){
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 5*1024*1024){ alert('파일 크기가 5MB를 초과합니다.'); return; }
+  if(file.size > 10*1024*1024){ alert('파일 크기가 10MB를 초과합니다.'); return; }
+
+  const ft = detectFileType(file);
+  pdfFileType = ft;
+
   const nameEl = document.getElementById('pdfFileName');
-  nameEl.textContent = '📄 ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+  nameEl.innerHTML = ft.icon + ' <strong>' + file.name + '</strong> <span style="color:var(--muted)">(' + (file.size/1024).toFixed(0) + 'KB)</span>';
   nameEl.style.display = '';
+
+  const noteEl = document.getElementById('pdfFileTypeNote');
+  noteEl.innerHTML = '감지된 유형: <span style="color:var(--accent)">' + ft.label + '</span>';
+  noteEl.style.display = '';
+
+  document.getElementById('dropIcon').textContent = ft.icon;
   document.getElementById('pdfAnalyzeBtn').disabled = false;
 
   const reader = new FileReader();
-  reader.onload = e => { pdfBase64 = e.target.result.split(',')[1]; };
-  reader.readAsDataURL(file);
+  if(ft.kind === 'text'){
+    reader.onload = e => {
+      try { pdfBase64 = btoa(unescape(encodeURIComponent(e.target.result))); }
+      catch(ex){ pdfBase64 = btoa(e.target.result); }
+    };
+    reader.readAsText(file, 'UTF-8');
+  } else {
+    reader.onload = e => { pdfBase64 = e.target.result.split(',')[1]; };
+    reader.readAsDataURL(file);
+  }
 }
 
 // Drag & drop support
@@ -1398,50 +1648,94 @@ function onPdfSelected(input){
   dz.addEventListener('drop', e=>{
     e.preventDefault(); dz.classList.remove('drag');
     const file = e.dataTransfer.files[0];
-    if(file && file.type==='application/pdf'){
-      const fi = document.getElementById('pdfFileInput');
-      // manually trigger
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      fi.files = dt.files;
-      onPdfSelected(fi);
-    }
+    if(!file) return;
+    const fi = document.getElementById('pdfFileInput');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fi.files = dt.files;
+    onPdfSelected(fi);
   });
 })();
 
 async function pdfAnalyze(){
-  if(!pdfBase64){ alert('PDF 파일을 먼저 선택해주세요.'); return; }
+  if(!pdfBase64){ alert('파일을 먼저 선택해주세요.'); return; }
   const apiKey = localStorage.getItem('crm_api_key');
   if(!apiKey){ alert('API 키가 없습니다.'); pdfShowStep(0); return; }
 
-  pdfShowStep(2); // loading
+  const ft = pdfFileType || {kind:'pdf', mediaType:'application/pdf', icon:'📄', label:'파일'};
+  const loadMsg = document.getElementById('pdfLoadingMsg');
+  if(loadMsg) loadMsg.textContent = ft.icon + ' ' + ft.label + ' 분석 중...';
+  pdfShowStep(2);
 
-  const prompt = `이 PDF에서 연락처 정보를 모두 추출해주세요.
-여러 사람이 있으면 각각 분리해서 추출하세요.
+  const prompt = `이 파일에서 연락처 정보와 거래/활동 내역을 모두 추출해주세요.
 반드시 아래 JSON 형식으로만 응답하세요. 다른 설명 텍스트 없이 JSON만:
 
-[
-  {
-    "company": "회사명",
-    "dept": "부서",
-    "position": "직책",
-    "last": "성",
-    "first": "이름",
-    "email": "이메일",
-    "office": "사무실전화",
-    "mobile": "휴대폰",
-    "extra": "팩스 등 추가연락처",
-    "address": "주소",
-    "memo": "기타정보"
-  }
-]
+{
+  "contacts": [
+    {
+      "company": "회사명",
+      "dept": "부서",
+      "position": "직책",
+      "last": "성",
+      "first": "이름",
+      "email": "이메일",
+      "office": "사무실전화",
+      "mobile": "휴대폰",
+      "extra": "팩스 등 추가연락처",
+      "address": "주소",
+      "memo": "기타정보"
+    }
+  ],
+  "activities": [
+    {
+      "date": "YYYY-MM-DD",
+      "type": "visit 또는 call 또는 quote 또는 order 또는 other",
+      "title": "한 줄 제목",
+      "content": "상세 내용",
+      "amount": "금액(숫자만, 없으면 빈 문자열)"
+    }
+  ]
+}
 
-- 한국 이름은 성(last)과 이름(first)을 분리하세요. 예: 김철수 → last:"김", first:"철수"
-- 외국 이름은 last에 성, first에 이름을 넣으세요.
+규칙:
+- 명함 이미지라면 명함에 보이는 모든 정보를 추출하세요.
+- 여러 명함이 있으면 각각 분리해서 추출하세요.
+- 한국 이름은 성(last)과 이름(first)을 분리. 예: 김철수 → last:"김", first:"철수"
+- 날짜는 반드시 YYYY-MM-DD 형식. 예: 2024.06.26 → "2024-06-26"
+- 거래 유형 매핑: 방문→visit, 통화→call, 견적→quote, 발주→order, 기타→other
+- 금액: 숫자만. 예: "3880만" → "38800000"
 - 없는 항목은 빈 문자열("")로 두세요.
 - JSON 외 다른 텍스트는 절대 포함하지 마세요.`;
 
   try {
+    // 파일 유형별 content 구성
+    let contentParts;
+    if(ft.kind === 'image'){
+      contentParts = [
+        { type:'image', source:{ type:'base64', media_type: ft.mediaType, data: pdfBase64 } },
+        { type:'text', text: prompt }
+      ];
+    } else if(ft.kind === 'text'){
+      let textContent = '';
+      try { textContent = decodeURIComponent(escape(atob(pdfBase64))); }
+      catch(e){ textContent = atob(pdfBase64); }
+      contentParts = [
+        { type:'text', text: '아래는 파일 내용입니다:\n\n' + textContent + '\n\n' + prompt }
+      ];
+    } else {
+      // PDF
+      contentParts = [
+        { type:'document', source:{ type:'base64', media_type:'application/pdf', data: pdfBase64 } },
+        { type:'text', text: prompt }
+      ];
+    }
+
+    const reqBody = {
+      model: 'claude-opus-4-6',
+      max_tokens: 4000,
+      messages: [{ role:'user', content: contentParts }]
+    };
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -1450,104 +1744,143 @@ async function pdfAnalyze(){
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
-      body: JSON.stringify({
-        model: 'claude-opus-4-6',
-        max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
-            { type: 'text', text: prompt }
-          ]
-        }]
-      })
+      body: JSON.stringify(reqBody)
     });
 
-    const data = await response.json();
+    let data;
+    try { data = await response.json(); }
+    catch(e){ throw new Error('서버 응답을 파싱할 수 없습니다. (HTTP ' + response.status + ')'); }
 
     if(!response.ok){
-      const msg = data?.error?.message || JSON.stringify(data);
-      throw new Error(msg);
+      const errType = data?.error?.type || '';
+      const errMsg  = data?.error?.message || JSON.stringify(data);
+      if(response.status === 401) throw new Error('API 키가 올바르지 않습니다. 키를 다시 확인해주세요.\n(' + errMsg + ')');
+      if(response.status === 400) throw new Error('요청 오류 (400): ' + errMsg);
+      if(response.status === 429) throw new Error('요청 한도 초과입니다. 잠시 후 다시 시도해주세요.');
+      throw new Error('API 오류 (' + response.status + '): ' + errMsg);
     }
 
     const raw = data.content?.find(b=>b.type==='text')?.text || '';
-    // Extract JSON array from response
-    const match = raw.match(/\[[\s\S]*\]/);
-    if(!match) throw new Error('연락처 정보를 찾을 수 없습니다. PDF에 연락처 정보가 포함되어 있는지 확인해주세요.');
+    if(!raw) throw new Error('AI 응답이 비어있습니다.');
 
-    pdfExtracted = JSON.parse(match[0]);
-    if(!pdfExtracted.length) throw new Error('추출된 연락처가 없습니다.');
+    // JSON 추출 — 다양한 패턴 시도
+    let parsed = null;
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if(jsonMatch){
+      try { parsed = JSON.parse(jsonMatch[0]); } catch(e){}
+    }
+    if(!parsed) throw new Error('응답에서 JSON을 파싱할 수 없습니다.\n원본: ' + raw.slice(0,200));
+
+    pdfExtracted  = parsed.contacts   || [];
+    pdfActivities = parsed.activities || [];
+
+    if(!pdfExtracted.length && !pdfActivities.length)
+      throw new Error('추출된 연락처나 활동 정보가 없습니다.\n파일에 연락처 관련 내용이 있는지 확인해주세요.');
 
     renderPdfResults();
     pdfShowStep(3);
 
   } catch(err) {
+    const msg = (err.message || String(err)).replace(/\n/g,'<br>');
     document.getElementById('pdfErrorMsg').innerHTML =
-      err.message + '<br><br><span style="font-size:11px">• API 키가 올바른지 확인해주세요<br>• PDF에 텍스트가 포함되어 있는지 확인해주세요<br>• 스캔된 이미지 PDF는 인식이 어려울 수 있습니다</span>';
+      `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:8px;padding:12px 14px;margin-bottom:12px;text-align:left;word-break:break-all">${msg}</div>
+       <div style="font-size:11px;color:var(--muted);line-height:1.8;text-align:left">
+         <b>확인 사항:</b><br>
+         • API 키가 <code>sk-ant-</code>로 시작하는지 확인<br>
+         • PDF가 암호화되어 있지 않은지 확인<br>
+         • 이미지는 JPG · PNG · WEBP 권장<br>
+         • 파일이 너무 크거나 손상되지 않았는지 확인
+       </div>`;
     pdfShowStep(4);
   }
 }
 
-function renderPdfResults(){
-  const div = document.getElementById('pdfResults');
-  div.innerHTML = pdfExtracted.map((p,i)=>{
-    const name = (p.last||'')+(p.first||'') || '이름 없음';
-    return `<div class="pdf-contact-card checked" id="pdfCard${i}">
-      <div class="pdf-card-header">
-        <input type="checkbox" class="pdf-card-check" id="pdfCheck${i}" checked onchange="document.getElementById('pdfCard${i}').classList.toggle('checked',this.checked)">
-        <div class="pdf-card-name">${name} ${p.company?'<span style="font-size:12px;color:var(--muted);font-weight:400">· '+p.company+'</span>':''}</div>
+function pdfRetry(){
+  pdfBase64=null; pdfExtracted=[]; pdfActivities=[]; pdfFileType=null;
+  document.getElementById('pdfFileInput').value='';
+  document.getElementById('pdfFileName').style.display='none';
+  document.getElementById('pdfFileTypeNote').style.display='none';
+  document.getElementById('pdfAnalyzeBtn').disabled=true;
+  document.getElementById('dropIcon').textContent='🗂';
+  pdfShowStep(1);
+}
+
+
+// ── TYPE MANAGER ──────────────────────────────────────────
+const DEFAULT_TYPE_IDS = ['order','quote','visit','call','other'];
+let _editTypes = [];
+
+function openTypeModal(){
+  _editTypes = actTypes.map(t=>({...t}));
+  renderTypeList();
+  document.getElementById('typeModal').classList.add('open');
+}
+
+function renderTypeList(){
+  const div = document.getElementById('typeList');
+  div.innerHTML = _editTypes.map((t,i)=>{
+    const isDef = DEFAULT_TYPE_IDS.includes(t.id);
+    return `<div style="display:grid;grid-template-columns:36px 60px 1fr 120px auto;gap:8px;align-items:center;margin-bottom:8px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        ${i>0?`<button onclick="_editTypes.splice(${i}-1,0,_editTypes.splice(${i},1)[0]);renderTypeList()" style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;font-size:10px;padding:1px 4px;line-height:1">▲</button>`:'<span></span>'}
+        ${i<_editTypes.length-1?`<button onclick="_editTypes.splice(${i}+1,0,_editTypes.splice(${i},1)[0]);renderTypeList()" style="background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;font-size:10px;padding:1px 4px;line-height:1">▼</button>`:'<span></span>'}
       </div>
-      <div class="pdf-fields">
-        <div class="pdf-field"><label>회사</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
-        <div class="pdf-field"><label>부서</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
-        <div class="pdf-field"><label>직책</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
-        <div class="pdf-field"><label>성</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
-        <div class="pdf-field"><label>이름</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
-        <div class="pdf-field"><label>이메일</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
-        <div class="pdf-field"><label>사무실</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
-        <div class="pdf-field"><label>휴대폰</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
-        <div class="pdf-field"><label>추가연락처</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
-        <div class="pdf-field full"><label>주소</label><input id="pr${i}_address" value="${esc2(p.address)}"></div>
-        <div class="pdf-field full"><label>메모</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
+      <input value="${t.emoji}" maxlength="2" ${isDef?'readonly':''} onchange="_editTypes[${i}].emoji=this.value" style="padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:16px;text-align:center;outline:none;width:100%;${isDef?'opacity:.6':''}">
+      <input value="${t.label}" ${isDef?'readonly':''} onchange="_editTypes[${i}].label=this.value" style="padding:6px 9px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;${isDef?'opacity:.6':''}">
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="color" value="${t.color||'#7986cb'}" onchange="_editTypes[${i}].color=this.value" style="width:32px;height:28px;border:1px solid var(--border);border-radius:5px;background:var(--bg);cursor:pointer;padding:2px">
+        <div style="width:20px;height:20px;border-radius:50%;background:${t.color||'#7986cb'}"></div>
       </div>
+      ${isDef
+        ? `<span style="font-size:11px;color:var(--muted);padding:0 8px">기본</span>`
+        : `<button onclick="_editTypes.splice(${i},1);renderTypeList()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 8px" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕</button>`
+      }
     </div>`;
   }).join('');
 }
 
-function esc2(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
-
-function pdfImportAll(){
-  let added = 0;
-  for(let i=0; i<pdfExtracted.length; i++){
-    const chk = document.getElementById('pdfCheck'+i);
-    if(!chk || !chk.checked) continue;
-    const get = id => document.getElementById(`pr${i}_${id}`)?.value?.trim()||'';
-    const last = get('last'), first = get('first');
-    if(!last && !first) continue;
-    const co = get('company');
-    const addr = get('address');
-    if(co && addr){ if(!companies[co]) companies[co]={}; if(!companies[co].address) companies[co].address=addr; }
-    contacts.unshift({ id:uid(), createdAt:new Date().toISOString(),
-      company:co, dept:get('dept'), position:get('position'), last, first,
-      email:get('email'), office:get('office'), mobile:get('mobile'),
-      extra:get('extra'), address:addr, memo:get('memo') });
-    added++;
-  }
-  persist();
-  closeModal('pdfModal');
-  renderContacts();
-  if(added) alert(`✅ ${added}개의 연락처가 추가되었습니다!`);
+function addCustomType(){
+  const emoji = document.getElementById('newTypeEmoji').value.trim()||'🔖';
+  const label = document.getElementById('newTypeLabel').value.trim();
+  const color = document.getElementById('newTypeColor').value;
+  if(!label){ alert('유형 이름을 입력하세요.'); return; }
+  const id = 'custom_'+Date.now();
+  _editTypes.push({id, label, emoji, color});
+  document.getElementById('newTypeEmoji').value='';
+  document.getElementById('newTypeLabel').value='';
+  renderTypeList();
 }
 
-function pdfRetry(){
-  pdfBase64=null; pdfExtracted=[];
-  document.getElementById('pdfFileInput').value='';
-  document.getElementById('pdfFileName').style.display='none';
-  document.getElementById('pdfAnalyzeBtn').disabled=true;
-  pdfShowStep(1);
+function saveTypes_modal(){
+  actTypes = _editTypes;
+  saveTypes(actTypes);
+  rebuildTypeMaps();
+  injectTypeStyles();
+  refreshTypeSelect();
+  refreshFilterBar();
+  closeModal('typeModal');
+  renderContacts();
+}
+
+function refreshTypeSelect(){
+  const sel = document.getElementById('a_type');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = actTypes.map(t=>`<option value="${t.id}">${t.emoji} ${t.label}</option>`).join('');
+  if(actTypes.find(t=>t.id===cur)) sel.value=cur;
+}
+
+function refreshFilterBar(){
+  const bar = document.getElementById('filterBar');
+  if(!bar) return;
+  bar.innerHTML = `<button class="filter-chip${curFilter==='all'?' active':''}" onclick="setFilter('all',this)">전체</button>`
+    + actTypes.map(t=>`<button class="filter-chip${curFilter===t.id?' active':''}" onclick="setFilter('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
 }
 
 // ── INIT ──────────────────────────────────────────────────
+injectTypeStyles();
+refreshTypeSelect();
+refreshFilterBar();
 renderStats();
 renderContacts();
 </script>
