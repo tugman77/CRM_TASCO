@@ -476,6 +476,34 @@
   </div>
 </div>
 
+<!-- Contact Delete Confirm Modal -->
+<div class="modal-overlay" id="delContactModal">
+  <div class="modal" style="width:380px;text-align:center">
+    <div style="font-size:40px;margin-bottom:14px">🗑</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px">연락처 삭제</div>
+    <div id="delContactInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px"></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:20px">이 연락처와 관련 활동이 모두 삭제됩니다. 복구할 수 없습니다.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="closeModal('delContactModal')" style="min-width:100px">취소</button>
+      <button class="btn btn-danger" id="delContactConfirmBtn" style="min-width:100px">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- Merge Confirm Modal -->
+<div class="modal-overlay" id="mergeConfirmModal">
+  <div class="modal" style="width:420px;text-align:center">
+    <div style="font-size:40px;margin-bottom:14px">🔀</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px">회사 병합</div>
+    <div id="mergeConfirmInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;font-size:13px;line-height:2"></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:20px">병합 후에는 되돌릴 수 없습니다.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="closeModal('mergeConfirmModal')" style="min-width:100px">취소</button>
+      <button class="btn btn-primary" id="mergeConfirmBtn" style="min-width:100px">병합 실행</button>
+    </div>
+  </div>
+</div>
+
 <!-- Activity Modal -->
 <div class="modal-overlay" id="activityModal">
   <div class="modal" style="width:480px">
@@ -1237,10 +1265,20 @@ function saveContact(){
   else { contacts.unshift({id:uid(),createdAt:new Date().toISOString(),...data}); persist(); closeModal('contactModal'); renderContacts(); }
 }
 function delContact(id){
-  if(!confirm('이 연락처와 관련 활동을 삭제할까요?')) return;
-  contacts=contacts.filter(c=>c.id!==id);
-  activities=activities.filter(a=>a.contactId!==id);
-  persist(); backToList();
+  const c = contacts.find(x=>x.id===id);
+  if(!c) return;
+  const actCnt = activities.filter(a=>a.contactId===id).length;
+  document.getElementById('delContactInfo').innerHTML =
+    `<strong>${c.last}${c.first}</strong>${c.company?' · '+c.company:''}<br>
+     <span style="font-size:12px;color:var(--muted)">관련 활동 ${actCnt}건도 함께 삭제됩니다.</span>`;
+  document.getElementById('delContactConfirmBtn').onclick = ()=>{
+    contacts = contacts.filter(x=>x.id!==id);
+    activities = activities.filter(a=>a.contactId!==id);
+    persist();
+    closeModal('delContactModal');
+    backToList();
+  };
+  document.getElementById('delContactModal').classList.add('open');
 }
 
 // ── COMPANY MODAL ─────────────────────────────────────────
@@ -1349,11 +1387,37 @@ function saveCompany(){
   const mergeTarget=document.getElementById('co_merge_target').value;
   if(!newName){ alert('회사명을 입력하세요.'); return; }
 
+  // ① 병합 — confirm 대신 전용 모달
+  if(mergeTarget){
+    const cnt=contacts.filter(c=>c.company===mergeTarget).length;
+    document.getElementById('mergeConfirmInfo').innerHTML=
+      `<div>없앨 회사&nbsp;&nbsp;<strong style="color:var(--accent2)">${mergeTarget}</strong> <span style="color:var(--muted)">(${cnt}명)</span></div>
+       <div>합칠 회사&nbsp;&nbsp;<strong style="color:var(--accent3)">${newName}</strong></div>
+       <div style="margin-top:8px;font-size:12px;color:var(--muted)">→ "${mergeTarget}" 소속 ${cnt}명이 "${newName}"으로 이동됩니다.</div>`;
+    document.getElementById('mergeConfirmBtn').onclick=()=>{
+      closeModal('mergeConfirmModal');
+      _doSaveCompany(newName, mergeTarget);
+    };
+    document.getElementById('mergeConfirmModal').classList.add('open');
+    return;
+  }
+
+  _doSaveCompany(newName, null);
+}
+
+function _doSaveCompany(newName, mergeTarget){
   // ① 병합
   if(mergeTarget){
-    if(!confirm(`"${mergeTarget}" 소속 직원을 모두 "${newName}"으로 병합할까요?\n이 작업은 되돌릴 수 없습니다.`)) return;
     contacts.forEach(c=>{ if(c.company===mergeTarget) c.company=newName; });
+    // 병합 대상 활동도 이전
+    const mergedInfo = companies[mergeTarget]||{};
     delete companies[mergeTarget];
+    // 재무/대표이사 데이터 병합 (기존 데이터 보존)
+    if(!companies[newName]) companies[newName]={};
+    if(mergedInfo.finance?.length && !companies[newName].finance?.length)
+      companies[newName].finance = mergedInfo.finance;
+    if(mergedInfo.ceoHistory?.length && !companies[newName].ceoHistory?.length)
+      companies[newName].ceoHistory = mergedInfo.ceoHistory;
   }
 
   // ② 회사명 변경
@@ -1365,7 +1429,7 @@ function saveCompany(){
     companies[newName]={...oldInfo,...companies[newName]};
   }
 
-  // ③ 공통 정보 + 재무 + 대표이사 저장
+  // ③ 공통 정보 저장
   if(!companies[newName]) companies[newName]={};
   companies[newName].phone     = document.getElementById('co_phone').value.trim();
   companies[newName].fax       = document.getElementById('co_fax').value.trim();
@@ -1374,13 +1438,11 @@ function saveCompany(){
   companies[newName].ourTeam   = document.getElementById('co_our_team').value.trim();
   companies[newName].ourName   = document.getElementById('co_our_name').value.trim();
   companies[newName].ourMemo   = document.getElementById('co_our_memo').value.trim();
-  // 재무: 빈 행 제거 후 저장
   companies[newName].finance   = _finRows.filter(r=>r.year).map(r=>({
     year:r.year, headcount:r.headcount, revenue:r.revenue,
     op_profit:r.op_profit, net_profit:r.net_profit,
     assets:r.assets, liabilities:r.liabilities
   }));
-  // 대표이사: 빈 이름 제거 후 저장
   companies[newName].ceoHistory= _ceoRows.filter(r=>r.name);
 
   persist();
@@ -1803,6 +1865,121 @@ function pdfRetry(){
   document.getElementById('pdfAnalyzeBtn').disabled=true;
   document.getElementById('dropIcon').textContent='🗂';
   pdfShowStep(1);
+}
+
+function esc2(s){ return (s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderPdfResults(){
+  const div = document.getElementById('pdfResults');
+  const typeLabel = {};
+  actTypes.forEach(t=>{ typeLabel[t.id] = t.emoji+' '+t.label; });
+
+  let html = '';
+
+  // ── 연락처 섹션 ──
+  if(pdfExtracted.length){
+    html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 연락처 (${pdfExtracted.length}명)</div>`;
+    html += pdfExtracted.map((p,i)=>{
+      const name=(p.last||'')+(p.first||'')||'이름 없음';
+      return `<div class="pdf-contact-card checked" id="pdfCard${i}">
+        <div class="pdf-card-header">
+          <input type="checkbox" class="pdf-card-check" id="pdfCheck${i}" checked onchange="document.getElementById('pdfCard${i}').classList.toggle('checked',this.checked)">
+          <div class="pdf-card-name">${name} ${p.company?'<span style="font-size:12px;color:var(--muted);font-weight:400">· '+p.company+'</span>':''}</div>
+        </div>
+        <div class="pdf-fields">
+          <div class="pdf-field"><label>회사</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
+          <div class="pdf-field"><label>부서</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
+          <div class="pdf-field"><label>직책</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
+          <div class="pdf-field"><label>성</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
+          <div class="pdf-field"><label>이름</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
+          <div class="pdf-field"><label>이메일</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
+          <div class="pdf-field"><label>사무실</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
+          <div class="pdf-field"><label>휴대폰</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
+          <div class="pdf-field"><label>추가연락처</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
+          <div class="pdf-field full"><label>주소</label><input id="pr${i}_address" value="${esc2(p.address)}"></div>
+          <div class="pdf-field full"><label>메모</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── 활동 섹션 ──
+  if(pdfActivities.length){
+    html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 활동 내역 (${pdfActivities.length}건) — 연락처 저장 후 자동 연결됩니다</div>`;
+    html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--surface)">
+          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:28px"></th>
+          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">날짜</th>
+          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">유형</th>
+          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border)">내용</th>
+          <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:90px">금액</th>
+        </tr></thead>
+        <tbody>
+          ${pdfActivities.map((a,i)=>{
+            const tl = typeLabel[a.type]||('📌 '+a.type);
+            const amtDisp = a.amount ? '₩'+Number(a.amount||0).toLocaleString() : '';
+            return `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:7px 10px"><input type="checkbox" id="paCheck${i}" checked style="accent-color:var(--accent3)"></td>
+              <td style="padding:7px 10px;font-family:'IBM Plex Mono',monospace;color:var(--muted)">${a.date||''}</td>
+              <td style="padding:7px 10px">${tl}</td>
+              <td style="padding:7px 10px;color:var(--text)">${a.title||''}${a.content&&a.content!==a.title?'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+a.content+'</div>':''}</td>
+              <td style="padding:7px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--accent3);font-size:11px">${amtDisp}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  div.innerHTML = html || '<div style="text-align:center;padding:24px;color:var(--muted)">추출된 정보가 없습니다.</div>';
+}
+
+function pdfImportAll(){
+  let addedContacts = 0, addedActs = 0;
+  const newContactIds = [];
+
+  // ① 연락처 저장
+  for(let i=0; i<pdfExtracted.length; i++){
+    const chk = document.getElementById('pdfCheck'+i);
+    if(!chk || !chk.checked) continue;
+    const get = id => document.getElementById(`pr${i}_${id}`)?.value?.trim()||'';
+    const last=get('last'), first=get('first');
+    if(!last && !first) continue;
+    const co=get('company'), addr=get('address');
+    if(co && addr){ if(!companies[co]) companies[co]={}; if(!companies[co].address) companies[co].address=addr; }
+    const newId = uid();
+    contacts.unshift({ id:newId, createdAt:new Date().toISOString(),
+      company:co, dept:get('dept'), position:get('position'), last, first,
+      email:get('email'), office:get('office'), mobile:get('mobile'),
+      extra:get('extra'), address:addr, memo:get('memo') });
+    newContactIds.push(newId);
+    addedContacts++;
+  }
+
+  // ② 활동 저장 — 첫 번째 저장된 연락처에 연결
+  const targetId = newContactIds[0] || null;
+  if(targetId && pdfActivities.length){
+    for(let i=0; i<pdfActivities.length; i++){
+      const chk = document.getElementById('paCheck'+i);
+      if(!chk || !chk.checked) continue;
+      const a = pdfActivities[i];
+      activities.push({ id:uid(), contactId:targetId,
+        type:a.type||'other', date:a.date||'',
+        title:a.title||'', content:a.content||'', amount:a.amount||'',
+        createdAt:new Date().toISOString() });
+      addedActs++;
+    }
+  } else if(pdfActivities.length && !targetId){
+    alert('활동을 연결할 연락처가 없습니다. 연락처를 먼저 체크해주세요.');
+    return;
+  }
+
+  persist();
+  closeModal('pdfModal');
+  renderContacts();
+  const msg = [addedContacts?`연락처 ${addedContacts}명`:'', addedActs?`활동 ${addedActs}건`:''].filter(Boolean).join(', ');
+  if(msg) alert(`✅ ${msg} 추가되었습니다!`);
 }
 
 
