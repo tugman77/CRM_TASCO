@@ -334,7 +334,7 @@
   <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> 연락처 <span class="today-badge" id="todayContacts" style="display:none"></span></button>
   <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> 전체 활동 <span class="today-badge" id="todayActivities" style="display:none"></span></button>
   <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> 활동 유형 관리</button>
-  <button class="sidebar-btn" onclick="openGsModal()"><span>☁️</span> Google Sheets 연동</button>
+  <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> Supabase 연동</button>
   <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:'IBM Plex Mono',monospace;line-height:1.5"></div>
   <div class="sidebar-stats" id="sidebarStats"></div>
 </aside>
@@ -402,7 +402,7 @@
     <span>가져오기</span>
   </button>
   <button class="mobile-tab" id="mTabGs" onclick="openGsModal()">
-    <span class="tab-icon" id="mTabGsIcon">☁️</span>
+    <span class="tab-icon" id="mTabGsIcon">🗄</span>
     <span>연동설정</span>
   </button>
 </nav>
@@ -576,43 +576,75 @@
   </div>
 </div>
 
-<!-- Google Sheets 연동 Modal -->
+<!-- Supabase 연동 Modal -->
 <div class="modal-overlay" id="gsModal">
-  <div class="modal" style="width:520px">
+  <div class="modal" style="width:540px">
     <button class="modal-close" onclick="closeModal('gsModal')">✕</button>
-    <div class="modal-title">☁️ Google Sheets 연동</div>
+    <div class="modal-title">🗄 Supabase 연동</div>
 
-    <div id="gsStep0">
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;font-size:12px;line-height:2;color:var(--muted)">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">📋 설정 방법 (최초 1회)</div>
-        <div><span style="color:var(--accent);font-weight:600">1.</span> <a href="https://sheets.new" target="_blank" style="color:var(--accent)">sheets.new</a> 에서 새 Google Sheets 파일 생성</div>
-        <div><span style="color:var(--accent);font-weight:600">2.</span> 메뉴 → <b>확장 프로그램</b> → <b>Apps Script</b> 클릭</div>
-        <div><span style="color:var(--accent);font-weight:600">3.</span> 기존 코드 전체 삭제 후 <b>Code.gs 내용 붙여넣기</b></div>
-        <div><span style="color:var(--accent);font-weight:600">4.</span> 💾 저장 → <b>배포</b> → <b>새 배포</b></div>
-        <div><span style="color:var(--accent);font-weight:600">5.</span> 유형: <b>웹 앱</b> · 실행: <b>나</b> · 액세스: <b>모든 사용자</b></div>
-        <div><span style="color:var(--accent);font-weight:600">6.</span> <b>배포</b> 클릭 → 권한 허용 → <b>URL 복사</b></div>
-        <div><span style="color:var(--accent);font-weight:600">7.</span> 아래에 붙여넣기</div>
-      </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;font-size:12px;line-height:2.1;color:var(--muted)">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">📋 최초 설정 방법 (한 번만)</div>
+      <div><span style="color:var(--accent);font-weight:600">1.</span> <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a> → 무료 가입 → 새 프로젝트 생성</div>
+      <div><span style="color:var(--accent);font-weight:600">2.</span> 프로젝트 대시보드 → 왼쪽 <b>SQL Editor</b> 클릭</div>
+      <div><span style="color:var(--accent);font-weight:600">3.</span> 아래 <b>SQL 복사</b> 버튼 클릭 → 붙여넣기 → <b>Run</b></div>
+      <div><span style="color:var(--accent);font-weight:600">4.</span> 왼쪽 <b>Project Settings → API</b></div>
+      <div><span style="color:var(--accent);font-weight:600">5.</span> <b>Project URL</b> 과 <b>anon public key</b> 복사 후 아래 입력</div>
+    </div>
 
-      <div class="form-group" style="margin-bottom:12px">
-        <label style="font-size:12px;color:var(--muted);margin-bottom:6px;display:block">Apps Script 웹 앱 URL</label>
-        <input type="text" id="gsUrlInput" placeholder="https://script.google.com/macros/s/...../exec"
-          style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none">
-        <div id="gsUrlMsg" style="font-size:11px;margin-top:5px;color:var(--muted)"></div>
-      </div>
+    <!-- SQL 복사 버튼 -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'IBM Plex Mono',monospace">SQL Editor에 실행할 테이블 생성 코드</div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.7;max-height:120px;overflow-y:auto" id="sbSqlBlock">create table if not exists contacts (id text primary key, company text, dept text, position text, last text, first text, email text, office text, mobile text, extra text, address text, memo text, created_at text);
+create table if not exists activities (id text primary key, contact_id text, type text, date text, title text, content text, amount text, created_at text);
+create table if not exists companies (name text primary key, data text);
+create table if not exists types (id int primary key, data text);
+alter table contacts enable row level security;
+alter table activities enable row level security;
+alter table companies enable row level security;
+alter table types enable row level security;
+create policy "allow all" on contacts for all using (true) with check (true);
+create policy "allow all" on activities for all using (true) with check (true);
+create policy "allow all" on companies for all using (true) with check (true);
+create policy "allow all" on types for all using (true) with check (true);</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:6px;width:100%" onclick="
+        navigator.clipboard.writeText(document.getElementById('sbSqlBlock').textContent);
+        this.textContent='✅ 복사됨!';
+        setTimeout(()=>this.textContent='📋 SQL 전체 복사',1500)
+      ">📋 SQL 전체 복사</button>
+    </div>
 
-      <div id="gsCurrentStatus" style="display:none;background:rgba(67,233,123,0.08);border:1px solid rgba(67,233,123,0.25);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:12px">
-        <div style="color:var(--accent3);font-weight:600;margin-bottom:4px">✅ 현재 연동됨</div>
-        <div id="gsCurrentUrl" style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;word-break:break-all"></div>
-        <div id="gsLastSyncInfo" style="color:var(--muted);font-size:11px;margin-top:4px"></div>
+    <!-- URL / Key 입력 -->
+    <div style="display:grid;gap:10px;margin-bottom:14px">
+      <div class="form-group" style="margin:0">
+        <label style="font-size:11px;color:var(--muted);margin-bottom:4px;display:block">Project URL</label>
+        <input type="text" id="sbUrlInput" placeholder="https://xxxxxxxxxxx.supabase.co"
+          style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none">
       </div>
+      <div class="form-group" style="margin:0">
+        <label style="font-size:11px;color:var(--muted);margin-bottom:4px;display:block">anon public key</label>
+        <div style="position:relative">
+          <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            style="width:100%;padding:9px 38px 9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none">
+          <button onclick="const i=document.getElementById('sbKeyInput');i.type=i.type==='password'?'text':'password'"
+            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer">👁</button>
+        </div>
+      </div>
+    </div>
 
-      <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
-        <button class="btn btn-outline btn-sm" onclick="closeModal('gsModal')">닫기</button>
-        <button class="btn btn-outline btn-sm" id="gsDisconnectBtn" style="display:none;color:var(--danger);border-color:var(--danger)" onclick="gsDisconnect()">연동 해제</button>
-        <button class="btn btn-outline btn-sm" onclick="gsManualLoad()">☁ 지금 불러오기</button>
-        <button class="btn btn-primary btn-sm" onclick="gsSaveUrl()">연결 저장</button>
-      </div>
+    <!-- 현재 연동 상태 -->
+    <div id="sbCurrentStatus" style="display:none;background:rgba(67,233,123,0.08);border:1px solid rgba(67,233,123,0.25);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:12px">
+      <div style="color:var(--accent3);font-weight:600;margin-bottom:4px">✅ 현재 연동됨</div>
+      <div id="sbCurrentUrl" style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;word-break:break-all"></div>
+      <div id="sbLastSyncInfo" style="color:var(--muted);font-size:11px;margin-top:4px"></div>
+    </div>
+
+    <div id="sbStatusMsg" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>
+
+    <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('gsModal')">닫기</button>
+      <button class="btn btn-outline btn-sm" id="sbDisconnectBtn" style="display:none;color:var(--danger);border-color:var(--danger)" onclick="sbDisconnect()">연동 해제</button>
+      <button class="btn btn-outline btn-sm" onclick="sbManualLoad()">☁ 지금 불러오기</button>
+      <button class="btn btn-primary btn-sm" onclick="sbSaveSettings()">✅ 연결 저장</button>
     </div>
   </div>
 </div>
@@ -824,85 +856,189 @@ let contacts  = JSON.parse(localStorage.getItem('crm_contacts')  || '[]');
 let activities= JSON.parse(localStorage.getItem('crm_activities')|| '[]');
 let companies = JSON.parse(localStorage.getItem('crm_companies') || '{}');
 
-// ── GOOGLE SHEETS 연동 ────────────────────────────────────
-let gsUrl = localStorage.getItem('crm_gs_url') || '';
-let gsSyncing = false;
-let gsPendingSave = false;
-let gsLastSync = localStorage.getItem('crm_gs_last_sync') || '';
+// ── SUPABASE 연동 ─────────────────────────────────────────
+let sbUrl   = localStorage.getItem('crm_sb_url')   || '';
+let sbKey   = localStorage.getItem('crm_sb_key')   || '';
+let sbSyncing    = false;
+let sbPendingSave= false;
+let sbLastSync   = localStorage.getItem('crm_sb_last_sync') || '';
 
-function gsIsConnected(){ return !!gsUrl; }
+function sbIsConnected(){ return !!(sbUrl && sbKey); }
 
-// 상태 표시 업데이트
-function gsUpdateStatus(state, msg){
+function sbHeaders(){
+  return {
+    'Content-Type':  'application/json',
+    'apikey':        sbKey,
+    'Authorization': 'Bearer ' + sbKey,
+    'Prefer':        'return=minimal'
+  };
+}
+
+// 상태 표시
+function sbUpdateStatus(state, msg){
   const el = document.getElementById('gsSyncStatus');
   if(!el) return;
-  const icons = { ok:'✅', syncing:'🔄', error:'⚠️', offline:'💾' };
-  const colors = { ok:'var(--accent3)', syncing:'var(--accent4)', error:'var(--accent2)', offline:'var(--muted)' };
+  const icons  = {ok:'✅', syncing:'🔄', error:'⚠️', offline:'💾'};
+  const colors = {ok:'var(--accent3)', syncing:'var(--accent4)', error:'var(--accent2)', offline:'var(--muted)'};
   el.innerHTML = `<span style="color:${colors[state]}">${icons[state]} ${msg}</span>`;
 }
 
-// 전체 데이터 Sheets에서 불러오기
-async function gsLoad(){
-  if(!gsIsConnected()) return;
-  gsUpdateStatus('syncing','불러오는 중...');
-  try {
-    const res = await fetch(gsUrl + '?action=load', {method:'GET'});
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error||'불러오기 실패');
+// ── 테이블 upsert 헬퍼 ───────────────────────────────────
+async function sbUpsert(table, rows){
+  if(!rows.length) return;
+  // 1000행씩 청크 처리 (Supabase 권장)
+  const CHUNK = 1000;
+  for(let i=0; i<rows.length; i+=CHUNK){
+    const chunk = rows.slice(i, i+CHUNK);
+    const res = await fetch(`${sbUrl}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: {...sbHeaders(), 'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body: JSON.stringify(chunk)
+    });
+    if(!res.ok){
+      const err = await res.text();
+      throw new Error(`${table} 저장 실패: ${err}`);
+    }
+  }
+}
 
-    // 데이터 병합 (Sheets 우선, 단 비어있으면 로컬 유지)
-    if(data.contacts   && data.contacts.length)   contacts   = data.contacts;
-    if(data.activities && data.activities.length) activities = data.activities;
-    if(data.companies  && Object.keys(data.companies).length) companies = data.companies;
-    if(data.types      && data.types.length){
-      actTypes = data.types;
-      localStorage.setItem('crm_types', JSON.stringify(actTypes));
-      rebuildTypeMaps(); injectTypeStyles(); refreshTypeSelect(); refreshFilterBar();
+// ── 테이블 전체 삭제 후 재삽입 ──────────────────────────
+async function sbReplace(table, rows){
+  // 기존 데이터 전체 삭제
+  const delRes = await fetch(`${sbUrl}/rest/v1/${table}?id=neq.NEVER_MATCH_PLACEHOLDER`, {
+    method: 'DELETE',
+    headers: sbHeaders()
+  });
+  // neq 트릭 대신 gte(id, '') 로 전체 삭제
+  const delRes2 = await fetch(`${sbUrl}/rest/v1/${table}?id=gte.0000000000`, {
+    method: 'DELETE',
+    headers: sbHeaders()
+  });
+  if(rows.length) await sbUpsert(table, rows);
+}
+
+// ── 전체 불러오기 ────────────────────────────────────────
+async function sbLoad(){
+  if(!sbIsConnected()) return;
+  sbUpdateStatus('syncing','불러오는 중...');
+  try {
+    // 병렬로 4개 테이블 가져오기
+    const [rC, rA, rCo, rT] = await Promise.all([
+      fetch(`${sbUrl}/rest/v1/contacts?select=*&order=created_at.asc&limit=100000`,   {headers: sbHeaders()}),
+      fetch(`${sbUrl}/rest/v1/activities?select=*&order=date.desc&limit=2000000`,     {headers: sbHeaders()}),
+      fetch(`${sbUrl}/rest/v1/companies?select=*&limit=50000`,                        {headers: sbHeaders()}),
+      fetch(`${sbUrl}/rest/v1/types?select=*&limit=100`,                              {headers: sbHeaders()}),
+    ]);
+
+    if(!rC.ok) throw new Error('연락처 불러오기 실패: ' + await rC.text());
+    if(!rA.ok) throw new Error('활동 불러오기 실패: '   + await rA.text());
+
+    const dbContacts   = await rC.json();
+    const dbActivities = await rA.json();
+    const dbCompanies  = rCo.ok ? await rCo.json() : [];
+    const dbTypes      = rT.ok  ? await rT.json()  : [];
+
+    // DB → CRM 형식 변환
+    if(dbContacts.length)   contacts   = dbContacts.map(sbRowToContact);
+    if(dbActivities.length) activities = dbActivities.map(sbRowToActivity);
+
+    // companies: [{name, data(JSON)}] → {name: {...}}
+    if(dbCompanies.length){
+      companies = {};
+      dbCompanies.forEach(r=>{ try{ companies[r.name]=JSON.parse(r.data||'{}'); }catch(e){} });
     }
 
-    // 로컬에도 캐시
-    localStorage.setItem('crm_contacts',  JSON.stringify(contacts));
-    localStorage.setItem('crm_activities',JSON.stringify(activities));
-    localStorage.setItem('crm_companies', JSON.stringify(companies));
-    gsLastSync = new Date().toLocaleString('ko-KR');
-    localStorage.setItem('crm_gs_last_sync', gsLastSync);
-    gsUpdateStatus('ok', '동기화 완료 · ' + gsLastSync);
+    // types
+    if(dbTypes.length){
+      try{
+        const parsed = JSON.parse(dbTypes[0].data);
+        if(parsed && parsed.length){
+          actTypes = parsed;
+          localStorage.setItem('crm_types', JSON.stringify(actTypes));
+          rebuildTypeMaps(); injectTypeStyles(); refreshTypeSelect(); refreshFilterBar();
+        }
+      }catch(e){}
+    }
+
+    // 로컬 캐시
+    localPersist();
+    sbLastSync = new Date().toLocaleString('ko-KR');
+    localStorage.setItem('crm_sb_last_sync', sbLastSync);
+    sbUpdateStatus('ok', '동기화 완료 · ' + sbLastSync);
     renderStats(); renderContacts(); refreshTeamFilterBars();
+
   } catch(err){
-    gsUpdateStatus('error', '불러오기 실패: ' + err.message);
+    sbUpdateStatus('error', err.message);
   }
 }
 
-// 전체 데이터 Sheets에 저장
-async function gsSave(){
-  if(!gsIsConnected()){ localPersist(); return; }
-  if(gsSyncing){ gsPendingSave = true; return; }
-  gsSyncing = true;
-  gsUpdateStatus('syncing','저장 중...');
-  localPersist(); // 로컬에도 항상 저장
+// ── 전체 저장 ────────────────────────────────────────────
+async function sbSave(){
+  if(!sbIsConnected()){ localPersist(); return; }
+  if(sbSyncing){ sbPendingSave = true; return; }
+  sbSyncing = true;
+  sbUpdateStatus('syncing','저장 중...');
+  localPersist();
   try {
-    const res = await fetch(gsUrl, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'save',
-        contacts, activities, companies,
-        types: actTypes
-      })
+    await Promise.all([
+      sbUpsert('contacts',   contacts.map(contactToSbRow)),
+      sbUpsert('activities', activities.map(activityToSbRow)),
+    ]);
+    // companies
+    const coRows = Object.entries(companies).map(([name,data])=>({name, data: JSON.stringify(data)}));
+    if(coRows.length) await sbUpsert('companies', coRows);
+    // types
+    await fetch(`${sbUrl}/rest/v1/types?id=gte.0`, {method:'DELETE', headers:sbHeaders()});
+    await fetch(`${sbUrl}/rest/v1/types`, {
+      method:'POST', headers:sbHeaders(),
+      body: JSON.stringify([{id:1, data: JSON.stringify(actTypes)}])
     });
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error||'저장 실패');
-    gsLastSync = new Date().toLocaleString('ko-KR');
-    localStorage.setItem('crm_gs_last_sync', gsLastSync);
-    gsUpdateStatus('ok', '저장됨 · ' + gsLastSync);
+
+    sbLastSync = new Date().toLocaleString('ko-KR');
+    localStorage.setItem('crm_sb_last_sync', sbLastSync);
+    sbUpdateStatus('ok', '저장됨 · ' + sbLastSync);
   } catch(err){
-    gsUpdateStatus('error', '저장 실패 (로컬 백업됨): ' + err.message);
+    sbUpdateStatus('error', '저장 실패 (로컬 백업됨): ' + err.message);
   } finally {
-    gsSyncing = false;
-    if(gsPendingSave){ gsPendingSave = false; gsSave(); }
+    sbSyncing = false;
+    if(sbPendingSave){ sbPendingSave=false; sbSave(); }
   }
 }
 
-// 로컬 저장 (기존 persist 역할)
+// ── 데이터 변환 헬퍼 ─────────────────────────────────────
+function contactToSbRow(c){
+  return {
+    id: c.id, company: c.company||'', dept: c.dept||'',
+    position: c.position||'', last: c.last||'', first: c.first||'',
+    email: c.email||'', office: c.office||'', mobile: c.mobile||'',
+    extra: c.extra||'', address: c.address||'', memo: c.memo||'',
+    created_at: c.createdAt || new Date().toISOString()
+  };
+}
+function sbRowToContact(r){
+  return {
+    id: r.id, company: r.company, dept: r.dept, position: r.position,
+    last: r.last, first: r.first, email: r.email, office: r.office,
+    mobile: r.mobile, extra: r.extra, address: r.address, memo: r.memo,
+    createdAt: r.created_at
+  };
+}
+function activityToSbRow(a){
+  return {
+    id: a.id, contact_id: a.contactId, type: a.type||'other',
+    date: a.date||'', title: a.title||'', content: a.content||'',
+    amount: a.amount||'', created_at: a.createdAt||new Date().toISOString()
+  };
+}
+function sbRowToActivity(r){
+  return {
+    id: r.id, contactId: r.contact_id, type: r.type,
+    date: r.date, title: r.title, content: r.content,
+    amount: r.amount, createdAt: r.created_at
+  };
+}
+
+// ── 로컬 저장 ────────────────────────────────────────────
 function localPersist(){
   localStorage.setItem('crm_contacts',  JSON.stringify(contacts));
   localStorage.setItem('crm_activities',JSON.stringify(activities));
@@ -913,7 +1049,7 @@ function persist(){
   localPersist();
   renderStats();
   refreshTeamFilterBars();
-  if(gsIsConnected()) gsSave();
+  if(sbIsConnected()) sbSave();
 }
 
 let editCid = null;       // editing contact id
@@ -2390,64 +2526,71 @@ function refreshFilterBar(){
     + actTypes.map(t=>`<button class="filter-chip${actFilter===t.id?' active':''}" onclick="setActFilter('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
 }
 
-// ── GOOGLE SHEETS 설정 모달 ───────────────────────────────
+// ── SUPABASE 설정 모달 ────────────────────────────────────
 function openGsModal(){
-  const input = document.getElementById('gsUrlInput');
-  const statusDiv = document.getElementById('gsCurrentStatus');
-  const disconnectBtn = document.getElementById('gsDisconnectBtn');
-  const curUrlEl = document.getElementById('gsCurrentUrl');
-  const lastSyncEl = document.getElementById('gsLastSyncInfo');
+  const urlIn  = document.getElementById('sbUrlInput');
+  const keyIn  = document.getElementById('sbKeyInput');
+  const status = document.getElementById('sbCurrentStatus');
+  const discBtn= document.getElementById('sbDisconnectBtn');
+  const curUrl = document.getElementById('sbCurrentUrl');
+  const lastSy = document.getElementById('sbLastSyncInfo');
 
-  input.value = gsUrl;
-  if(gsUrl){
-    statusDiv.style.display = '';
-    disconnectBtn.style.display = '';
-    curUrlEl.textContent = gsUrl;
-    lastSyncEl.textContent = gsLastSync ? '마지막 동기화: ' + gsLastSync : '아직 동기화 안 됨';
+  urlIn.value = sbUrl;
+  keyIn.value = sbKey;
+
+  if(sbIsConnected()){
+    status.style.display  = '';
+    discBtn.style.display = '';
+    curUrl.textContent    = sbUrl;
+    lastSy.textContent    = sbLastSync ? '마지막 동기화: ' + sbLastSync : '아직 동기화 안 됨';
   } else {
-    statusDiv.style.display = 'none';
-    disconnectBtn.style.display = 'none';
+    status.style.display  = 'none';
+    discBtn.style.display = 'none';
   }
-  document.getElementById('gsUrlMsg').textContent = '';
+  document.getElementById('sbStatusMsg').textContent = '';
   document.getElementById('gsModal').classList.add('open');
 }
 
-function gsSaveUrl(){
-  const url = document.getElementById('gsUrlInput').value.trim();
-  const msg = document.getElementById('gsUrlMsg');
-  if(!url){
+function sbSaveSettings(){
+  const url = document.getElementById('sbUrlInput').value.trim().replace(/\/$/,'');
+  const key = document.getElementById('sbKeyInput').value.trim();
+  const msg = document.getElementById('sbStatusMsg');
+
+  if(!url || !key){
     msg.style.color = 'var(--accent2)';
-    msg.textContent = 'URL을 입력해주세요.';
+    msg.textContent = '⚠ URL과 API Key를 모두 입력해주세요.';
     return;
   }
-  if(!url.includes('script.google.com')){
+  if(!url.includes('supabase.co')){
     msg.style.color = 'var(--accent2)';
-    msg.textContent = '⚠ Google Apps Script URL이 아닌 것 같습니다.';
+    msg.textContent = '⚠ Supabase Project URL이 아닌 것 같습니다.';
     return;
   }
-  gsUrl = url;
-  localStorage.setItem('crm_gs_url', gsUrl);
+
+  sbUrl = url;
+  sbKey = key;
+  localStorage.setItem('crm_sb_url', sbUrl);
+  localStorage.setItem('crm_sb_key', sbKey);
   msg.style.color = 'var(--accent3)';
-  msg.textContent = '✅ 저장됐습니다. 불러오는 중...';
-  closeModal('gsModal');
-  gsLoad();
+  msg.textContent = '✅ 저장됐습니다. Supabase에서 불러오는 중...';
+  setTimeout(()=>{ closeModal('gsModal'); sbLoad(); }, 800);
 }
 
-function gsDisconnect(){
-  if(!confirm('Google Sheets 연동을 해제할까요?\n로컬 데이터는 유지됩니다.')) return;
-  gsUrl = '';
-  localStorage.removeItem('crm_gs_url');
-  gsUpdateStatus('offline', '로컬 저장 모드');
+function sbDisconnect(){
+  sbUrl = ''; sbKey = '';
+  localStorage.removeItem('crm_sb_url');
+  localStorage.removeItem('crm_sb_key');
+  sbUpdateStatus('offline', '로컬 저장 모드');
   closeModal('gsModal');
 }
 
-function gsManualLoad(){
-  if(!gsUrl){
-    document.getElementById('gsUrlMsg').textContent = '먼저 URL을 저장해주세요.';
+function sbManualLoad(){
+  if(!sbUrl || !sbKey){
+    document.getElementById('sbStatusMsg').textContent = '먼저 URL과 Key를 입력하고 저장해주세요.';
     return;
   }
   closeModal('gsModal');
-  gsLoad();
+  sbLoad();
 }
 
 // ── INIT ──────────────────────────────────────────────────
@@ -2458,12 +2601,12 @@ refreshTeamFilterBars();
 renderStats();
 renderContacts();
 
-// Google Sheets 연동 시 자동 동기화
-if(gsIsConnected()){
-  gsUpdateStatus('syncing', '불러오는 중...');
-  gsLoad();
+// Supabase 연동 시 자동 동기화
+if(sbIsConnected()){
+  sbUpdateStatus('syncing', '불러오는 중...');
+  sbLoad();
 } else {
-  gsUpdateStatus('offline', '로컬 저장 모드 · ☁️ 클릭해서 연동');
+  sbUpdateStatus('offline', '로컬 저장 모드 · 🗄 클릭해서 Supabase 연동');
 }
 </script>
 </body>
