@@ -2362,7 +2362,10 @@ let pdfExtracted = [];
 let pdfActivities = [];
 
 function pdfShowStep(n){
-  for(let i=0;i<=4;i++) document.getElementById('pdfStep'+i).style.display = i===n ? '' : 'none';
+  for(let i=0;i<=7;i++){
+    const el = document.getElementById('pdfStep'+i);
+    if(el) el.style.display = i===n ? '' : 'none';
+  }
 }
 
 function openPdfModal(){
@@ -2370,10 +2373,15 @@ function openPdfModal(){
   pdfFileType = null;
   pdfExtracted = [];
   pdfActivities = [];
+  _csvFile = null;
+  _csvRawRows = []; _csvHeaders = []; _csvMapping = {};
   document.getElementById('pdfFileInput').value='';
   document.getElementById('pdfFileName').style.display='none';
   document.getElementById('pdfFileTypeNote').style.display='none';
-  document.getElementById('pdfAnalyzeBtn').disabled=true;
+  const analyzeBtn = document.getElementById('pdfAnalyzeBtn');
+  analyzeBtn.disabled = true;
+  analyzeBtn.textContent = '🔍 분석 시작';
+  analyzeBtn.onclick = pdfAnalyze;
   document.getElementById('dropIcon').textContent='🗂';
   const key = localStorage.getItem('crm_api_key');
   // 키 미리보기 표시
@@ -2791,21 +2799,39 @@ function csvParse(){
   const btn = document.getElementById('pdfAnalyzeBtn');
   if(btn){ btn.textContent = '🔍 분석 시작'; btn.onclick = pdfAnalyze; }
 
-  const reader = new FileReader();
+  // 로딩 표시
+  pdfShowStep(6);
+  document.getElementById('csvProgressMsg').textContent = '📊 CSV 파일 읽는 중...';
+  document.getElementById('csvProgressBar').style.width = '10%';
+  document.getElementById('csvProgressSub').textContent = `파일 크기: ${(_csvFile.size/1024/1024).toFixed(1)}MB`;
+
   const processText = text => {
-    try {
-      const result = csvParseText(text);
-      _csvHeaders = result.headers;
-      _csvRawRows = result.rows;
-      _csvMapping = csvAutoMap(_csvHeaders);
-      pdfShowStep(5);
-      csvRenderMapping();
-    } catch(err){ alert('CSV 파싱 오류: ' + err.message); }
+    document.getElementById('csvProgressMsg').textContent = '📊 CSV 파싱 중...';
+    document.getElementById('csvProgressBar').style.width = '40%';
+    setTimeout(()=>{
+      try {
+        const result = csvParseText(text);
+        _csvHeaders = result.headers;
+        _csvRawRows = result.rows;
+        _csvMapping = csvAutoMap(_csvHeaders);
+        document.getElementById('csvProgressBar').style.width = '100%';
+        setTimeout(()=>{
+          pdfShowStep(5);
+          csvRenderMapping();
+        }, 200);
+      } catch(err){
+        pdfShowStep(1);
+        alert('CSV 파싱 오류: ' + err.message);
+      }
+    }, 50);
   };
+
+  const reader = new FileReader();
   reader.onload = e => processText(e.target.result);
   reader.onerror = () => {
     const r2 = new FileReader();
     r2.onload = e2 => processText(e2.target.result);
+    r2.onerror = () => { pdfShowStep(1); alert('파일을 읽을 수 없습니다.'); };
     r2.readAsText(_csvFile, 'EUC-KR');
   };
   reader.readAsText(_csvFile, 'UTF-8');
@@ -2916,6 +2942,11 @@ function csvUpdatePreview(){
 
 async function csvImport(){
   pdfShowStep(6);
+  document.getElementById('csvProgressBar').style.width = '0%';
+  document.getElementById('csvProgressMsg').textContent = '가져오는 중...';
+  document.getElementById('csvProgressSub').textContent = `총 ${_csvRawRows.length.toLocaleString()}행 처리 시작`;
+  await new Promise(r=>setTimeout(r,50));
+
   const total = _csvRawRows.length;
   let added = 0, skipped = 0, dupCount = 0;
 
