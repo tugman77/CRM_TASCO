@@ -2435,6 +2435,9 @@ async function pdfAnalyzeAll(){
     pdfShowStep(2);
     try {
       const result = await _callPdfApi(b64, ft, apiKey);
+      // 파일 출처를 각 항목에 태깅
+      (result.contacts||[]).forEach(c=>{ c._srcFile = file.name; });
+      (result.activities||[]).forEach(a=>{ a._srcFile = file.name; });
       _pdfAllExtracted.push(...(result.contacts||[]));
       _pdfAllActivities.push(...(result.activities||[]));
     } catch(err){
@@ -2717,63 +2720,94 @@ function renderPdfResults(){
   const typeLabel = {};
   actTypes.forEach(t=>{ typeLabel[t.id] = t.emoji+' '+t.label; });
 
+  // 파일별로 그룹핑
+  const fileGroups = [];
+  const noSrc = '__single__';
+  const seen = new Map(); // srcFile → group index
+
+  pdfExtracted.forEach((p,i)=>{
+    const src = p._srcFile || noSrc;
+    if(!seen.has(src)){ seen.set(src, fileGroups.length); fileGroups.push({src, contacts:[], activities:[]}); }
+    fileGroups[seen.get(src)].contacts.push({...p, _idx:i});
+  });
+  pdfActivities.forEach((a,i)=>{
+    const src = a._srcFile || noSrc;
+    if(!seen.has(src)){ seen.set(src, fileGroups.length); fileGroups.push({src, contacts:[], activities:[]}); }
+    fileGroups[seen.get(src)].activities.push({...a, _idx:i});
+  });
+
+  const multiFile = fileGroups.length > 1;
   let html = '';
 
-  // ── 연락처 섹션 ──
-  if(pdfExtracted.length){
-    html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 연락처 (${pdfExtracted.length}명)</div>`;
-    html += pdfExtracted.map((p,i)=>{
-      const name=(p.last||'')+(p.first||'')||'이름 없음';
-      return `<div class="pdf-contact-card checked" id="pdfCard${i}">
-        <div class="pdf-card-header">
-          <input type="checkbox" class="pdf-card-check" id="pdfCheck${i}" checked onchange="document.getElementById('pdfCard${i}').classList.toggle('checked',this.checked)">
-          <div class="pdf-card-name">${name} ${p.company?'<span style="font-size:12px;color:var(--muted);font-weight:400">· '+p.company+'</span>':''}</div>
-        </div>
-        <div class="pdf-fields">
-          <div class="pdf-field"><label>회사</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
-          <div class="pdf-field"><label>부서</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
-          <div class="pdf-field"><label>직책</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
-          <div class="pdf-field"><label>성</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
-          <div class="pdf-field"><label>이름</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
-          <div class="pdf-field"><label>이메일</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
-          <div class="pdf-field"><label>사무실</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
-          <div class="pdf-field"><label>휴대폰</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
-          <div class="pdf-field"><label>추가연락처</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
-          <div class="pdf-field full"><label>주소</label><input id="pr${i}_address" value="${esc2(p.address)}"></div>
-          <div class="pdf-field full"><label>메모</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
-        </div>
+  fileGroups.forEach((grp, gi)=>{
+    // 파일 구분선 (다중 파일일 때만)
+    if(multiFile){
+      const fname = grp.src === noSrc ? '파일' : grp.src;
+      html += `<div style="display:flex;align-items:center;gap:8px;margin:${gi>0?'24px':0}px 0 10px">
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent2);font-weight:600;white-space:nowrap">📎 ${fname}</div>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <div style="font-size:10px;color:var(--muted)">${grp.contacts.length}명 · 활동 ${grp.activities.length}건</div>
       </div>`;
-    }).join('');
-  }
+    }
 
-  // ── 활동 섹션 ──
-  if(pdfActivities.length){
-    html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 활동 내역 (${pdfActivities.length}건) — 연락처 저장 후 자동 연결됩니다</div>`;
-    html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead><tr style="background:var(--surface)">
-          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:28px"></th>
-          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">날짜</th>
-          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">유형</th>
-          <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border)">내용</th>
-          <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:90px">금액</th>
-        </tr></thead>
-        <tbody>
-          ${pdfActivities.map((a,i)=>{
-            const tl = typeLabel[a.type]||('📌 '+a.type);
-            const amtDisp = a.amount ? '₩'+Number(a.amount||0).toLocaleString() : '';
-            return `<tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:7px 10px"><input type="checkbox" id="paCheck${i}" checked style="accent-color:var(--accent3)"></td>
-              <td style="padding:7px 10px;font-family:'IBM Plex Mono',monospace;color:var(--muted)">${a.date||''}</td>
-              <td style="padding:7px 10px">${tl}</td>
-              <td style="padding:7px 10px;color:var(--text)">${a.title||''}${a.content&&a.content!==a.title?'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+a.content+'</div>':''}</td>
-              <td style="padding:7px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--accent3);font-size:11px">${amtDisp}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>`;
-  }
+    // 연락처
+    if(grp.contacts.length){
+      if(!multiFile) html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 연락처 (${grp.contacts.length}명)</div>`;
+      html += grp.contacts.map(p=>{
+        const i = p._idx;
+        const name=(p.last||'')+(p.first||'')||'이름 없음';
+        return `<div class="pdf-contact-card checked" id="pdfCard${i}">
+          <div class="pdf-card-header">
+            <input type="checkbox" class="pdf-card-check" id="pdfCheck${i}" checked onchange="document.getElementById('pdfCard${i}').classList.toggle('checked',this.checked)">
+            <div class="pdf-card-name">${name}${p.company?` <span style="font-size:12px;color:var(--muted);font-weight:400">· ${p.company}</span>`:''}</div>
+          </div>
+          <div class="pdf-fields">
+            <div class="pdf-field"><label>회사</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
+            <div class="pdf-field"><label>부서</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
+            <div class="pdf-field"><label>직책</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
+            <div class="pdf-field"><label>성</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
+            <div class="pdf-field"><label>이름</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
+            <div class="pdf-field"><label>이메일</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
+            <div class="pdf-field"><label>사무실</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
+            <div class="pdf-field"><label>휴대폰</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
+            <div class="pdf-field"><label>추가연락처</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
+            <div class="pdf-field full"><label>주소</label><input id="pr${i}_address" value="${esc2(p.address)}"></div>
+            <div class="pdf-field full"><label>메모</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // 활동
+    if(grp.activities.length){
+      html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:${grp.contacts.length?'14px':0}px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 활동 내역 (${grp.activities.length}건)${multiFile?'':' — 연락처 저장 후 자동 연결됩니다'}</div>`;
+      html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:4px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:var(--surface)">
+            <th style="padding:8px 10px;width:28px;border-bottom:1px solid var(--border)"></th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">날짜</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">유형</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border)">내용</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:90px">금액</th>
+          </tr></thead>
+          <tbody>
+            ${grp.activities.map(a=>{
+              const i = a._idx;
+              const tl = typeLabel[a.type]||('📌 '+a.type);
+              const amtDisp = a.amount ? '₩'+Number(a.amount||0).toLocaleString() : '';
+              return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:7px 10px"><input type="checkbox" id="paCheck${i}" checked style="accent-color:var(--accent3)"></td>
+                <td style="padding:7px 10px;font-family:'IBM Plex Mono',monospace;color:var(--muted)">${a.date||''}</td>
+                <td style="padding:7px 10px">${tl}</td>
+                <td style="padding:7px 10px;color:var(--text)">${a.title||''}${a.content&&a.content!==a.title?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${a.content}</div>`:''}</td>
+                <td style="padding:7px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--accent3);font-size:11px">${amtDisp}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }
+  });
 
   div.innerHTML = html || '<div style="text-align:center;padding:24px;color:var(--muted)">추출된 정보가 없습니다.</div>';
 }
