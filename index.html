@@ -178,19 +178,33 @@
   .co-timeline-label { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
   .timeline { position: relative; }
   .timeline::before { content: ''; position: absolute; left: 14px; top: 6px; bottom: 6px; width: 1px; background: var(--border); }
-  .timeline-item { display: flex; gap: 12px; margin-bottom: 12px; }
+  .timeline-item { display: flex; gap: 12px; margin-bottom: 8px; }
   .timeline-dot { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; position: relative; z-index: 1; }
   .dot-call { background: rgba(79,124,255,0.15); color: var(--accent); border: 1px solid var(--accent); }
-  .tl-body { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; flex: 1; }
-  .tl-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-  .tl-type { font-size: 12px; font-weight: 600; }
+  .tl-body { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; flex: 1; overflow: hidden; transition: border-color 0.15s; }
+  .tl-body:hover { border-color: var(--accent); }
+  .tl-summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer; user-select: none; gap: 8px; }
+  .tl-summary-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .tl-type { font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .tl-title-preview { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tl-summary-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .tl-date { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
-  .tl-who { font-size: 11px; color: var(--accent); margin-bottom: 3px; cursor: pointer; }
+  .tl-amount-badge { font-size: 11px; color: var(--accent3); font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .tl-chevron { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+  .tl-detail { display: none; padding: 0 12px 10px; border-top: 1px solid var(--border); }
+  .tl-detail.open { display: block; }
+  .tl-who { font-size: 11px; color: var(--accent); margin: 6px 0 4px; cursor: pointer; }
   .tl-who:hover { text-decoration: underline; }
   .tl-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
-  .tl-amount { font-size: 11px; color: var(--accent3); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+  .tl-amount { font-size: 12px; color: var(--accent3); font-family: 'IBM Plex Mono', monospace; margin-top: 4px; font-weight: 600; }
+  .tl-actions { display: flex; gap: 4px; margin-top: 8px; justify-content: flex-end; }
+  .tl-act-btn { background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-size: 11px; padding: 3px 8px; border-radius: 5px; font-family: 'Noto Sans KR', sans-serif; transition: all 0.1s; }
+  .tl-act-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tl-act-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
   .show-more-btn { width: 100%; padding: 7px; background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; margin-top: 4px; transition: all 0.15s; }
   .show-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+  /* 활동 필터바 (개인/회사 상세) */
+  .acts-filter { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
 
   /* Ungrouped */
   .ungrouped-label { font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px; }
@@ -276,13 +290,36 @@
   .ceo-header { display:grid; grid-template-columns:100px 1fr 1fr 1fr 32px; gap:8px; margin-bottom:6px; font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; }
 
   /* Finance summary in company card */
-  .fin-summary { padding:8px 18px; background:rgba(67,233,123,0.04); border-bottom:1px solid var(--border); display:flex; gap:20px; flex-wrap:wrap; font-size:12px; align-items:center; }
-  .fin-chip { display:flex; flex-direction:column; gap:1px; }
+  .fin-summary { padding:0 18px; background:rgba(67,233,123,0.04); border-bottom:1px solid var(--border); display:flex; gap:0; flex-wrap:nowrap; font-size:12px; align-items:stretch; overflow:hidden; }
+  .fin-summary-preview { display:flex; align-items:center; gap:0; flex:1; overflow:hidden; cursor:pointer; padding:7px 0; }
+  .fin-summary-preview:hover { opacity:.8; }
+  .fin-chip { display:flex; align-items:center; gap:4px; padding:0 10px; border-right:1px solid var(--border); white-space:nowrap; flex-shrink:0; }
+  .fin-chip:first-child { padding-left:0; }
   .fin-chip-label { font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
-  .fin-chip-value { font-size:13px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+  .fin-chip-value { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
   .fin-chip-value.pos { color:var(--accent3); }
   .fin-chip-value.neg { color:var(--accent2); }
   .fin-chip-value.neu { color:var(--text); }
+  .fin-expand-btn { padding:0 12px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:11px; font-family:'IBM Plex Mono',monospace; border-left:1px solid var(--border); white-space:nowrap; flex-shrink:0; }
+  .fin-expand-btn:hover { color:var(--accent); }
+  .fin-detail { display:none; padding:10px 18px; border-bottom:1px solid var(--border); background:rgba(67,233,123,0.02); }
+  .fin-detail.open { display:block; }
+  .fin-table { width:100%; border-collapse:collapse; font-size:12px; font-family:'IBM Plex Mono',monospace; }
+  .fin-table th { font-size:10px; color:var(--muted); font-weight:500; padding:4px 8px; text-align:right; border-bottom:1px solid var(--border); }
+  .fin-table th:first-child { text-align:left; }
+  .fin-table td { padding:5px 8px; text-align:right; border-bottom:1px solid rgba(45,50,80,0.5); }
+  .fin-table td:first-child { text-align:left; color:var(--accent); font-weight:600; }
+  /* CEO expandable */
+  .ceo-bar { padding:6px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); background:rgba(79,124,255,0.03); cursor:pointer; user-select:none; }
+  .ceo-bar:hover { background:rgba(79,124,255,0.07); }
+  .ceo-bar-name { color:var(--text); font-weight:600; }
+  .ceo-detail { display:none; padding:8px 18px; border-bottom:1px solid var(--border); background:rgba(79,124,255,0.02); }
+  .ceo-detail.open { display:block; }
+  .ceo-row-item { display:flex; gap:10px; font-size:12px; padding:4px 0; border-bottom:1px solid rgba(45,50,80,0.4); align-items:center; }
+  .ceo-row-item:last-child { border-bottom:none; }
+  .ceo-row-name { font-weight:600; color:var(--text); min-width:80px; }
+  .ceo-row-period { color:var(--accent); font-family:'IBM Plex Mono',monospace; font-size:11px; }
+  .ceo-row-memo { color:var(--muted); font-size:11px; flex:1; }
 
   /* PDF Import */
   .pdf-dropzone {
@@ -789,16 +826,16 @@ create policy "allow all" on types for all using (true) with check (true);</div>
       <div class="form-section">
         <div class="form-section-title">파일 업로드</div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.8">
-          명함 사진, PDF, Word, 텍스트 파일 등 다양한 형식을 지원합니다.<br>
+          명함 사진, PDF, Word, 텍스트 파일, 그리고 Outlook·Gmail 등의 <strong style="color:var(--accent3)">대용량 CSV</strong>도 지원합니다.<br>
           <span style="color:var(--accent)">📄 PDF</span> &nbsp;
           <span style="color:var(--accent)">🖼 사진 (JPG·PNG·WEBP)</span> &nbsp;
           <span style="color:var(--accent)">📝 텍스트 (TXT)</span> &nbsp;
-          <span style="color:var(--accent)">📋 CSV/Excel</span>
+          <span style="color:var(--accent3)">📊 CSV (크기 제한 없음)</span>
         </p>
         <div id="pdfDropzone" class="pdf-dropzone" onclick="document.getElementById('pdfFileInput').click()">
           <div class="pdf-drop-icon" id="dropIcon">🗂</div>
           <div class="pdf-drop-text">클릭하거나 파일을 드래그하여 업로드</div>
-          <div class="pdf-drop-sub">PDF · JPG · PNG · WEBP · TXT · CSV (최대 10MB)</div>
+          <div class="pdf-drop-sub">PDF · JPG · PNG · WEBP · TXT · CSV (CSV는 크기 제한 없음 / 기타 최대 10MB)</div>
           <input type="file" id="pdfFileInput"
             accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.xls,.xlsx,.doc,.docx"
             style="display:none" onchange="onPdfSelected(this)">
@@ -848,8 +885,48 @@ create policy "allow all" on types for all using (true) with check (true);</div>
       </div>
     </div>
 
+    <!-- Step 6 (CSV): 컬럼 매핑 -->
+    <div id="pdfStep5" class="pdf-step" style="display:none">
+      <div class="form-section">
+        <div class="form-section-title">📊 CSV 컬럼 매핑 확인</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">자동으로 감지된 매핑입니다. 필요하면 드롭다운으로 변경하세요.</p>
+        <div id="csvMappingArea" style="overflow:auto;max-height:300px"></div>
+        <div id="csvPreviewInfo" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="pdfShowStep(1)">← 다시 선택</button>
+        <button class="btn btn-primary" onclick="csvImport()">✅ 이 설정으로 가져오기</button>
+      </div>
+    </div>
+
+    <!-- Step 7 (CSV): 진행 중 -->
+    <div id="pdfStep6" class="pdf-step" style="display:none">
+      <div style="text-align:center;padding:48px 20px">
+        <div class="pdf-spinner"></div>
+        <div style="font-size:15px;font-weight:600;margin-top:20px" id="csvProgressMsg">가져오는 중...</div>
+        <div style="margin:16px auto;max-width:320px;background:var(--surface2);border-radius:8px;overflow:hidden;height:10px">
+          <div id="csvProgressBar" style="height:10px;background:var(--accent3);width:0%;transition:width 0.15s;border-radius:8px"></div>
+        </div>
+        <div id="csvProgressSub" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- Step 8 (CSV): 완료 -->
+    <div id="pdfStep7" class="pdf-step" style="display:none">
+      <div style="text-align:center;padding:44px 20px">
+        <div style="font-size:52px;margin-bottom:14px">✅</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:10px" id="csvDoneMsg"></div>
+        <div id="csvDoneSub" style="font-size:13px;color:var(--muted);line-height:1.9"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="pdfShowStep(1)">추가 파일 가져오기</button>
+        <button class="btn btn-primary" onclick="closeModal('pdfModal')">닫기</button>
+      </div>
+    </div>
+
   </div>
 </div>
+
 
 <script>
 // ── DATA ────────────────────────────────────────────────
@@ -1189,9 +1266,30 @@ function setViewMode(m){
   document.getElementById('vBtn-'+m).classList.add('active');
   renderContacts();
 }
-let actFilter = 'all';   // 활동 유형 필터
-let teamFilter = 'all';  // 연락처 팀 필터
-let actTeamFilter = 'all'; // 활동 팀 필터
+// ── 필터 상태 (Set 기반 다중선택) ───────────────────────
+let actFilter    = new Set(); // 활동 유형 필터 (빈 Set = 전체)
+let teamFilter   = new Set(); // 연락처 팀 필터
+let actTeamFilter= new Set(); // 활동 팀 필터
+
+// Set 필터 토글 헬퍼
+function toggleFilter(set, val){
+  if(val==='all'){ set.clear(); return; }
+  if(set.has(val)) set.delete(val);
+  else set.add(val);
+}
+// Set 필터 적용 헬퍼: arr을 필터링 (빈 Set = 전체)
+function applySetFilter(arr, set, keyFn){
+  if(!set.size) return arr;
+  return arr.filter(item => set.has(keyFn(item)));
+}
+// 칩 active 동기화
+function syncChips(barSelector, set){
+  document.querySelectorAll(barSelector+' .filter-chip').forEach(b=>{
+    const v = b.dataset.val;
+    if(v==='all') b.classList.toggle('active', set.size===0);
+    else          b.classList.toggle('active', set.has(v));
+  });
+}
 
 // 팀 목록 추출 (companies에서 ourTeam 값들)
 function getTeamList(){
@@ -1203,37 +1301,34 @@ function getTeamList(){
 }
 
 // 팀 필터가 적용될 회사 목록 반환
-function getCosByTeam(team){
-  if(team==='all') return null; // null = 필터 없음
+function getCosByTeam(teamSet){
+  if(!teamSet || !teamSet.size) return null;
   return Object.entries(companies)
-    .filter(([,ci])=>(ci.ourTeam||'')=== team)
+    .filter(([,ci])=>teamSet.has(ci.ourTeam||''))
     .map(([name])=>name);
 }
 
 function setActFilter(f, btn){
-  actFilter = f;
-  document.querySelectorAll('#actFilterBar .filter-chip').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  toggleFilter(actFilter, f);
+  syncChips('#actFilterBar', actFilter);
   renderAllActs();
 }
 
 function setTeamFilter(f, btn){
-  teamFilter = f;
-  document.querySelectorAll('#teamFilterBar .filter-chip').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  toggleFilter(teamFilter, f);
+  syncChips('#teamFilterBar', teamFilter);
   renderContacts();
 }
 
 function setActTeamFilter(f, btn){
-  actTeamFilter = f;
-  document.querySelectorAll('#actTeamFilterBar .filter-chip').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  toggleFilter(actTeamFilter, f);
+  syncChips('#actTeamFilterBar', actTeamFilter);
   renderAllActs();
 }
 
 function refreshTeamFilterBars(){
   const teams = getTeamList();
-  const makeChips = (barId, curVal, fnName) => {
+  const makeChips = (barId, set, fnName) => {
     const bar = document.getElementById(barId);
     if(!bar) return;
     if(!teams.length){
@@ -1243,8 +1338,8 @@ function refreshTeamFilterBars(){
     }
     bar.style.display='';
     bar.innerHTML = `<span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;align-self:center;margin-right:4px;white-space:nowrap">👥 팀</span>`
-      + `<button class="filter-chip${curVal==='all'?' active':''}" onclick="${fnName}('all',this)">전체</button>`
-      + teams.map(t=>`<button class="filter-chip${curVal===t?' active':''}" onclick="${fnName}('${t.replace(/'/g,"\\'")}',this)">👥 ${t}</button>`).join('');
+      + `<button class="filter-chip${set.size===0?' active':''}" data-val="all" onclick="${fnName}('all',this)">전체</button>`
+      + teams.map(t=>`<button class="filter-chip${set.has(t)?' active':''}" data-val="${t.replace(/"/g,'&quot;')}" onclick="${fnName}('${t.replace(/'/g,"\\'")}',this)">👥 ${t}</button>`).join('');
   };
   makeChips('teamFilterBar',    teamFilter,    'setTeamFilter');
   makeChips('actTeamFilterBar', actTeamFilter, 'setActTeamFilter');
@@ -1264,8 +1359,8 @@ function renderContacts(){
     const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase();
     return s.includes(q);
   });
-  // 팀 필터
-  if(teamFilter !== 'all'){
+  // 팀 필터 (다중선택)
+  if(teamFilter.size){
     const cos = getCosByTeam(teamFilter);
     if(cos) list = list.filter(c => cos.includes(c.company||''));
   }
@@ -1286,7 +1381,7 @@ function renderGroupView(list){
     const members = groups[co];
     const ci = companies[co]||{};
     const coActs = coActivities(co);
-    const types = [...new Set(coActs.map(a=>a.type))];
+    const types = actTypes.map(t=>t.id).filter(id=>coActs.some(a=>a.type===id));
     const isExp = expanded.has(co);
     const col = ac(co);
     const preview = coActs.slice(0,5);
@@ -1313,26 +1408,74 @@ function renderGroupView(list){
           ${ci.phone?`<span>☎ ${ci.phone}</span>`:'<span style="opacity:.4">대표전화 없음</span>'}
           ${ci.fax?`<span>📠 ${ci.fax}</span>`:''}
           ${ci.address?`<span>📍 ${ci.address}</span>`:'<span style="opacity:.4">주소 없음</span>'}
-          ${(()=>{const ceos=ci.ceoHistory||[];const cur=ceos.find(c=>!c.to||c.to==='현재')||ceos[0];return cur?`<span>👔 대표 ${cur.name}${cur.from?' ('+cur.from+'~'+(cur.to&&cur.to!=='현재'?cur.to:'현재')+')':''}</span>`:''})()}
           ${ci.ourName?`<span style="color:var(--accent3)">👤 담당 ${ci.ourTeam?ci.ourTeam+' ':''}<strong>${ci.ourName}</strong></span>`:''}
           <button class="shared-edit-btn" onclick="openCompanyModal('${esc(co)}')">✏ 수정</button>
         </div>
-        <!-- finance summary (최신 연도) -->
+        <!-- 재무 요약 (1줄 + 펼치기) -->
         ${(()=>{
-          const fin=(ci.finance||[]).sort((a,b)=>Number(b.year)-Number(a.year));
+          const fin=(ci.finance||[]).slice().sort((a,b)=>Number(b.year)-Number(a.year));
           if(!fin.length) return '';
           const r=fin[0];
-          const fmtFin=v=>v?(Number(v.toString().replace(/[^0-9.-]/g,''))||0).toLocaleString()+'백만':'—';
+          const fmtFin=v=>v?(Number(v.toString().replace(/[^0-9.-]/g,''))||0).toLocaleString()+'M':'—';
           const profitVal=Number((r.net_profit||'').toString().replace(/[^0-9.-]/g,'')||0);
-          return `<div class="fin-summary">
-            <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">${r.year}년</span>
-            ${r.headcount?`<div class="fin-chip"><span class="fin-chip-label">인원</span><span class="fin-chip-value neu">${r.headcount}명</span></div>`:''}
-            ${r.revenue?`<div class="fin-chip"><span class="fin-chip-label">매출</span><span class="fin-chip-value neu">${fmtFin(r.revenue)}</span></div>`:''}
-            ${r.op_profit?`<div class="fin-chip"><span class="fin-chip-label">영업이익</span><span class="fin-chip-value ${Number((r.op_profit||'').toString().replace(/[^0-9.-]/g,''))||0 >= 0?'pos':'neg'}">${fmtFin(r.op_profit)}</span></div>`:''}
-            ${r.net_profit?`<div class="fin-chip"><span class="fin-chip-label">순이익</span><span class="fin-chip-value ${profitVal>=0?'pos':'neg'}">${fmtFin(r.net_profit)}</span></div>`:''}
-            ${r.assets?`<div class="fin-chip"><span class="fin-chip-label">자산</span><span class="fin-chip-value neu">${fmtFin(r.assets)}</span></div>`:''}
-            ${r.liabilities?`<div class="fin-chip"><span class="fin-chip-label">부채</span><span class="fin-chip-value neg">${fmtFin(r.liabilities)}</span></div>`:''}
-            ${fin.length>1?`<span style="font-size:11px;color:var(--muted)">외 ${fin.length-1}년 데이터</span>`:''}
+          const coId=CSS.escape(co);
+          const chips=[
+            r.headcount?`<div class="fin-chip"><span class="fin-chip-label">인원</span><span class="fin-chip-value neu">${r.headcount}명</span></div>`:'',
+            r.revenue?`<div class="fin-chip"><span class="fin-chip-label">매출</span><span class="fin-chip-value neu">${fmtFin(r.revenue)}</span></div>`:'',
+            r.op_profit?`<div class="fin-chip"><span class="fin-chip-label">영업이익</span><span class="fin-chip-value ${Number((r.op_profit||'').toString().replace(/[^0-9.-]/g,''))||0>=0?'pos':'neg'}">${fmtFin(r.op_profit)}</span></div>`:'',
+            r.net_profit?`<div class="fin-chip"><span class="fin-chip-label">순이익</span><span class="fin-chip-value ${profitVal>=0?'pos':'neg'}">${fmtFin(r.net_profit)}</span></div>`:'',
+            r.assets?`<div class="fin-chip"><span class="fin-chip-label">자산</span><span class="fin-chip-value neu">${fmtFin(r.assets)}</span></div>`:'',
+            r.liabilities?`<div class="fin-chip"><span class="fin-chip-label">부채</span><span class="fin-chip-value neg">${fmtFin(r.liabilities)}</span></div>`:'',
+          ].filter(Boolean).join('');
+          const allRows=fin.map(yr=>{
+            const fv=v=>v?(Number(v.toString().replace(/[^0-9.-]/g,''))||0).toLocaleString():'—';
+            return `<tr>
+              <td>${yr.year}</td>
+              <td>${yr.headcount?yr.headcount+'명':'—'}</td>
+              <td>${fv(yr.revenue)}</td>
+              <td class="${Number((yr.op_profit||'').toString().replace(/[^0-9.-]/g,'')||0)>=0?'pos':'neg'}">${fv(yr.op_profit)}</td>
+              <td class="${Number((yr.net_profit||'').toString().replace(/[^0-9.-]/g,'')||0)>=0?'pos':'neg'}">${fv(yr.net_profit)}</td>
+              <td>${fv(yr.assets)}</td>
+              <td>${fv(yr.liabilities)}</td>
+            </tr>`;
+          }).join('');
+          return `<div class="fin-summary" id="fin-wrap-${coId}">
+            <div class="fin-summary-preview" onclick="toggleFinDetail('${coId}')">
+              <span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;padding-right:10px;border-right:1px solid var(--border);flex-shrink:0">${r.year}년</span>
+              ${chips}
+            </div>
+            ${fin.length>1?`<button class="fin-expand-btn" id="fin-btn-${coId}" onclick="toggleFinDetail('${coId}')">전체 ${fin.length}년 ▾</button>`:''}
+          </div>
+          <div class="fin-detail" id="fin-detail-${coId}">
+            <table class="fin-table">
+              <thead><tr><th>연도</th><th>인원</th><th>매출(M)</th><th>영업이익</th><th>순이익</th><th>자산</th><th>부채</th></tr></thead>
+              <tbody>${allRows}</tbody>
+            </table>
+          </div>`;
+        })()}
+        <!-- 대표이사 (1줄 + 펼치기) -->
+        ${(()=>{
+          const ceos=(ci.ceoHistory||[]).slice().sort((a,b)=>{
+            const ya=Number((a.from||'0').toString().replace(/[^0-9]/g,''));
+            const yb=Number((b.from||'0').toString().replace(/[^0-9]/g,''));
+            return yb-ya;
+          });
+          if(!ceos.length) return '';
+          const cur=ceos.find(ceo=>!ceo.to||ceo.to==='현재')||ceos[0];
+          const coId=CSS.escape(co);
+          const allRows=ceos.map(ceo=>`<div class="ceo-row-item">
+            <span class="ceo-row-name">${ceo.name}</span>
+            <span class="ceo-row-period">${ceo.from||''}${ceo.from&&(ceo.to||'현재')?' ~ '+(ceo.to||'현재'):ceo.to?'~ '+ceo.to:''}</span>
+            ${ceo.memo?`<span class="ceo-row-memo">${ceo.memo}</span>`:''}
+          </div>`).join('');
+          return `<div class="ceo-bar" onclick="toggleCeoDetail('${coId}')">
+            <span>👔 대표이사</span>
+            <span class="ceo-bar-name">${cur.name}</span>
+            ${cur.from?`<span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent)">${cur.from} ~ ${cur.to&&cur.to!=='현재'?cur.to:'현재'}</span>`:''}
+            <span style="margin-left:auto;font-size:10px;color:var(--muted)">${ceos.length>1?`총 ${ceos.length}명 `:''} ▾</span>
+          </div>
+          <div class="ceo-detail" id="ceo-detail-${coId}">
+            ${allRows}
           </div>`;
         })()}
         <!-- members -->
@@ -1348,10 +1491,8 @@ function renderGroupView(list){
           </div>
           ${coActs.length===0
             ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">활동 없음</div>`
-            : `<div class="timeline" id="tl-${CSS.escape(co)}">
-                ${preview.map(a=>tlItem(a,co)).join('')}
-               </div>
-               ${coActs.length>5?`<button class="show-more-btn" onclick="showAll('${esc(co)}')">+ ${coActs.length-5}건 더 보기</button>`:''}`
+            : `<div class="acts-filter" id="coActsFilter-${CSS.escape(co)}"></div>
+               <div id="tl-${CSS.escape(co)}"></div>`
           }
         </div>
       </div>
@@ -1367,11 +1508,50 @@ function renderGroupView(list){
 
   if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>연락처가 없습니다.</p></div>`;
   document.getElementById('mainGrid').innerHTML=html;
+
+  // 회사별 활동 필터 초기화
+  named.forEach(co=>{
+    const filterBar = document.getElementById('coActsFilter-'+CSS.escape(co));
+    if(!filterBar) return;
+    const allActs = coActivities(co);
+    if(!allActs.length) return;
+    filterBar.innerHTML =
+      `<button class="filter-chip active" data-val="all" onclick="setCoActFilter('${esc(co)}',this,'all')">전체</button>`
+      + actTypes.map(t=>{
+          const cnt = allActs.filter(a=>a.type===t.id).length;
+          return cnt ? `<button class="filter-chip" data-val="${t.id}" onclick="setCoActFilter('${esc(co)}',this,'${t.id}')">${t.emoji} ${t.label}</button>` : '';
+        }).join('');
+    if(!_coActFilters[co]) _coActFilters[co] = new Set();
+    _renderCoActs(co);
+  });
+}
+
+const _coActFilters = {}; // co → Set
+function setCoActFilter(co, btn, f){
+  if(!_coActFilters[co]) _coActFilters[co] = new Set();
+  toggleFilter(_coActFilters[co], f);
+  const filterBar = document.getElementById('coActsFilter-'+CSS.escape(co));
+  if(filterBar) filterBar.querySelectorAll('.filter-chip').forEach(b=>{
+    const v = b.dataset.val || b.getAttribute('onclick')?.match(/'([^']+)',this\)$/)?.[1] || '';
+    if(v==='all') b.classList.toggle('active', _coActFilters[co].size===0);
+    else b.classList.toggle('active', _coActFilters[co].has(v));
+  });
+  _renderCoActs(co);
+}
+function _renderCoActs(co){
+  const tl = document.getElementById('tl-'+CSS.escape(co));
+  if(!tl) return;
+  const set = _coActFilters[co] || new Set();
+  const all = coActivities(co);
+  const filtered = set.size===0 ? all : all.filter(a=>set.has(a.type));
+  tl.innerHTML = filtered.length===0
+    ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">해당 유형의 활동이 없습니다.</div>`
+    : `<div class="timeline">${filtered.map(a=>tlItem(a,{showWho:true})).join('')}</div>`;
 }
 
 function personCard(c, standalone=false){
   const acts=activities.filter(a=>a.contactId===c.id);
-  const types=[...new Set(acts.map(a=>a.type))];
+  const types=actTypes.map(t=>t.id).filter(id=>acts.some(a=>a.type===id));
   const init=(c.last||c.first||'?')[0];
   const bg=ac(c.last+c.first);
   const title=[c.dept,c.position].filter(Boolean).join(' / ');
@@ -1384,43 +1564,127 @@ function personCard(c, standalone=false){
       </div>
     </div>
     <div class="person-contacts">
-      ${c.office?`<span><span class="pc-label">직통</span>${c.office}</span>`:''}
-      ${c.mobile?`<span><span class="pc-label">핸드폰</span>${c.mobile}</span>`:''}
-      ${!c.office&&!c.mobile?`<span style="opacity:.4">연락처 없음</span>`:''}
+      ${c.mobile
+        ? `<span><span class="pc-label">핸드폰</span>${c.mobile}</span>`
+        : c.office ? `<span><span class="pc-label">직통</span>${c.office}</span>` : ''}
+      ${c.email?`<span><span class="pc-label">이메일</span>${c.email}</span>`:''}
+      ${!c.mobile&&!c.office&&!c.email?`<span style="opacity:.4">연락처 없음</span>`:''}
     </div>
     ${types.length?`<div class="person-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${acts.filter(a=>a.type===t).length}</span>`).join('')}</div>`:''}
   </div>`;
 }
 
-function tlItem(a, co){
-  const c=contacts.find(x=>x.id===a.contactId);
-  const who=c?c.last+c.first:'?';
+// ── 접이식 타임라인 아이템 ────────────────────────────────
+function tlItem(a, opts){
+  // opts: { showWho, fromDetail }
+  opts = opts || {};
+  const c = contacts.find(x=>x.id===a.contactId);
+  const isAmountType = (a.type==='order'||a.type==='quote');
+  const amountBadge  = (isAmountType && a.amount)
+    ? `<span class="tl-amount-badge">₩${fmtMoney(a.amount)}</span>` : '';
+  const whoHtml = opts.showWho && c
+    ? `<div class="tl-who" onclick="showDetail('${c.id}')">👤 ${c.last}${c.first}${c.company?' <span style="color:var(--muted)">· '+c.company+'</span>':''}</div>` : '';
+
+  const titlePreview = a.title
+    ? `<span class="tl-title-preview">${a.title}</span>` : '';
+
   return `<div class="timeline-item">
-    <div class="timeline-dot ${TD[a.type]}">${TE[a.type]}</div>
+    <div class="timeline-dot ${TD[a.type]||'dot-call'}">${TE[a.type]||'•'}</div>
     <div class="tl-body">
-      <div class="tl-meta">
-        <span class="tl-type">${TL[a.type]}${a.title?' · '+a.title:''}</span>
-        <div style="display:flex;gap:4px;align-items:center">
+      <div class="tl-summary" onclick="tlToggle(this)">
+        <div class="tl-summary-left">
+          <span class="tl-type">${TL[a.type]||a.type}</span>
+          ${titlePreview}
+        </div>
+        <div class="tl-summary-right">
+          ${amountBadge}
           <span class="tl-date">${a.date}</span>
-          <button onclick="openEditAct('${a.id}')" title="수정" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
-          <button onclick="delAct('${a.id}')" title="삭제" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">🗑</button>
+          <span class="tl-chevron">▶</span>
         </div>
       </div>
-      <div class="tl-who" onclick="showDetail('${a.contactId}')">👤 ${who}</div>
-      ${a.content?`<div class="tl-text">${a.content}</div>`:''}
-      ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
+      <div class="tl-detail">
+        ${whoHtml}
+        ${a.title?`<div style="font-size:13px;font-weight:600;margin-bottom:4px">${a.title}</div>`:''}
+        ${a.content?`<div class="tl-text">${a.content}</div>`:''}
+        ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
+        <div class="tl-actions">
+          <button class="tl-act-btn" onclick="openEditAct('${a.id}')">✏ 수정</button>
+          <button class="tl-act-btn danger" onclick="delAct('${a.id}',${opts.fromDetail?'true':'false'})">🗑 삭제</button>
+        </div>
+      </div>
     </div>
   </div>`;
 }
 
-function showAll(co){
-  const all=coActivities(co);
-  const tl=document.getElementById('tl-'+CSS.escape(co));
-  if(tl){ tl.innerHTML=all.map(a=>tlItem(a,co)).join(''); }
-  const btn=tl?.nextElementSibling;
-  if(btn?.classList.contains('show-more-btn')) btn.remove();
+function tlToggle(summaryEl){
+  const detail  = summaryEl.nextElementSibling;
+  const chevron = summaryEl.querySelector('.tl-chevron');
+  const isOpen  = detail.classList.toggle('open');
+  if(chevron) chevron.style.transform = isOpen ? 'rotate(90deg)' : '';
 }
 
+// ── 활동 필터 렌더 헬퍼 (개인/회사 상세용) ───────────────
+function renderActsFilter(containerId, filterSet, onChangeFn){
+  const bar = document.getElementById(containerId);
+  if(!bar) return;
+  bar.innerHTML =
+    `<button class="filter-chip${filterSet.size===0?' active':''}" data-val="all" onclick="${onChangeFn}('all',this)">전체</button>`
+    + actTypes.map(t=>`<button class="filter-chip${filterSet.has(t.id)?' active':''}" data-val="${t.id}" onclick="${onChangeFn}('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
+}
+
+// 개인 상세 활동 필터
+let detailActFilter = new Set();
+function setDetailActFilter(f, btn){
+  toggleFilter(detailActFilter, f);
+  syncChips('#detailActsFilter', detailActFilter);
+  if(currentCid) _renderDetailActs(currentCid);
+}
+
+// 회사 상세 활동 필터
+let coDetailActFilter = new Set();
+function setCoDetailActFilter(f, btn){
+  toggleFilter(coDetailActFilter, f);
+  syncChips('#coDetailActsFilter', coDetailActFilter);
+  _renderCoDetailActs();
+}
+let _currentCoDetail = '';
+
+function _renderDetailActs(id){
+  const allActs = contactActivities(id);
+  const filtered = detailActFilter.size===0 ? allActs : allActs.filter(a=>detailActFilter.has(a.type));
+  const el = document.getElementById('detailActsList');
+  if(!el) return;
+  el.innerHTML = filtered.length===0
+    ? `<div class="empty-state"><div class="empty-icon">📋</div><p>${detailActFilter.size===0?'아직 활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`
+    : `<div class="timeline">${filtered.map(a=>tlItem(a,{fromDetail:true})).join('')}</div>`;
+}
+
+function _renderCoDetailActs(){
+  const allActs = coActivities(_currentCoDetail);
+  const filtered = coDetailActFilter.size===0 ? allActs : allActs.filter(a=>coDetailActFilter.has(a.type));
+  const el = document.getElementById('coDetailActsList');
+  if(!el) return;
+  el.innerHTML = filtered.length===0
+    ? `<div class="empty-state" style="padding:20px"><div class="empty-icon">📋</div><p>${coDetailActFilter.size===0?'활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`
+    : `<div class="timeline">${filtered.map(a=>tlItem(a,{showWho:true})).join('')}</div>`;
+}
+
+function showAll(co){
+  _renderCoActs(co);
+}
+
+function toggleFinDetail(coId){
+  const el  = document.getElementById('fin-detail-'+coId);
+  const btn = document.getElementById('fin-btn-'+coId);
+  if(!el) return;
+  const open = el.classList.toggle('open');
+  if(btn) btn.textContent = btn.textContent.replace(open?'▾':'▴', open?'▴':'▾');
+}
+function toggleCeoDetail(coId){
+  const el = document.getElementById('ceo-detail-'+coId);
+  if(!el) return;
+  el.classList.toggle('open');
+}
 function toggleCo(co){
   const el=document.getElementById('cg-'+CSS.escape(co));
   if(!el) return;
@@ -1440,7 +1704,7 @@ function renderGroupList(list){
     const members=groups[co];
     const ci=companies[co]||{};
     const coActs=coActivities(co);
-    const types=[...new Set(coActs.map(a=>a.type))];
+    const types=actTypes.map(t=>t.id).filter(id=>coActs.some(a=>a.type===id));
     const isExp=expanded.has(co);
     const col=ac(co);
 
@@ -1473,8 +1737,8 @@ function renderGroupList(list){
             <thead><tr>
               <th style="width:130px">이름</th>
               <th style="width:160px">직함</th>
-              <th style="width:150px">직통</th>
               <th style="width:150px">핸드폰</th>
+              <th style="width:150px">이메일</th>
               <th style="width:110px">활동</th>
             </tr></thead>
             <tbody>
@@ -1491,7 +1755,7 @@ function renderGroupList(list){
       <div class="ungrouped-label">── 회사 미지정 (${none.length}명)</div>
       <div class="list-wrap">
         <table class="list-table">
-          <thead><tr><th style="width:130px">이름</th><th style="width:160px">직함</th><th style="width:150px">직통</th><th style="width:150px">핸드폰</th><th style="width:110px">활동</th></tr></thead>
+          <thead><tr><th style="width:130px">이름</th><th style="width:160px">직함</th><th style="width:150px">핸드폰</th><th style="width:150px">이메일</th><th style="width:110px">활동</th></tr></thead>
           <tbody>${none.map(c=>personListRow(c)).join('')}</tbody>
         </table>
       </div>
@@ -1543,8 +1807,8 @@ function renderFlatList(list){
         <thead><tr>
           <th style="width:130px">이름</th>
           <th style="width:160px">직함</th>
-          <th style="width:150px">직통</th>
           <th style="width:150px">핸드폰</th>
+          <th style="width:180px">이메일</th>
           <th style="width:110px">활동</th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -1555,10 +1819,13 @@ function renderFlatList(list){
 // ── PERSON LIST ROW ──────────────────────────────────────
 function personListRow(c, indented=true){
   const acts=activities.filter(a=>a.contactId===c.id);
-  const types=[...new Set(acts.map(a=>a.type))];
+  const types=actTypes.map(t=>t.id).filter(id=>acts.some(a=>a.type===id));
   const bg=ac(c.last+c.first);
   const init=(c.last||c.first||'?')[0];
   const title=[c.dept,c.position].filter(Boolean).join(' / ')||'—';
+  // 핸드폰 없으면 직통 표시
+  const phoneVal = c.mobile || c.office || '';
+  const emailVal = c.email || '';
   return `<tr onclick="showDetail('${c.id}')" style="cursor:pointer">
     <td style="padding-left:${indented?26:14}px">
       <div style="display:flex;align-items:center;gap:8px">
@@ -1567,8 +1834,8 @@ function personListRow(c, indented=true){
       </div>
     </td>
     <td style="color:var(--muted);font-size:12px">${title}</td>
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${c.office||'<span style="opacity:.3">—</span>'}</td>
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${c.mobile||'<span style="opacity:.3">—</span>'}</td>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${phoneVal||'<span style="opacity:.3">—</span>'}</td>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${emailVal||'<span style="opacity:.3">—</span>'}</td>
     <td>${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]}${acts.filter(a=>a.type===t).length}</span>`).join(' ')||'<span style="color:var(--border);font-size:11px">—</span>'}</td>
   </tr>`;
 }
@@ -1586,7 +1853,7 @@ function showDetail(id){
   const info=[
     {l:'이메일',v:c.email||'—'},{l:'휴대폰',v:c.mobile||'—'},
     {l:'사무실',v:c.office||'—'},{l:'추가 연락처',v:c.extra||'—'},
-    {l:'주소',v:ci.address||c.address||'—'},{l:'메모',v:c.memo||'—'},
+    {l:'주소',v:ci.address||c.address||'—'},
   ];
 
   document.getElementById('detailContent').innerHTML=`
@@ -1605,28 +1872,16 @@ function showDetail(id){
     <div class="info-grid">
       ${info.map(i=>`<div class="info-card"><div class="info-card-label">${i.l}</div><div class="info-card-value">${i.v}</div></div>`).join('')}
     </div>
+    ${c.memo||ci.memo?`<div class="info-card" style="margin-bottom:16px;border:1px solid var(--border);border-radius:9px;padding:14px 16px">
+      <div class="info-card-label">메모</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;margin-top:6px">${c.memo||ci.memo||''}</div>
+    </div>`:''}
     <div class="acts-section">
       <div class="acts-head"><span class="acts-title">활동 (${acts.length})</span>
         <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">＋ 추가</button>
       </div>
-      ${acts.length===0?`<div class="empty-state"><div class="empty-icon">📋</div><p>아직 활동이 없습니다.</p></div>`
-        :`<div class="timeline">${acts.map(a=>`
-          <div class="timeline-item">
-            <div class="timeline-dot ${TD[a.type]}">${TE[a.type]}</div>
-            <div class="tl-body">
-              <div class="tl-meta">
-                <span class="tl-type">${TL[a.type]}${a.title?' · '+a.title:''}</span>
-                <div style="display:flex;gap:4px;align-items:center">
-                  <span class="tl-date">${a.date}</span>
-                  <button onclick="openEditAct('${a.id}')" title="수정" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
-                  <button onclick="delAct('${a.id}',true)" title="삭제" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">🗑</button>
-                </div>
-              </div>
-              ${a.content?`<div class="tl-text">${a.content}</div>`:''}
-              ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
-            </div>
-          </div>`).join('')}
-        </div>`}
+      <div class="acts-filter" id="detailActsFilter"></div>
+      <div id="detailActsList"></div>
     </div>`;
 
   // Company back button
@@ -1643,6 +1898,11 @@ function showDetail(id){
     };
   } else coBtn.style.display='none';
 
+  // 활동 필터 초기화 및 렌더
+  detailActFilter = new Set();
+  renderActsFilter('detailActsFilter', detailActFilter, 'setDetailActFilter');
+  _renderDetailActs(id);
+
   document.getElementById('contactsView').style.display='none';
   document.getElementById('detailView').classList.add('open');
 }
@@ -1650,10 +1910,10 @@ function showDetail(id){
 // ── ALL ACTIVITIES ───────────────────────────────────────
 function renderAllActs(){
   let allSorted = [...activities].sort((a,b)=>b.date.localeCompare(a.date));
-  // 유형 필터
-  if(actFilter !== 'all') allSorted = allSorted.filter(a=>a.type===actFilter);
-  // 팀 필터
-  if(actTeamFilter !== 'all'){
+  // 유형 필터 (다중선택)
+  if(actFilter.size) allSorted = allSorted.filter(a=>actFilter.has(a.type));
+  // 팀 필터 (다중선택)
+  if(actTeamFilter.size){
     const cos = getCosByTeam(actTeamFilter);
     if(cos){
       const cids = contacts.filter(c=>cos.includes(c.company||'')).map(c=>c.id);
@@ -1667,35 +1927,14 @@ function renderAllActs(){
   // 건수 표시
   const subEl = document.getElementById('actsSub');
   if(subEl){
-    let desc = actFilter==='all' ? '전체' : (TL[actFilter]||actFilter);
-    if(actTeamFilter!=='all') desc += ` · 👥 ${actTeamFilter}팀`;
+    let desc = actFilter.size===0 ? '전체'
+      : [...actFilter].map(f=>TL[f]||f).join('+');
+    if(actTeamFilter.size) desc += ` · 👥 ${[...actTeamFilter].join('+')}팀`;
     subEl.textContent = `${desc} ${acts.length}건 / 전체 ${total}건`;
   }
 
-  if(!acts.length){ div.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>${actFilter==='all'?'활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`; return; }
-  div.innerHTML=`<div class="timeline">${acts.map(a=>{
-    const c=contacts.find(x=>x.id===a.contactId);
-    return `<div class="timeline-item">
-      <div class="timeline-dot ${TD[a.type]}">${TE[a.type]}</div>
-      <div class="tl-body">
-        <div class="tl-meta">
-          <span class="tl-type" style="cursor:pointer" onclick="${c?`showDetail('${c.id}')`:''}">
-            ${TL[a.type]||a.type}${a.title?' · '+a.title:''}
-          </span>
-          <div style="display:flex;gap:4px;align-items:center">
-            <span class="tl-date">${a.date}</span>
-            <button onclick="openEditAct('${a.id}')" title="수정" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">✏</button>
-            <button onclick="delAct('${a.id}')" title="삭제" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:3px;transition:all 0.1s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">🗑</button>
-          </div>
-        </div>
-        <div class="tl-who" style="cursor:pointer" onclick="${c?`showDetail('${c.id}')`:''}">
-          👤 ${c?c.last+c.first:'?'} ${c&&c.company?'<span style="color:var(--muted)">· '+c.company+'</span>':''}
-        </div>
-        ${a.content?`<div class="tl-text">${a.content}</div>`:''}
-        ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
-      </div>
-    </div>`;
-  }).join('')}</div>`;
+  if(!acts.length){ div.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>${actFilter.size===0?'활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`; return; }
+  div.innerHTML=`<div class="timeline">${acts.map(a=>tlItem(a,{showWho:true})).join('')}</div>`;
 }
 
 // ── CONTACT MODAL ────────────────────────────────────────
@@ -1797,7 +2036,7 @@ function renderFinTable(){
   const tbody=document.getElementById('finBody');
   tbody.innerHTML=_finRows.map((r,i)=>`
     <tr>
-      <td><input class="fin-year" value="${r.year}" onchange="_finRows[${i}].year=this.value" placeholder="2024"></td>
+      <td><input class="fin-year" value="${r.year}" onchange="_finRows[${i}].year=this.value" onblur="renderFinTable()" placeholder="2024"></td>
       <td><input class="fin-input" value="${r.headcount}" onchange="_finRows[${i}].headcount=this.value" placeholder="—"></td>
       <td><input class="fin-input" value="${r.revenue}" onchange="_finRows[${i}].revenue=this.value" placeholder="—"></td>
       <td><input class="fin-input" value="${r.op_profit}" onchange="_finRows[${i}].op_profit=this.value" placeholder="—"></td>
@@ -2187,7 +2426,27 @@ function detectFileType(file){
 function onPdfSelected(input){
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 10*1024*1024){ alert('파일 크기가 10MB를 초과합니다.'); return; }
+
+  // CSV는 전용 플로우 (pdfModal 내 Step5~7)
+  if(file.name.toLowerCase().endsWith('.csv') || file.type==='text/csv'){
+    _csvFile = file;
+    const sizeMB = (file.size/1024/1024).toFixed(1);
+    const nameEl = document.getElementById('pdfFileName');
+    nameEl.innerHTML = `📊 <strong>${file.name}</strong> <span style="color:var(--muted)">(${sizeMB}MB · CSV 자동 처리)</span>`;
+    nameEl.style.display = '';
+    document.getElementById('pdfFileTypeNote').innerHTML =
+      `감지된 유형: <span style="color:var(--accent3)">CSV 파일 — 대용량 직접 파싱 모드</span>`;
+    document.getElementById('pdfFileTypeNote').style.display = '';
+    document.getElementById('dropIcon').textContent = '📊';
+    // 분석 버튼을 CSV 파싱 버튼으로 교체
+    const btn = document.getElementById('pdfAnalyzeBtn');
+    btn.disabled = false;
+    btn.textContent = '➡ CSV 분석하기';
+    btn.onclick = csvParse;
+    return;
+  }
+
+  if(file.size > 10*1024*1024){ alert('파일 크기가 10MB를 초과합니다.\nCSV 파일은 크기 제한 없이 자동 처리됩니다.'); return; }
 
   const ft = detectFileType(file);
   pdfFileType = ft;
@@ -2498,6 +2757,258 @@ function pdfImportAll(){
 }
 
 
+// ── CSV 대용량 가져오기 ───────────────────────────────────
+let _csvRawRows = [];   // 파싱된 전체 행 배열
+let _csvHeaders = [];   // 원본 헤더
+let _csvMapping = {};   // CRM필드 → 원본컬럼명
+
+// Outlook CSV 컬럼명 자동 매핑 테이블 (한글/영문 모두)
+const CSV_AUTO_MAP = {
+  last:     ['성','Last Name','Lastname','성(Last Name)','last_name'],
+  first:    ['이름','First Name','Firstname','이름(First Name)','first_name'],
+  company:  ['회사','Company','회사 이름','Company Name','organization'],
+  dept:     ['부서','Department','Dept'],
+  position: ['직함','Job Title','Title','직위','Position'],
+  email:    ['전자 메일 주소','Email Address','Email','이메일','E-mail','email_1_value'],
+  mobile:   ['휴대폰','Mobile Phone','Mobile','Cell Phone','핸드폰','phone_1_value'],
+  office:   ['회사 전화','Business Phone','Work Phone','직통','사무실 전화','phone_2_value'],
+  extra:    ['기타 전화','Other Phone','Home Phone','추가 연락처'],
+  address:  ['회사 주소','Business Address','Address','주소','Street'],
+  memo:     ['메모','Notes','Note','비고'],
+};
+const CSV_FIELD_LABELS = {
+  last:'성', first:'이름', company:'회사', dept:'부서', position:'직함',
+  email:'이메일', mobile:'핸드폰', office:'직통', extra:'추가연락처',
+  address:'주소', memo:'메모',
+};
+
+// CSV 관련 상태
+let _csvFile = null;
+
+function csvParse(){
+  if(!_csvFile){ alert('파일을 먼저 선택해주세요.'); return; }
+  // 분석 버튼 원상복구 (다음 비CSV 파일을 위해)
+  const btn = document.getElementById('pdfAnalyzeBtn');
+  if(btn){ btn.textContent = '🔍 분석 시작'; btn.onclick = pdfAnalyze; }
+
+  const reader = new FileReader();
+  const processText = text => {
+    try {
+      const result = csvParseText(text);
+      _csvHeaders = result.headers;
+      _csvRawRows = result.rows;
+      _csvMapping = csvAutoMap(_csvHeaders);
+      pdfShowStep(5);
+      csvRenderMapping();
+    } catch(err){ alert('CSV 파싱 오류: ' + err.message); }
+  };
+  reader.onload = e => processText(e.target.result);
+  reader.onerror = () => {
+    const r2 = new FileReader();
+    r2.onload = e2 => processText(e2.target.result);
+    r2.readAsText(_csvFile, 'EUC-KR');
+  };
+  reader.readAsText(_csvFile, 'UTF-8');
+}
+
+// 간단하고 견고한 CSV 파서 (따옴표 처리 포함)
+function csvParseText(text){
+  // BOM 제거
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const lines = [];
+  let cur = '', inQ = false;
+  for(let i=0; i<text.length; i++){
+    const ch = text[i];
+    if(ch==='"'){
+      if(inQ && text[i+1]==='"'){ cur+='"'; i++; }
+      else inQ = !inQ;
+    } else if((ch==='\n'||ch==='\r') && !inQ){
+      if(ch==='\r' && text[i+1]==='\n') i++;
+      lines.push(cur); cur='';
+    } else cur+=ch;
+  }
+  if(cur) lines.push(cur);
+
+  const parseLine = line => {
+    const cells=[]; let c='', iq=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){
+        if(iq && line[i+1]==='"'){c+='"';i++;}
+        else iq=!iq;
+      } else if(ch===',' && !iq){ cells.push(c.trim()); c=''; }
+      else c+=ch;
+    }
+    cells.push(c.trim()); return cells;
+  };
+
+  if(!lines.length) throw new Error('빈 파일입니다.');
+  const headers = parseLine(lines[0]);
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    const cells = parseLine(lines[i]);
+    const row = {};
+    headers.forEach((h,j)=>{ row[h] = cells[j]||''; });
+    rows.push(row);
+  }
+  return {headers, rows};
+}
+
+// 컬럼명 자동 매핑
+function csvAutoMap(headers){
+  const map = {};
+  const lowers = headers.map(h=>h.toLowerCase().replace(/\s/g,''));
+  Object.entries(CSV_AUTO_MAP).forEach(([field, candidates])=>{
+    for(const c of candidates){
+      const cl = c.toLowerCase().replace(/\s/g,'');
+      const idx = lowers.findIndex(h=>h===cl || h.includes(cl) || cl.includes(h));
+      if(idx>=0){ map[field] = headers[idx]; break; }
+    }
+  });
+  return map;
+}
+
+// 매핑 UI 렌더
+function csvRenderMapping(){
+  const area = document.getElementById('csvMappingArea');
+  const previewInfo = document.getElementById('csvPreviewInfo');
+  previewInfo.textContent = `총 ${_csvRawRows.length.toLocaleString()}행 감지 · 아래에서 컬럼 매핑을 확인하세요.`;
+
+  const opts = `<option value="">— 사용 안 함 —</option>`
+    + _csvHeaders.map(h=>`<option value="${h.replace(/"/g,'&quot;')}">${h}</option>`).join('');
+
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr>
+      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">CRM 필드</th>
+      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">CSV 컬럼 매핑</th>
+      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">미리보기 (첫 행)</th>
+    </tr></thead><tbody>`;
+
+  Object.entries(CSV_FIELD_LABELS).forEach(([field, label])=>{
+    const mapped = _csvMapping[field]||'';
+    const preview = _csvRawRows[0]?.[mapped]||'';
+    const sel = opts.replace(`value="${mapped}"`,`value="${mapped}" selected`);
+    html += `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px 10px;font-weight:600;color:var(--accent);white-space:nowrap">${label}</td>
+      <td style="padding:6px 10px">
+        <select onchange="_csvMapping['${field}']=this.value;csvUpdatePreview()" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:3px 6px;width:100%">
+          ${sel}
+        </select>
+      </td>
+      <td style="padding:6px 10px;color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${preview||'—'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  area.innerHTML = html;
+}
+
+function csvUpdatePreview(){
+  // 미리보기 값만 갱신
+  document.querySelectorAll('#csvMappingArea tbody tr').forEach((tr, idx)=>{
+    const field = Object.keys(CSV_FIELD_LABELS)[idx];
+    const mapped = _csvMapping[field]||'';
+    const preview = _csvRawRows[0]?.[mapped]||'';
+    const td = tr.querySelectorAll('td')[2];
+    if(td) td.textContent = preview||'—';
+  });
+}
+
+async function csvImport(){
+  pdfShowStep(6);
+  const total = _csvRawRows.length;
+  let added = 0, skipped = 0, dupCount = 0;
+
+  // 기존 연락처 이메일·이름 Set (중복 검사용)
+  const existEmails = new Set(contacts.map(c=>c.email||'').filter(Boolean).map(e=>e.toLowerCase()));
+  const existNames  = new Set(contacts.map(c=>(c.last+c.first).replace(/\s/g,'')).filter(Boolean));
+
+  const CHUNK = 500; // 브라우저 블로킹 방지용 청크
+  for(let i=0; i<total; i++){
+    const row = _csvRawRows[i];
+    const get = field => {
+      const col = _csvMapping[field];
+      return col ? (row[col]||'').trim() : '';
+    };
+
+    // 이름 처리: 성/이름 분리 or 전체 이름에서 분리
+    let last  = get('last');
+    let first = get('first');
+    if(!last && !first){
+      // full name 컬럼 시도
+      const fullCols = ['Full Name','이름','Name','성명','DisplayName','display_name'];
+      let full = '';
+      for(const fc of fullCols){
+        if(row[fc]){ full = row[fc].trim(); break; }
+      }
+      if(full){
+        const parts = full.split(/\s+/);
+        if(parts.length>=2){ last=parts[0]; first=parts.slice(1).join(' '); }
+        else { last=full; }
+      }
+    }
+
+    const email   = get('email').toLowerCase();
+    const company = get('company');
+    const mobile  = get('mobile');
+    const office  = get('office');
+
+    // 중복 체크 (이메일 또는 이름)
+    const nameKey = (last+first).replace(/\s/g,'');
+    if(email && existEmails.has(email)){ dupCount++; skipped++; continue; }
+    if(!email && nameKey && existNames.has(nameKey)){ dupCount++; skipped++; continue; }
+    if(!last && !first && !email && !mobile && !office){ skipped++; continue; }
+
+    const newId = uid();
+    const co = company.trim();
+    contacts.push({
+      id: newId,
+      createdAt: new Date().toISOString(),
+      company: co,
+      dept:     get('dept'),
+      position: get('position'),
+      last:     last  || '',
+      first:    first || '',
+      email:    get('email'),
+      office:   office,
+      mobile:   mobile,
+      extra:    get('extra'),
+      address:  get('address'),
+      memo:     get('memo'),
+    });
+    if(co && !companies[co]) companies[co] = {};
+    if(email) existEmails.add(email);
+    if(nameKey) existNames.add(nameKey);
+    added++;
+
+    // 진행바 업데이트 (매 CHUNK마다 UI 양보)
+    if(i % CHUNK === 0){
+      const pct = Math.round((i/total)*100);
+      document.getElementById('csvProgressBar').style.width = pct+'%';
+      document.getElementById('csvProgressMsg').textContent = `가져오는 중... (${i.toLocaleString()} / ${total.toLocaleString()})`;
+      document.getElementById('csvProgressSub').textContent = `추가: ${added.toLocaleString()}명 · 중복 건너뜀: ${dupCount.toLocaleString()}건`;
+      await new Promise(r=>setTimeout(r,0)); // UI 업데이트 양보
+    }
+  }
+
+  // 저장
+  document.getElementById('csvProgressBar').style.width = '100%';
+  document.getElementById('csvProgressMsg').textContent = '저장 중...';
+  await new Promise(r=>setTimeout(r,30));
+  persist();
+  renderContacts();
+  refreshTeamFilterBars();
+
+  // 완료 화면
+  pdfShowStep(7);
+  document.getElementById('csvDoneMsg').textContent = `${added.toLocaleString()}명 추가 완료!`;
+  document.getElementById('csvDoneSub').innerHTML =
+    `전체 ${total.toLocaleString()}행 처리<br>`
+    + (dupCount ? `중복 건너뜀: ${dupCount.toLocaleString()}건<br>` : '')
+    + (skipped-dupCount ? `빈 행 건너뜀: ${(skipped-dupCount).toLocaleString()}건<br>` : '')
+    + `<br>Supabase 연동이 설정되어 있으면 자동으로 동기화됩니다.`;
+}
+
 // ── TYPE MANAGER ──────────────────────────────────────────
 const DEFAULT_TYPE_IDS = ['order','quote','visit','call','other'];
 let _editTypes = [];
@@ -2565,8 +3076,8 @@ function refreshTypeSelect(){
 function refreshFilterBar(){
   const bar = document.getElementById('actFilterBar');
   if(!bar) return;
-  bar.innerHTML = `<button class="filter-chip${actFilter==='all'?' active':''}" onclick="setActFilter('all',this)">전체</button>`
-    + actTypes.map(t=>`<button class="filter-chip${actFilter===t.id?' active':''}" onclick="setActFilter('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
+  bar.innerHTML = `<button class="filter-chip${actFilter.size===0?' active':''}" data-val="all" onclick="setActFilter('all',this)">전체</button>`
+    + actTypes.map(t=>`<button class="filter-chip${actFilter.has(t.id)?' active':''}" data-val="${t.id}" onclick="setActFilter('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
 }
 
 // ── SUPABASE 설정 모달 ────────────────────────────────────
