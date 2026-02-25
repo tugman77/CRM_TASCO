@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRM 고객관리</title>
+<title>RelaCRM — 스마트 고객관리 시스템</title>
+<meta name="description" content="명함·PDF·CSV를 AI로 자동 분석해 연락처를 저장하는 스마트 고객관리 시스템">
+<meta name="author" content="RelaCRM">
+<meta property="og:title" content="RelaCRM — 스마트 고객관리 시스템">
+<meta property="og:description" content="명함·PDF·CSV를 AI로 자동 분석해 연락처를 저장하는 스마트 고객관리 시스템">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -370,8 +374,8 @@
 
 <aside class="sidebar">
   <div class="logo">
-    <h1>▸ CRM</h1>
-    <span>고객관리 시스템</span>
+    <h1 style="font-size:20px;letter-spacing:-0.5px">▸ Rela<span style="color:var(--text);font-weight:400">CRM</span></h1>
+    <span>스마트 고객관리 시스템</span>
   </div>
   <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> 연락처 <span class="today-badge" id="todayContacts" style="display:none"></span></button>
   <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> 전체 활동 <span class="today-badge" id="todayActivities" style="display:none"></span></button>
@@ -379,6 +383,11 @@
   <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> Supabase 연동</button>
   <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:'IBM Plex Mono',monospace;line-height:1.5"></div>
   <div class="sidebar-stats" id="sidebarStats"></div>
+  <div style="margin-top:auto;padding:12px 16px 16px;border-top:1px solid var(--border)">
+    <button class="sidebar-btn" onclick="openHelpModal()" style="font-size:11px;color:var(--muted)"><span>❓</span> 사용 가이드</button>
+    <button class="sidebar-btn" onclick="openLicenseModal()" style="font-size:11px;color:var(--muted)"><span>📄</span> 라이선스 정보</button>
+    <div style="font-size:10px;color:var(--border);text-align:center;margin-top:8px;font-family:'IBM Plex Mono',monospace">RelaCRM v1.0</div>
+  </div>
 </aside>
 
 <main class="main">
@@ -2308,7 +2317,15 @@ function delAct(id, fromDetail=false){
 }
 
 // ── UTILS ─────────────────────────────────────────────────
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function closeModal(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('open');
+  if(id==='onboardingModal'){
+    const chk = document.getElementById('onboardingSkip');
+    if(chk && chk.checked) localStorage.setItem('crm_onboarding_skip','1');
+  }
+}
 document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }); });
 
 function renderStats(){
@@ -3341,6 +3358,174 @@ if(sbIsConnected()){
 } else {
   sbUpdateStatus('offline', '로컬 저장 모드 · 🗄 클릭해서 Supabase 연동');
 }
+
+function openHelpModal(){
+  closeModal('onboardingModal');
+  document.getElementById('helpModal').classList.add('open');
+}
+function openLicenseModal(){
+  document.getElementById('licenseModal').classList.add('open');
+}
+
+// 온보딩: 첫 실행 또는 미스킵 시 표시
+(function(){
+  const skip = localStorage.getItem('crm_onboarding_skip');
+  if(!skip){
+    document.getElementById('onboardingModal').classList.add('open');
+  }
+})();
 </script>
+<!-- ── 사용 가이드 모달 ─────────────────────────────── -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal" style="width:680px;max-height:88vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('helpModal')">✕</button>
+    <div class="modal-title">❓ 사용 가이드</div>
+    <div style="padding:0 2px">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:15px;margin-bottom:6px">🗂 파일 가져오기</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">
+            명함 사진, PDF 문서를 업로드하면<br>
+            AI가 자동으로 연락처를 추출합니다.<br>
+            여러 파일을 한 번에 선택할 수 있습니다.<br>
+            <span style="color:var(--accent)">→ Claude API 키 필요</span>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:15px;margin-bottom:6px">📊 CSV 가져오기</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">
+            Outlook, Gmail 주소록을 CSV로 내보낸 후<br>
+            파일 가져오기에서 CSV를 선택하면<br>
+            대용량도 자동으로 처리됩니다.<br>
+            <span style="color:var(--accent3)">→ API 키 불필요, 파일 크기 무제한</span>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:15px;margin-bottom:6px">🗄 클라우드 동기화</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">
+            Supabase와 연동하면 여러 기기에서<br>
+            데이터를 공유할 수 있습니다.<br>
+            <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a>에서 무료 계정 생성 후<br>
+            Project URL과 API Key를 입력하세요.
+          </div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div style="font-size:15px;margin-bottom:6px">💾 데이터 저장</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9">
+            Supabase 미연동 시 브라우저 로컬에<br>
+            자동 저장됩니다. 브라우저 데이터를<br>
+            지우면 삭제되므로 Supabase 연동을<br>
+            권장합니다.
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Claude API 키 발급 방법</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:2">
+        1. <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> 접속 후 가입<br>
+        2. 우측 상단 → API Keys 메뉴 클릭<br>
+        3. Create Key 버튼 클릭 → 키 복사<br>
+        4. RelaCRM → 파일 가져오기 → 🔑 API 키 입력란에 붙여넣기<br>
+        <span style="color:var(--accent2)">⚠ API 키는 본인만 사용하세요. 타인에게 공유하지 마세요.</span>
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px">Supabase 연동 방법</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:2">
+        1. <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a> 접속 → 무료 가입 → 새 프로젝트 생성<br>
+        2. SQL Editor에서 아래 3개 테이블 생성 (좌측 🗄 버튼 → SQL 복사 버튼 사용)<br>
+        3. Settings → API → Project URL과 anon public Key 복사<br>
+        4. RelaCRM → 🗄 Supabase 연동 메뉴에 입력
+      </div>
+
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="closeModal('helpModal')">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 라이선스 모달 ─────────────────────────────────── -->
+<div class="modal-overlay" id="licenseModal">
+  <div class="modal" style="width:560px">
+    <button class="modal-close" onclick="closeModal('licenseModal')">✕</button>
+    <div class="modal-title">📄 라이선스 정보</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;font-size:12px;line-height:2;color:var(--muted)">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px">RelaCRM v1.0</div>
+
+      <div style="color:var(--text);font-weight:600;margin-bottom:4px">✅ 허용</div>
+      <div style="margin-bottom:12px">
+        • 개인 및 상업적 목적으로 자유롭게 사용<br>
+        • 데이터 수정, 활동 유형 커스터마이징<br>
+        • 자체 서버/Supabase에 연동하여 사용<br>
+        • 팀 내 공유 및 업무 활용
+      </div>
+
+      <div style="color:var(--accent2);font-weight:600;margin-bottom:4px">❌ 금지</div>
+      <div style="margin-bottom:12px">
+        • 이 소프트웨어 자체를 재판매·재배포<br>
+        • 소스코드에서 라이선스 고지 제거<br>
+        • 역설계 후 별도 제품으로 출시
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px;font-size:11px;color:var(--border)">
+        본 소프트웨어는 현재 상태("AS IS")로 제공됩니다.<br>
+        데이터 손실에 대한 책임은 사용자에게 있으며,<br>
+        Supabase 연동 또는 주기적 백업을 권장합니다.<br><br>
+        © 2025 RelaCRM. All rights reserved.
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="closeModal('licenseModal')">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 온보딩 모달 (첫 실행시) ───────────────────────── -->
+<div class="modal-overlay" id="onboardingModal">
+  <div class="modal" style="width:580px;text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">▸</div>
+    <div style="font-size:22px;font-weight:700;margin-bottom:4px">Rela<span style="color:var(--muted);font-weight:400">CRM</span>에 오신 것을 환영합니다</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:24px">스마트 고객관리 시스템 · v1.0</div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;text-align:left">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:22px;margin-bottom:8px">🗂</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">AI 명함 분석</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">명함 사진·PDF를 AI가 자동으로 연락처로 추출합니다</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:22px;margin-bottom:8px">📊</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">대용량 CSV</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Outlook·Gmail 주소록을 크기 제한 없이 가져옵니다</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:22px;margin-bottom:8px">🗄</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">클라우드 동기화</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Supabase 연동으로 여러 기기에서 데이터를 공유합니다</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(79,124,255,0.08);border:1px solid rgba(79,124,255,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.9;text-align:left;margin-bottom:20px">
+      <span style="color:var(--accent);font-weight:600">시작 전 준비사항</span><br>
+      • <strong style="color:var(--text)">AI 파일 분석</strong>을 사용하려면 Claude API 키가 필요합니다
+        (<a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a>에서 무료 발급)<br>
+      • <strong style="color:var(--text)">CSV 가져오기</strong>는 API 키 없이도 바로 사용 가능합니다<br>
+      • <strong style="color:var(--text)">데이터 영구 보존</strong>을 원하면 Supabase 연동을 권장합니다
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-outline" onclick="openHelpModal();closeModal('onboardingModal')">❓ 자세한 가이드 보기</button>
+      <button class="btn btn-primary" onclick="closeModal('onboardingModal')" style="padding:10px 32px">시작하기 →</button>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:11px;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="onboardingSkip" style="accent-color:var(--accent);vertical-align:middle;margin-right:4px">
+        다시 보지 않기
+      </label>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
