@@ -509,7 +509,7 @@
   <div class="topbar" id="mainTopbar">
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="이름, 회사 검색..." data-i18n-placeholder="이름, 회사 검색..." oninput="renderContacts()">
+      <input type="text" id="searchInput" placeholder="이름, 회사 검색..." data-i18n-placeholder="이름, 회사 검색..." oninput="_debouncedRender()">
     </div>
     <div class="view-toggle">
       <button class="toggle-btn active" id="vBtn-group" title="회사별 카드" onclick="setViewMode('group')">⊞</button>
@@ -2088,6 +2088,7 @@ function sbRowToActivity(r){
 
 // ── 로컬 저장 ────────────────────────────────────────────
 function localPersist(){
+  _idxDirty = true; // 인덱스 무효화
   safeStorage.setItem('crm_contacts',  JSON.stringify(contacts));
   safeStorage.setItem('crm_activities',JSON.stringify(activities));
   safeStorage.setItem('crm_companies', JSON.stringify(companies));
@@ -2275,15 +2276,88 @@ function refreshTeamFilterBars(){
 }
 
 // ── HELPERS ─────────────────────────────────────────────
+// ── 인덱스 캐시 (O(N²) → O(1) 조회) ─────────────────────
+// contacts/activities 변경 시 rebuildIndex() 호출
+let _idxCoToIds   = {};  // company → Set<contactId>
+let _idxIdToActs  = {};  // contactId → activity[]
+let _idxCoToActs  = {};  // company → activity[] (정렬됨)
+let _idxDirty     = true;
+
+function rebuildIndex(){
+  _idxCoToIds  = {};
+  _idxIdToActs = {};
+  _idxCoToActs = {};
+
+  // contacts 인덱싱
+  for(const c of contacts){
+    const co = (c.company||'').trim();
+    if(co){ (_idxCoToIds[co] = _idxCoToIds[co]||new Set()).add(c.id); }
+    _idxIdToActs[c.id] = [];
+  }
+
+  // activities 인덱싱 + 정렬
+  const sorted = [...activities].sort((a,b)=>b.date.localeCompare(a.date));
+  for(const a of sorted){
+    if(_idxIdToActs[a.contactId]) _idxIdToActs[a.contactId].push(a);
+  }
+
+  // 회사별 활동 캐시
+  for(const co of Object.keys(_idxCoToIds)){
+    const ids = _idxCoToIds[co];
+    _idxCoToActs[co] = sorted.filter(a=>ids.has(a.contactId));
+  }
+  _idxDirty = false;
+}
+
+function _ensureIndex(){
+  if(_idxDirty) rebuildIndex();
+}
+
 function coActivities(coName){
-  const ids = contacts.filter(c=>(c.company||'').trim()===coName).map(c=>c.id);
-  return activities.filter(a=>ids.includes(a.contactId)).sort((a,b)=>b.date.localeCompare(a.date));
+  _ensureIndex();
+  return _idxCoToActs[coName] || [];
+}
+
+function contactActivities(contactId){
+  _ensureIndex();
+  return _idxIdToActs[contactId] || [];
 }
 function contactActivities(cid){ return activities.filter(a=>a.contactId===cid).sort((a,b)=>b.date.localeCompare(a.date)); }
 
 // ── RENDER CONTACTS ─────────────────────────────────────
+// ── 가상 스크롤 ───────────────────────────────────────────
+let _vsOffset   = 0;   // 현재 렌더된 회사 수
+let _vsObserver = null;
+
+function _vsObserve(){
+  if(_vsObserver) _vsObserver.disconnect();
+  const sentinel = document.getElementById('_vssentinel') ||
+                   document.getElementById('_vssentinel'.replace('ss','s'));
+  const el = document.getElementById('_vssentinel') || document.querySelector('#_vssentinel');
+  const target = document.getElementById('_vssentinel');
+  if(!target) return;
+  _vsObserver = new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting){
+      _vsOffset += 20;
+      renderContacts();
+    }
+  }, { threshold: 0.1 });
+  _vsObserver.observe(target);
+}
+
+// ── 검색 디바운싱 (200ms) ─────────────────────────────────
+let _renderTimer = null;
+function _debouncedRender(){
+  clearTimeout(_renderTimer);
+  _renderTimer = setTimeout(renderContacts, 200);
+}
+
 function renderContacts(){
-  const q = document.getElementById('searchInput').value.toLowerCase();
+  // 검색어/필터 변경 감지 → 오프셋 리셋
+  const _newQ = (document.getElementById('searchInput')||{}).value||'';
+  if(typeof _lastRenderQ !== 'undefined' && _lastRenderQ !== _newQ) _vsOffset = 0;
+  _lastRenderQ = _newQ;
+  const q = _newQ.toLowerCase();
   let list = contacts.filter(c=>{
     const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase();
     return s.includes(q);
@@ -2307,12 +2381,20 @@ function renderGroupView(list){
   let html='';
   let _coIdx=0;
 
-  for(const co of named){
+  // 가상 스크롤: 처음엔 첫 CHUNK개만 렌더, 나머지는 스크롤 시 추가
+  const VSCROLL_CHUNK = 20;
+  const _namedToRender = named.slice(0, _vsOffset + VSCROLL_CHUNK);
+  const _hasMore = named.length > _namedToRender.length;
+
+  for(const co of _namedToRender){
     const _cid='co'+(_coIdx++);
     const members = groups[co];
     const ci = companies[co]||{};
     const coActs = coActivities(co);
-    const types = actTypes.map(t=>t.id).filter(id=>coActs.some(a=>a.type===id));
+    // type별 카운트 미리 집계 (루프 내 재filter 제거)
+    const typeCount = {};
+    for(const a of coActs) typeCount[a.type] = (typeCount[a.type]||0)+1;
+    const types = actTypes.map(t=>t.id).filter(id=>typeCount[id]>0);
     const isExp = expanded.has(co);
     const col = ac(co);
     const preview = coActs.slice(0,5);
@@ -2329,7 +2411,7 @@ function renderGroupView(list){
             ${coActs.length?`<span>📋 ${coActs.length}${i18n('건')}</span>`:''}
           </div>
         </div>
-        <div class="company-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${coActs.filter(a=>a.type===t).length}</span>`).join('')}</div>
+        <div class="company-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${typeCount[t]||0}</span>`).join('')}</div>
         <span class="company-toggle">▾</span>
       </div>
       <div class="company-body">
@@ -2439,13 +2521,15 @@ function renderGroupView(list){
   }
 
   if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>${i18n('연락처가 없습니다')}</p></div>`;
+  if(_hasMore) html += `<div id="_vssentinel" style="height:1px;margin-bottom:40px"></div>`;
   document.getElementById('mainGrid').innerHTML=html;
+  if(_hasMore) _vsObserve();
 
-  // 회사별 활동 필터 초기화
-  named.forEach(co=>{
+  // 회사별 활동 필터 초기화 (인덱스 캐시 직접 사용, coActivities 재호출 없음)
+  _namedToRender.forEach(co=>{
     const filterBar = document.getElementById('coActsFilter-'+CSS.escape(co));
     if(!filterBar) return;
-    const allActs = coActivities(co);
+    const allActs = coActivities(co); // 이미 캐시됨 → O(1)
     if(!allActs.length) return;
     filterBar.innerHTML =
       `<button class="filter-chip active" data-val="all" onclick="setCoActFilter('${esc(co)}',this,'all')">${i18n('전체')}</button>`
@@ -4233,6 +4317,7 @@ async function sbDiagnose(){
 // ── INIT ──────────────────────────────────────────────────
 function _crmInit(){
   try {
+    rebuildIndex(); // 인덱스 최초 빌드
     injectTypeStyles();
     refreshTypeSelect();
     refreshFilterBar();
