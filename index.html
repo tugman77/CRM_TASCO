@@ -587,7 +587,7 @@
     <h1 style="font-size:20px;letter-spacing:-0.5px">▸ Rela<span style="color:var(--text);font-weight:400">CRM</span></h1>
     <span><span data-i18n="스마트 고객관리 시스템">스마트 고객관리 시스템</span></span>
   </div>
-  <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> 연락처 <span class="today-badge" id="todayContacts" style="display:none"></span></button>
+  <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> <span data-i18n="연락처">연락처</span> <span class="today-badge" id="todayContacts" style="display:none"></span></button>
   <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> <span data-i18n="전체 활동">전체 활동</span> <span class="today-badge" id="todayActivities" style="display:none"></span></button>
   <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> <span data-i18n="활동 유형 관리">활동 유형 관리</span></button>
   <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> <span data-i18n="Supabase 연동">Supabase 연동</span></button>
@@ -603,7 +603,7 @@
     </div>
     <!-- 로그인 사용자 표시 -->
     <div class="login-user-bar" id="loginUserBar" style="display:none"></div>
-    <button class="sidebar-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;font-size:12px;color:var(--accent)"><span>👥</span> 사용자 관리</button>
+    <button class="sidebar-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;font-size:12px;color:var(--accent)"><span>👥</span> <span data-i18n="사용자 관리">사용자 관리</span></button>
     <div style="font-size:10px;color:var(--border);text-align:center;margin-top:8px;font-family:IBM Plex Mono,monospace">RelaCRM v1.0</div>
     <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
       <select id="langSelect" onchange="setLang(this.value)"
@@ -686,7 +686,7 @@
   </button>
   <button class="mobile-tab" id="mTabUser" onclick="_mobileUserMenu()">
     <span class="tab-icon" id="mTabUserIcon">👤</span>
-    <span id="mTabUserLabel">계정</span>
+    <span id="mTabUserLabel" data-i18n="계정">계정</span>
   </button>
 </nav>
 
@@ -1692,6 +1692,8 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PIN이 설정되었습니다',
     'PIN 잠금을 해제하시겠습니까?':'PIN 잠금을 해제하시겠습니까?\n데이터는 유지됩니다.',
     'PIN 잠금':'PIN 잠금',
+    '사용자 관리':'사용자 관리',
+    '계정':'계정',
     'AI 분석 중 안내':'Claude AI가 연락처 정보를 추출하고 있습니다',
     'PDF 결과 안내':'내용을 확인하고 필요하면 수정 후 저장하세요. 체크된 항목만 CRM에 추가됩니다.',
     'sk- 시작 오류':'⚠ sk- 로 시작해야 합니다',
@@ -1866,6 +1868,8 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PIN set successfully',
     'PIN 잠금을 해제하시겠습니까?':'Disable PIN lock?\nYour data will be kept.',
     'PIN 잠금':'PIN Lock',
+    '사용자 관리':'User Management',
+    '계정':'Account',
     'AI 분석 중 안내':'Claude AI is extracting contact info',
     'PDF 결과 안내':'Review extracted info and edit if needed. Only checked items will be added.',
     'sk- 시작 오류':'⚠ Key must start with sk-',
@@ -2040,6 +2044,8 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PINを設定しました',
     'PIN 잠금을 해제하시겠습니까?':'PINロックを解除しますか？',
     'PIN 잠금':'PINロック',
+    '사용자 관리':'ユーザー管理',
+    '계정':'アカウント',
     'AI 분석 중 안내':'Claude AIが連絡先情報を抽出しています',
     'PDF 결과 안내':'内容を確認し、必要なら編集後に保存してください。',
     'sk- 시작 오류':'⚠ sk- で始まる必要があります',
@@ -2215,6 +2221,8 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PIN码已设置',
     'PIN 잠금을 해제하시겠습니까?':'解除PIN锁定？数据将保留。',
     'PIN 잠금':'PIN锁定',
+    '사용자 관리':'用户管理',
+    '계정':'账户',
     'AI 분석 중 안내':'Claude AI正在提取联系人信息',
     'PDF 결과 안내':'请确认提取内容，如需修改后保存。只有勾选项才会添加。',
     'sk- 시작 오류':'⚠ 密钥必须以sk-开头',
