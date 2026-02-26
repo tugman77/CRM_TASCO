@@ -24,7 +24,7 @@
     --danger: #ef5350;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
 
   /* ── SIDEBAR (PC) ── */
   .sidebar {
@@ -80,7 +80,7 @@
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
     background: var(--surface); border-top: 1px solid var(--border);
     padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
   .mobile-tab {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -112,7 +112,50 @@
   .filter-bar + .filter-bar { padding-top: 8px; border-top: 1px solid var(--border); }
 
   /* ── 모바일 반응형 ── */
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 640px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 26px; position: relative; }
   @media (max-width: 768px) {
+  /* 사용자 관리 모달 모바일 */
+  .user-row {
+    grid-template-columns: 28px 1fr 60px 50px 34px;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  /* 로그인 카드 모바일 최적화 */
+  #loginOverlay {
+    align-items: flex-start;
+    padding: 20px 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .login-card {
+    width: calc(100% - 32px);
+    max-width: 100%;
+    margin: auto;
+    padding: 32px 24px;
+  }
+
+  /* 터치 타깃 최소화 방지 */
+  button, .sidebar-btn, .mobile-tab, .btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .mobile-tab {
+    min-height: 48px;
+  }
+  /* 모바일 스크롤 관성 */
+  .content, .modal, .detail-panel {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* iOS input 자동 줌 방지 (font-size 16px 미만 시 줌 발생) */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  /* 단, 특별히 작은 보조 input은 예외 */
+  .login-input { font-size: 16px !important; }
+
     body { flex-direction: column; }
     .sidebar { display: none !important; }
     .main { margin-left: 0 !important; padding-top: 52px; padding-bottom: 70px; }
@@ -215,10 +258,9 @@
   .ungrouped-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 
   /* Modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .modal-overlay { display: none; position: fixed; top:0;right:0;bottom:0;left:0; background: rgba(0,0,0,0.72); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 640px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 26px; position: relative; }
-  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+    .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
   .modal-close { position: absolute; top: 13px; right: 13px; background: var(--surface2); border: none; color: var(--text); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; }
   .modal-close:hover { background: var(--danger); }
   .form-section { margin-bottom: 18px; }
@@ -277,12 +319,12 @@
 
   /* Finance table */
   .fin-table { width:100%; border-collapse:collapse; font-size:13px; }
-  .fin-table th { text-align:center; padding:8px 6px; font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; border-bottom:1px solid var(--border); background:var(--surface2); white-space:nowrap; }
+  .fin-table th { text-align:center; padding:8px 6px; font-size:10px; color:var(--muted); font-family:IBM Plex Mono,monospace; text-transform:uppercase; border-bottom:1px solid var(--border); background:var(--surface2); white-space:nowrap; }
   .fin-table td { padding:5px 4px; border-bottom:1px solid var(--border); vertical-align:middle; }
   .fin-table tr:last-child td { border-bottom:none; }
-  .fin-input { width:100%; padding:5px 7px; background:var(--bg); border:1px solid var(--border); border-radius:5px; color:var(--text); font-size:12px; font-family:'IBM Plex Mono',monospace; outline:none; text-align:right; }
+  .fin-input { width:100%; padding:5px 7px; background:var(--bg); border:1px solid var(--border); border-radius:5px; color:var(--text); font-size:12px; font-family:IBM Plex Mono,monospace; outline:none; text-align:right; }
   .fin-input:focus { border-color:var(--accent); }
-  .fin-year { width:72px; padding:5px 7px; background:var(--bg); border:1px solid var(--border); border-radius:5px; color:var(--accent); font-size:12px; font-family:'IBM Plex Mono',monospace; outline:none; text-align:center; font-weight:600; }
+  .fin-year { width:72px; padding:5px 7px; background:var(--bg); border:1px solid var(--border); border-radius:5px; color:var(--accent); font-size:12px; font-family:IBM Plex Mono,monospace; outline:none; text-align:center; font-weight:600; }
   .fin-year:focus { border-color:var(--accent); }
   .fin-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:2px 6px; border-radius:4px; transition:all 0.1s; }
   .fin-del:hover { background:var(--danger); color:#fff; }
@@ -293,7 +335,7 @@
   .ceo-input:focus { border-color:var(--accent); }
   .ceo-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; transition:all 0.1s; width:32px; }
   .ceo-del:hover { background:var(--danger); color:#fff; }
-  .ceo-header { display:grid; grid-template-columns:100px 1fr 1fr 1fr 32px; gap:8px; margin-bottom:6px; font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; }
+  .ceo-header { display:grid; grid-template-columns:100px 1fr 1fr 1fr 32px; gap:8px; margin-bottom:6px; font-size:10px; color:var(--muted); font-family:IBM Plex Mono,monospace; text-transform:uppercase; }
 
   /* Finance summary in company card */
   .fin-summary { padding:0 18px; background:rgba(67,233,123,0.04); border-bottom:1px solid var(--border); display:flex; gap:0; flex-wrap:nowrap; font-size:12px; align-items:stretch; overflow:hidden; }
@@ -302,16 +344,16 @@
   .fin-summary-preview:hover ~ .fin-expand-btn, .fin-summary:hover .fin-expand-btn { opacity:1; }
   .fin-chip { display:flex; align-items:center; gap:4px; padding:0 10px; border-right:1px solid var(--border); white-space:nowrap; flex-shrink:0; }
   .fin-chip:first-child { padding-left:0; }
-  .fin-chip-label { font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
-  .fin-chip-value { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+  .fin-chip-label { font-size:10px; color:var(--muted); font-family:IBM Plex Mono,monospace; }
+  .fin-chip-value { font-size:12px; font-weight:600; font-family:IBM Plex Mono,monospace; }
   .fin-chip-value.pos { color:var(--accent3); }
   .fin-chip-value.neg { color:var(--accent2); }
   .fin-chip-value.neu { color:var(--text); }
-  .fin-expand-btn { padding:0 14px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:11px; font-family:'IBM Plex Mono',monospace; border-left:1px solid var(--border); white-space:nowrap; flex-shrink:0; transition:all 0.15s; }
+  .fin-expand-btn { padding:0 14px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:11px; font-family:IBM Plex Mono,monospace; border-left:1px solid var(--border); white-space:nowrap; flex-shrink:0; transition:all 0.15s; }
   .fin-expand-btn:hover { color:var(--accent3); background:rgba(67,233,123,0.08); }
   .fin-detail { display:none; padding:10px 18px; border-bottom:1px solid var(--border); background:rgba(67,233,123,0.02); }
   .fin-detail.open { display:block; }
-  .fin-table { width:100%; border-collapse:collapse; font-size:12px; font-family:'IBM Plex Mono',monospace; }
+  .fin-table { width:100%; border-collapse:collapse; font-size:12px; font-family:IBM Plex Mono,monospace; }
   .fin-table th { font-size:10px; color:var(--muted); font-weight:500; padding:4px 8px; text-align:right; border-bottom:1px solid var(--border); }
   .fin-table th:first-child { text-align:left; }
   .fin-table td { padding:5px 8px; text-align:right; border-bottom:1px solid rgba(45,50,80,0.5); }
@@ -327,7 +369,7 @@
   .ceo-row-item { display:flex; gap:10px; font-size:12px; padding:4px 0; border-bottom:1px solid rgba(45,50,80,0.4); align-items:center; }
   .ceo-row-item:last-child { border-bottom:none; }
   .ceo-row-name { font-weight:600; color:var(--text); min-width:80px; }
-  .ceo-row-period { color:var(--accent); font-family:'IBM Plex Mono',monospace; font-size:11px; }
+  .ceo-row-period { color:var(--accent); font-family:IBM Plex Mono,monospace; font-size:11px; }
   .ceo-row-memo { color:var(--muted); font-size:11px; flex:1; }
 
   /* PDF Import */
@@ -362,7 +404,7 @@
 
   /* ── PIN LOCK ─────────────────────────────────────────── */
   #pinOverlay {
-    position: fixed; inset: 0; z-index: 99000;
+    position: fixed; top:0;right:0;bottom:0;left:0; z-index: 99000;
     background: var(--bg);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -459,6 +501,74 @@
   .pin-toggle.on { background: var(--accent); }
   .pin-toggle.on::after { transform: translateX(16px); }
 
+
+  /* ── 로그인 화면 ───────────────────────────────────── */
+  #loginOverlay {
+    position: fixed; top:0;right:0;bottom:0;left:0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000;
+  }
+  #loginOverlay.hidden { display: none; }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 40px 36px; width: 360px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  .login-logo { font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .login-sub  { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono',monospace; margin-bottom: 28px; }
+  .login-field { margin-bottom: 14px; }
+  .login-field label { display:block; font-size:11px; color:var(--muted); font-family:IBM Plex Mono,monospace; margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px; }
+  .login-input {
+    width:100%; padding:11px 14px; background:var(--bg);
+    border:1px solid var(--border); border-radius:8px;
+    color:var(--text); font-size:14px; font-family:'Noto Sans KR',sans-serif;
+    outline:none; transition:border-color .2s;
+  }
+  .login-input:focus { border-color:var(--accent); }
+  .login-btn {
+    width:100%; padding:12px; background:var(--accent);
+    border:none; border-radius:10px; color:#fff;
+    font-size:15px; font-weight:600; font-family:'Noto Sans KR',sans-serif;
+    cursor:pointer; margin-top:8px; transition:opacity .15s;
+  }
+  .login-btn:hover { opacity:.85; }
+  .login-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .login-msg { font-size:12px; text-align:center; margin-top:12px; min-height:18px; color:var(--accent2); }
+  .login-msg.ok { color:var(--accent3); }
+  /* 사이드바 사용자 바 */
+  .login-user-bar {
+    display:flex; align-items:center; gap:8px;
+    padding:7px 12px; background:rgba(79,124,255,.1);
+    border-radius:8px; margin:0 10px 6px; font-size:12px;
+  }
+  .login-user-avatar {
+    width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:#fff; flex-shrink:0;
+  }
+  /* 사용자 관리 모달 */
+  .user-row {
+    display:grid; grid-template-columns:30px 1fr 72px 62px 38px;
+    gap:8px; align-items:center; padding:9px 0;
+    border-bottom:1px solid var(--border); font-size:13px;
+  }
+  .user-row:last-child { border-bottom:none; }
+  .user-av {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:#fff;
+  }
+  .role-badge { font-size:10px; padding:2px 7px; border-radius:10px; font-family:IBM Plex Mono,monospace; text-align:center; }
+  .role-badge.admin { background:rgba(79,124,255,.2); color:var(--accent); }
+  .role-badge.user  { background:rgba(121,134,203,.15); color:var(--muted); }
+  /* 활동 입력자 */
+  .tl-creator { font-size:10px; color:var(--muted); font-family:IBM Plex Mono,monospace; margin-top:3px; }
+
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
@@ -481,7 +591,7 @@
   <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> <span data-i18n="전체 활동">전체 활동</span> <span class="today-badge" id="todayActivities" style="display:none"></span></button>
   <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> <span data-i18n="활동 유형 관리">활동 유형 관리</span></button>
   <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> <span data-i18n="Supabase 연동">Supabase 연동</span></button>
-  <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:'IBM Plex Mono',monospace;line-height:1.5"></div>
+  <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:IBM Plex Mono,monospace;line-height:1.5"></div>
   <div style="margin-top:auto;padding:12px 16px 16px;border-top:1px solid var(--border)">
     <div class="sidebar-stats" id="sidebarStats"></div>
     <div style="border-top:1px solid var(--border);margin:8px 0 10px;opacity:.4"></div>
@@ -491,11 +601,14 @@
       <span>🔐 <span data-i18n="PIN 잠금">PIN 잠금</span></span>
       <button class="pin-toggle" id="pinToggleBtn" onclick="openPinSetup()" title="PIN 설정/변경"></button>
     </div>
-    <div style="font-size:10px;color:var(--border);text-align:center;margin-top:8px;font-family:'IBM Plex Mono',monospace">RelaCRM v1.0</div>
+    <!-- 로그인 사용자 표시 -->
+    <div class="login-user-bar" id="loginUserBar" style="display:none"></div>
+    <button class="sidebar-btn" id="userMgmtBtn" onclick="openUserMgmt()" style="display:none;font-size:12px;color:var(--accent)"><span>👥</span> 사용자 관리</button>
+    <div style="font-size:10px;color:var(--border);text-align:center;margin-top:8px;font-family:IBM Plex Mono,monospace">RelaCRM v1.0</div>
     <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
       <select id="langSelect" onchange="setLang(this.value)"
         style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);
-               font-size:11px;padding:5px 8px;border-radius:6px;cursor:pointer;outline:none;font-family:'IBM Plex Mono',monospace">
+               font-size:11px;padding:5px 8px;border-radius:6px;cursor:pointer;outline:none;font-family:IBM Plex Mono,monospace">
         <option value="ko">🇰🇷 한국어</option>
         <option value="en">🇺🇸 English</option>
         <option value="ja">🇯🇵 日本語</option>
@@ -570,6 +683,10 @@
   <button class="mobile-tab" id="mTabGs" onclick="openGsModal()">
     <span class="tab-icon" id="mTabGsIcon">🗄</span>
     <span data-i18n="Supabase 연동">연동설정</span>
+  </button>
+  <button class="mobile-tab" id="mTabUser" onclick="_mobileUserMenu()">
+    <span class="tab-icon" id="mTabUserIcon">👤</span>
+    <span id="mTabUserLabel">계정</span>
   </button>
 </nav>
 
@@ -759,8 +876,8 @@
 
     <!-- SQL 복사 버튼 -->
     <div style="margin-bottom:14px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'IBM Plex Mono',monospace">SQL Editor에 실행할 테이블 생성 코드</div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.7;max-height:120px;overflow-y:auto" id="sbSqlBlock">create table if not exists contacts (id text primary key, company text, dept text, position text, last text, first text, email text, office text, mobile text, extra text, address text, memo text, created_at text);
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:IBM Plex Mono,monospace">SQL Editor에 실행할 테이블 생성 코드</div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11px;font-family:IBM Plex Mono,monospace;color:var(--muted);line-height:1.7;max-height:120px;overflow-y:auto" id="sbSqlBlock">create table if not exists contacts (id text primary key, company text, dept text, position text, last text, first text, email text, office text, mobile text, extra text, address text, memo text, created_at text);
 create table if not exists activities (id text primary key, contact_id text, type text, date text, title text, content text, amount text, created_at text);
 create table if not exists companies (name text primary key, data text);
 create table if not exists types (id int primary key, data text);
@@ -771,9 +888,32 @@ alter table types enable row level security;
 create policy "allow all" on contacts for all using (true) with check (true);
 create policy "allow all" on activities for all using (true) with check (true);
 create policy "allow all" on companies for all using (true) with check (true);
-create policy "allow all" on types for all using (true) with check (true);</div>
+create policy "allow all" on types for all using (true) with check (true);
+-- 검색 성능 인덱스 (3만명 이상 권장)
+create index if not exists idx_contacts_company on contacts(company);
+create index if not exists idx_contacts_email on contacts(email);
+create index if not exists idx_activities_contact on activities(contact_id);
+create index if not exists idx_activities_date on activities(date desc);
+-- Realtime 활성화 (30명 동시접속)
+alter publication supabase_realtime add table contacts;
+alter publication supabase_realtime add table activities;
+alter publication supabase_realtime add table companies;
+-- 사용자 계정 테이블
+create table if not exists crm_users (id text primary key, name text unique not null, pw_hash text not null, role text default 'user', is_active boolean default true, last_login text, created_at text);
+alter table crm_users enable row level security;
+create policy "allow all" on crm_users for all using (true) with check (true);
+-- activities에 입력자 컬럼 추가
+alter table activities add column if not exists created_by text default '';</div>
       <button class="btn btn-outline btn-sm" style="margin-top:6px;width:100%" onclick="
-        navigator.clipboard.writeText(document.getElementById('sbSqlBlock').textContent);
+        var _sqlTxt=document.getElementById('sbSqlBlock').textContent;
+        if(navigator.clipboard&&window.isSecureContext){
+          navigator.clipboard.writeText(_sqlTxt);
+        } else {
+          var ta=document.createElement('textarea');
+          ta.value=_sqlTxt; ta.style.cssText='position:fixed;opacity:0';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); document.body.removeChild(ta);
+        }
         this.textContent=i18n('복사됨');
         setTimeout(()=>this.textContent=i18n('SQL 복사'),1500)
       " data-i18n="SQL 복사">📋 SQL 전체 복사</button>
@@ -784,13 +924,13 @@ create policy "allow all" on types for all using (true) with check (true);</div>
       <div class="form-group" style="margin:0">
         <label style="font-size:11px;color:var(--muted);margin-bottom:4px;display:block">Project URL</label>
         <input type="text" id="sbUrlInput" placeholder="https://xxxxxxxxxxx.supabase.co"
-          style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none">
+          style="width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:IBM Plex Mono,monospace;outline:none">
       </div>
       <div class="form-group" style="margin:0">
         <label style="font-size:11px;color:var(--muted);margin-bottom:4px;display:block">anon public key</label>
         <div style="position:relative">
           <input type="password" id="sbKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-            style="width:100%;padding:9px 38px 9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none">
+            style="width:100%;padding:9px 38px 9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:IBM Plex Mono,monospace;outline:none">
           <button onclick="const i=document.getElementById('sbKeyInput');i.type=i.type==='password'?'text':'password'"
             style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer">👁</button>
         </div>
@@ -799,8 +939,11 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 
     <!-- 현재 연동 상태 -->
     <div id="sbCurrentStatus" style="display:none;background:rgba(67,233,123,0.08);border:1px solid rgba(67,233,123,0.25);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:12px">
-      <div style="color:var(--accent3);font-weight:600;margin-bottom:4px">✅ 현재 연동됨</div>
-      <div id="sbCurrentUrl" style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;word-break:break-all"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="color:var(--accent3);font-weight:600">✅ 현재 연동됨</span>
+        <span class="sb-rt-badge" style="font-size:11px;color:var(--muted)">○ 실시간 대기</span>
+      </div>
+      <div id="sbCurrentUrl" style="color:var(--muted);font-family:IBM Plex Mono,monospace;font-size:10px;word-break:break-all"></div>
       <div id="sbLastSyncInfo" style="color:var(--muted);font-size:11px;margin-top:4px"></div>
     </div>
 
@@ -932,7 +1075,7 @@ create policy "allow all" on types for all using (true) with check (true);</div>
         </p>
         <div class="form-row single">
           <div class="form-group">
-            <label>Anthropic API Key <span id="keyPreview" style="font-size:10px;color:var(--accent3);font-family:'IBM Plex Mono',monospace"></span></label>
+            <label>Anthropic API Key <span id="keyPreview" style="font-size:10px;color:var(--accent3);font-family:IBM Plex Mono,monospace"></span></label>
             <div style="position:relative">
               <input type="password" id="pdfApiKey" placeholder="sk-ant-api03-..."
                 style="padding-right:44px"
@@ -1058,6 +1201,338 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 
 
 <script>
+
+// ══════════════════════════════════════════════════════════
+// 사용자 인증 시스템 (개인 계정 로그인)
+// ══════════════════════════════════════════════════════════
+
+var _curUser = null; // { id, name, role }
+
+function _pwHash(pw){
+  var salt='RelaCRM_AUTH_v2';
+  var str=salt+pw+salt.split('').reverse().join('');
+  var h=5381;
+  for(var i=0;i<str.length;i++){h=((h<<5)+h)^str.charCodeAt(i);h=h>>>0;}
+  return 'pw_'+('00000000'+h.toString(16)).slice(-8);
+}
+
+function _userColor(name){
+  var c=['#4f7cff','#ff6b6b','#43e97b','#f7971e','#a855f7','#06b6d4'];
+  var h=0;for(var ch of(name||''))h=(h*31+ch.charCodeAt(0))%c.length;
+  return c[h];
+}
+
+async function _doLogin(){
+  var name=(document.getElementById('loginName').value||'').trim();
+  var pw=(document.getElementById('loginPw').value||'');
+  var msg=document.getElementById('loginMsg');
+  var btn=document.getElementById('loginBtn');
+  if(!name){msg.textContent='이름을 입력하세요.';return;}
+  if(!pw){msg.textContent='비밀번호를 입력하세요.';return;}
+  if(!sbIsConnected()){msg.textContent='먼저 Supabase를 연동해주세요.';return;}
+  btn.disabled=true;msg.textContent='확인 중...';msg.className='login-msg';
+  try{
+    var enc=encodeURIComponent(name);
+    var res=await fetch(
+      sbUrl+'/rest/v1/crm_users?select=*&name=eq.'+enc+'&is_active=eq.true&limit=1',
+      {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}}
+    );
+    if(!res.ok) throw new Error('서버 오류 ('+res.status+')');
+    var rows=await res.json();
+    if(!rows.length){msg.textContent='등록되지 않은 사용자입니다.';btn.disabled=false;return;}
+    if(rows[0].pw_hash!==_pwHash(pw)){msg.textContent='비밀번호가 틀렸습니다.';btn.disabled=false;return;}
+    _curUser={id:rows[0].id,name:rows[0].name,role:rows[0].role};
+    safeStorage.setItem('crm_session',JSON.stringify(_curUser));
+    fetch(sbUrl+'/rest/v1/crm_users?id=eq.'+rows[0].id,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
+      body:JSON.stringify({last_login:new Date().toISOString()})
+    }).catch(function(){});
+    msg.textContent='✓ 환영합니다, '+_curUser.name+'!';msg.className='login-msg ok';
+    setTimeout(function(){
+      document.getElementById('loginOverlay').classList.add('hidden');
+      _afterLogin();
+    },600);
+  }catch(e){msg.textContent='오류: '+e.message;btn.disabled=false;}
+}
+
+function _afterLogin(){
+  _updateUserBar();
+  _updateMobUserTab();
+  var mb=document.getElementById('userMgmtBtn');
+  if(mb) mb.style.display=(_curUser&&_curUser.role==='admin')?'':'none';
+  _crmInit();
+}
+
+function _logout(){
+  if(!confirm('로그아웃 하시겠습니까?')) return;
+  _sbStopRealtime();
+  _curUser=null;
+  safeStorage.removeItem('crm_session');
+  contacts=[];activities=[];companies={};_idxDirty=true;
+  var ov=document.getElementById('loginOverlay');
+  if(ov) ov.classList.remove('hidden');
+  document.getElementById('loginName').value='';
+  document.getElementById('loginPw').value='';
+  document.getElementById('loginMsg').textContent='';
+  document.getElementById('loginBtn').disabled=false;
+  var bar=document.getElementById('loginUserBar');
+  if(bar) bar.style.display='none';
+  var mb=document.getElementById('userMgmtBtn');
+  if(mb) mb.style.display='none';
+  _updateMobUserTab();
+}
+
+function _restoreSession(){
+  try{
+    var s=safeStorage.getItem('crm_session');
+    if(!s) return false;
+    var u=JSON.parse(s);
+    if(!u||!u.name||!sbIsConnected()) return false;
+    _curUser=u; return true;
+  }catch(e){return false;}
+}
+
+function _updateUserBar(){
+  var bar=document.getElementById('loginUserBar');
+  if(!bar||!_curUser) return;
+  var init=(_curUser.name||'?')[0];
+  var col=_userColor(_curUser.name);
+  bar.innerHTML=
+    '<div class="login-user-avatar" style="background:'+col+'">'+init+'</div>'+
+    '<div style="flex:1;min-width:0">'+
+      '<div style="font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+_curUser.name+'</div>'+
+      '<div style="font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace">'+(_curUser.role==='admin'?'👑 관리자':'사용자')+'</div>'+
+    '</div>'+
+    '<button onclick="_logout()" title="로그아웃" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;flex-shrink:0;padding:2px 4px">⏻</button>';
+  bar.style.display='flex';
+}
+
+async function openUserMgmt(){
+  if(!_curUser||_curUser.role!=='admin'){alert('관리자만 접근 가능합니다.');return;}
+  await _loadUserList();
+  ['newUserName','newUserPw'].forEach(function(id){document.getElementById(id).value='';});
+  ['userMgmtMsg','pwChangeCur','pwChangeNew','pwChangeMsg'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.value!==undefined?el.value='':el.textContent='';
+  });
+  document.getElementById('userMgmtModal').classList.add('open');
+}
+
+async function _loadUserList(){
+  var div=document.getElementById('userMgmtList');
+  div.innerHTML='<div style="padding:12px;color:var(--muted);font-size:12px;text-align:center">불러오는 중...</div>';
+  try{
+    var res=await fetch(sbUrl+'/rest/v1/crm_users?select=*&order=created_at.asc',
+      {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+    var users=res.ok?await res.json():[];
+    if(!users.length){div.innerHTML='<div style="padding:12px;color:var(--muted);font-size:12px">사용자가 없습니다.</div>';return;}
+    div.innerHTML='';
+    users.forEach(function(u){
+      var row=document.createElement('div');
+      row.className='user-row';
+      var col=_userColor(u.name);
+      var init=(u.name||'?')[0];
+      var isSelf=_curUser&&u.name===_curUser.name;
+      var last=u.last_login?new Date(u.last_login).toLocaleDateString('ko-KR'):'없음';
+      // 아바타
+      var av=document.createElement('div');
+      av.className='user-av';
+      av.style.background=col;
+      av.textContent=init;
+      // 이름+날짜
+      var info=document.createElement('div');
+      var nm=document.createElement('div');
+      nm.style.fontWeight='500';
+      nm.textContent=u.name;
+      if(isSelf){var badge=document.createElement('span');badge.style.cssText='font-size:10px;color:var(--accent)';badge.textContent=' (나)';nm.appendChild(badge);}
+      var dt=document.createElement('div');
+      dt.style.cssText='font-size:10px;color:var(--border)';
+      dt.textContent='최근: '+last;
+      info.appendChild(nm); info.appendChild(dt);
+      // 역할 배지
+      var rb=document.createElement('span');
+      rb.className='role-badge '+u.role;
+      rb.textContent=u.role==='admin'?'관리자':'사용자';
+      // 활성 상태
+      var st=document.createElement('span');
+      st.style.cssText='font-size:10px;color:'+(u.is_active?'var(--accent3)':'var(--accent2)');
+      st.textContent=u.is_active?'● 활성':'○ 비활성';
+      // 차단/복원 버튼
+      var btn=document.createElement(isSelf?'span':'button');
+      if(!isSelf){
+        btn.textContent=u.is_active?'차단':'복원';
+        btn.style.cssText='background:none;border:1px solid var(--border);border-radius:5px;padding:3px 7px;color:var(--muted);cursor:pointer;font-size:11px';
+        (function(uid,active){
+          btn.onclick=function(){_toggleUser(uid,active);};
+        })(u.id, u.is_active);
+      }
+      row.appendChild(av); row.appendChild(info); row.appendChild(rb); row.appendChild(st); row.appendChild(btn);
+      div.appendChild(row);
+    });
+  }catch(e){div.innerHTML='<div style="color:var(--accent2);padding:8px;font-size:12px">오류: '+e.message+'</div>';}
+}
+
+async function _addUser(){
+  var name=(document.getElementById('newUserName').value||'').trim();
+  var pw=(document.getElementById('newUserPw').value||'').trim();
+  var role=document.getElementById('newUserRole').value;
+  var msg=document.getElementById('userMgmtMsg');
+  if(!name){msg.textContent='이름을 입력하세요.';msg.style.color='var(--accent2)';return;}
+  if(pw.length<4){msg.textContent='비밀번호는 4자 이상이어야 합니다.';msg.style.color='var(--accent2)';return;}
+  msg.textContent='추가 중...';msg.style.color='var(--muted)';
+  try{
+    var res=await fetch(sbUrl+'/rest/v1/crm_users',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
+      body:JSON.stringify([{id:'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+        name:name,pw_hash:_pwHash(pw),role:role,is_active:true,created_at:new Date().toISOString()}])
+    });
+    if(!res.ok){var t=await res.text();throw new Error(t.slice(0,120));}
+    msg.textContent='✓ 추가되었습니다.';msg.style.color='var(--accent3)';
+    document.getElementById('newUserName').value='';
+    document.getElementById('newUserPw').value='';
+    await _loadUserList();
+  }catch(e){msg.textContent='오류: '+e.message;msg.style.color='var(--accent2)';}
+}
+
+async function _toggleUser(id,isActive){
+  try{
+    await fetch(sbUrl+'/rest/v1/crm_users?id=eq.'+id,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
+      body:JSON.stringify({is_active:!isActive})
+    });
+    await _loadUserList();
+  }catch(e){alert('오류: '+e.message);}
+}
+
+async function _changeMyPw(){
+  var cur=(document.getElementById('pwChangeCur').value||'');
+  var nw=(document.getElementById('pwChangeNew').value||'');
+  var msg=document.getElementById('pwChangeMsg');
+  if(!cur){msg.textContent='현재 비밀번호를 입력하세요.';msg.style.color='var(--accent2)';return;}
+  if(nw.length<4){msg.textContent='새 비밀번호는 4자 이상이어야 합니다.';msg.style.color='var(--accent2)';return;}
+  try{
+    var enc=encodeURIComponent(_curUser.name);
+    var res=await fetch(sbUrl+'/rest/v1/crm_users?name=eq.'+enc+'&pw_hash=eq.'+_pwHash(cur)+'&select=id',
+      {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+    var rows=await res.json();
+    if(!rows.length){msg.textContent='현재 비밀번호가 틀렸습니다.';msg.style.color='var(--accent2)';return;}
+    await fetch(sbUrl+'/rest/v1/crm_users?id=eq.'+_curUser.id,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
+      body:JSON.stringify({pw_hash:_pwHash(nw)})
+    });
+    msg.textContent='✓ 변경되었습니다.';msg.style.color='var(--accent3)';
+    document.getElementById('pwChangeCur').value='';
+    document.getElementById('pwChangeNew').value='';
+  }catch(e){msg.textContent='오류: '+e.message;msg.style.color='var(--accent2)';}
+}
+
+function _curUserName(){return _curUser?_curUser.name:'';}
+
+// ── 모바일 계정 탭 메뉴
+function _mobileUserMenu(){
+  if(!_curUser){
+    // 로그인 안 된 상태 → 로그인 화면
+    var ov=document.getElementById('loginOverlay');
+    if(ov) ov.classList.remove('hidden');
+    return;
+  }
+  // 로그인된 상태 → 옵션 시트
+  var opts=[
+    { label:'👑 사용자 관리', show:_curUser.role==='admin', fn:openUserMgmt },
+    { label:'🔑 비밀번호 변경', show:true, fn:function(){ openUserMgmt(); } },
+    { label:'⏻ 로그아웃', show:true, fn:_logout },
+  ].filter(function(o){return o.show;});
+
+  // 간단한 바텀시트 생성
+  var existing=document.getElementById('_mobUserSheet');
+  if(existing) existing.remove();
+  var sheet=document.createElement('div');
+  sheet.id='_mobUserSheet';
+  sheet.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:5000;'+
+    'background:var(--surface);border-radius:16px 16px 0 0;border-top:1px solid var(--border);'+
+    'padding:16px 0 calc(16px + env(safe-area-inset-bottom));'+
+    'animation:slideUp .2s ease';
+
+  // 사용자 정보
+  var header=document.createElement('div');
+  header.style.cssText='padding:10px 20px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);margin-bottom:8px';
+  var col=_userColor(_curUser.name);
+  var init=(_curUser.name||'?')[0];
+  header.innerHTML=
+    '<div style="width:36px;height:36px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">'+init+'</div>'+
+    '<div><div style="font-weight:600">'+_curUser.name+'</div>'+
+    '<div style="font-size:11px;color:var(--muted)">'+(_curUser.role==='admin'?'👑 관리자':'사용자')+'</div></div>';
+  sheet.appendChild(header);
+
+  opts.forEach(function(o){
+    var btn=document.createElement('button');
+    btn.textContent=o.label;
+    btn.style.cssText='display:block;width:100%;padding:14px 20px;background:none;border:none;'+
+      'color:var(--text);font-size:15px;font-family:Noto Sans KR,sans-serif;text-align:left;cursor:pointer;';
+    if(o.label.includes('로그아웃')) btn.style.color='var(--accent2)';
+    btn.onclick=function(){ sheet.remove(); overlay.remove(); o.fn(); };
+    sheet.appendChild(btn);
+  });
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:4999;background:rgba(0,0,0,.5)';
+  overlay.onclick=function(){ sheet.remove(); overlay.remove(); };
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(sheet);
+}
+
+// ── 탭바 계정 아이콘 갱신
+function _updateMobUserTab(){
+  var icon=document.getElementById('mTabUserIcon');
+  var label=document.getElementById('mTabUserLabel');
+  if(!icon||!label) return;
+  if(_curUser){
+    var init=(_curUser.name||'?')[0];
+    var col=_userColor(_curUser.name);
+    icon.innerHTML='<span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:'+col+
+      ';align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">'+init+'</span>';
+    label.textContent=_curUser.name.length>4?_curUser.name.slice(0,4)+'…':_curUser.name;
+  } else {
+    icon.textContent='👤';
+    label.textContent='계정';
+  }
+}
+
+
+// ── 최초 관리자 계정 자동 생성 (crm_users 비어있을 때)
+async function _initFirstAdmin(){
+  if(!sbIsConnected()) return;
+  try{
+    var res=await fetch(sbUrl+'/rest/v1/crm_users?select=id&limit=1',
+      {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+    if(!res.ok) return;
+    var rows=await res.json();
+    if(rows.length>0) return; // 이미 사용자 있음
+    // 최초 관리자 생성: admin / admin1234
+    await fetch(sbUrl+'/rest/v1/crm_users',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
+      body:JSON.stringify([{id:'admin_init',name:'admin',pw_hash:_pwHash('admin1234'),
+        role:'admin',is_active:true,created_at:new Date().toISOString()}])
+    });
+    // 로그인 화면에 초기 계정 안내
+    var msg=document.getElementById('loginMsg');
+    if(msg){
+      msg.innerHTML='🎉 초기 관리자 계정이 생성되었습니다<br>'+
+        '<span style="font-family:monospace;font-size:11px;color:var(--accent)">ID: admin / PW: admin1234</span><br>'+
+        '<span style="font-size:10px;color:var(--accent2)">로그인 후 즉시 비밀번호를 변경하세요!</span>';
+      msg.className='login-msg ok';
+    }
+  }catch(e){ console.warn('_initFirstAdmin 오류:',e); }
+}
+
+
+
 // ── 전역 에러 핸들러 (cross-origin "Script error." 대신 실제 에러 표시) ──
 window.addEventListener('error', function(e){
   var msg = e.message || 'Unknown error';
@@ -1886,117 +2361,130 @@ function sbUpdateStatus(state, msg){
   if(!el) return;
   const icons  = {ok:'✅', syncing:'🔄', error:'⚠️', offline:'💾'};
   const colors = {ok:'var(--accent3)', syncing:'var(--accent4)', error:'var(--accent2)', offline:'var(--muted)'};
-  el.innerHTML = `<span style="color:${colors[state]}">${icons[state]} ${msg}</span>`;
+  // Realtime 배지 포함
+  const rtHtml = sbIsConnected()
+    ? ` <span class="sb-rt-badge" style="font-size:10px;margin-left:4px;color:var(--muted)">○</span>`
+    : '';
+  el.innerHTML = `<span style="color:${colors[state]}">${icons[state]} ${msg}</span>${rtHtml}`;
 }
 
-// ── 테이블 upsert 헬퍼 ───────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// SUPABASE — 페이지네이션 + 서버사이드 검색 + Realtime 동시접속
+// ══════════════════════════════════════════════════════════
+
+const SB_PAGE     = 200;   // contacts 페이지 크기
+const SB_ACT_PAGE = 500;   // activities 페이지 크기
+let   _sbRtChannel = null; // Realtime 채널
+
+// ── 헬퍼: 페이지네이션으로 전체 rows 가져오기
+async function sbFetchAll(table, params, pageSize){
+  const h = { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey,
+               'Range-Unit': 'items', 'Prefer': 'count=none' };
+  let all = [], offset = 0;
+  while(true){
+    const range = `${offset}-${offset+pageSize-1}`;
+    const url = `${sbUrl}/rest/v1/${table}?${params}&limit=${pageSize}&offset=${offset}`;
+    const res = await fetch(url, { headers: {...h, 'Range': range} });
+    if(!res.ok){ const t=await res.text(); throw new Error(`[${table}] fetch 실패 (${res.status}): ${t.slice(0,120)}`); }
+    const rows = await res.json();
+    if(!Array.isArray(rows)||rows.length===0) break;
+    all = all.concat(rows);
+    if(rows.length < pageSize) break;
+    offset += pageSize;
+    // 진행 표시
+    sbUpdateStatus('syncing', `${table} ${all.length.toLocaleString()}행 로딩 중...`);
+  }
+  return all;
+}
+
+// ── upsert (분할 전송)
 async function sbUpsert(table, rows){
   if(!rows.length) return;
-  const CHUNK = 500; // 안전하게 500으로 낮춤
-  for(let i=0; i<rows.length; i+=CHUNK){
-    const chunk = rows.slice(i, i+CHUNK);
+  const h = { 'Content-Type':'application/json', 'apikey':sbKey,
+               'Authorization':'Bearer '+sbKey, 'Prefer':'resolution=merge-duplicates,return=minimal' };
+  const CHUNK = 200;
+  for(let i=0;i<rows.length;i+=CHUNK){
     const res = await fetch(`${sbUrl}/rest/v1/${table}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': sbKey,
-        'Authorization': 'Bearer ' + sbKey,
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify(chunk)
+      method:'POST', headers:h,
+      body: JSON.stringify(rows.slice(i,i+CHUNK))
     });
-    if(!res.ok){
-      const err = await res.text();
-      throw new Error(`[${table}] 저장 실패 (${res.status}): ${err}`);
-    }
+    if(!res.ok){ const e=await res.text(); throw new Error(`[${table}] upsert 실패 (${res.status}): ${e.slice(0,120)}`); }
   }
 }
 
-// ── 테이블 전체 삭제 ──────────────────────────────────────
-async function sbDeleteAll(table){
-  // id 컬럼이 text인 경우: neq.(빈문자열)로 전체 삭제
-  const res = await fetch(`${sbUrl}/rest/v1/${table}?id=neq.`, {
-    method: 'DELETE',
-    headers: {
-      'apikey': sbKey,
-      'Authorization': 'Bearer ' + sbKey,
-      'Prefer': 'return=minimal'
-    }
+// ── 개별 row upsert (단건 저장)
+async function sbUpsertOne(table, row){
+  const h = { 'Content-Type':'application/json', 'apikey':sbKey,
+               'Authorization':'Bearer '+sbKey, 'Prefer':'resolution=merge-duplicates,return=minimal' };
+  const res = await fetch(`${sbUrl}/rest/v1/${table}`, {
+    method:'POST', headers:h, body: JSON.stringify([row])
   });
-  // 204 또는 200이면 성공, 404는 테이블 비어있음(무시)
-  if(!res.ok && res.status !== 404){
-    const txt = await res.text();
-    console.warn(`[${table}] 삭제 경고 (${res.status}):`, txt);
-  }
+  if(!res.ok){ const e=await res.text(); throw new Error(`[${table}] upsert 실패 (${res.status}): ${e.slice(0,120)}`); }
 }
 
-// ── 전체 불러오기 ────────────────────────────────────────
+// ── 삭제
+async function sbDeleteById(table, id){
+  const h = { 'apikey':sbKey, 'Authorization':'Bearer '+sbKey, 'Prefer':'return=minimal' };
+  const res = await fetch(`${sbUrl}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
+    method:'DELETE', headers:h
+  });
+  if(!res.ok && res.status!==404){ const t=await res.text(); console.warn(`[${table}] delete 경고 (${res.status}):`,t.slice(0,80)); }
+}
+
+async function sbDeleteAll(table){
+  const h = { 'apikey':sbKey, 'Authorization':'Bearer '+sbKey, 'Prefer':'return=minimal' };
+  const res = await fetch(`${sbUrl}/rest/v1/${table}?id=neq.`, { method:'DELETE', headers:h });
+  if(!res.ok && res.status!==404){ const t=await res.text(); console.warn(`[${table}] 삭제 경고 (${res.status}):`,t.slice(0,80)); }
+}
+
+// ── 전체 불러오기 (초기 로드 — 페이지네이션)
 async function sbLoad(){
   if(!sbIsConnected()) return;
   sbUpdateStatus('syncing', i18n('불러오는 중...'));
   try {
-    // 연락처와 활동 가져오기 (순차적으로 — 오류 위치 파악 쉽게)
-    const rC = await fetch(
-      `${sbUrl}/rest/v1/contacts?select=*&order=created_at.asc&limit=100000`,
-      { headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey } }
-    );
-    if(!rC.ok){
-      const txt = await rC.text();
-      throw new Error(`연락처 불러오기 실패 (${rC.status}): ${txt}`);
-    }
-    const dbContacts = await rC.json();
+    // contacts 전체 페이지네이션
+    const dbContacts = await sbFetchAll('contacts', 'select=*&order=created_at.asc', SB_PAGE);
 
-    const rA = await fetch(
-      `${sbUrl}/rest/v1/activities?select=*&order=date.desc&limit=2000000`,
-      { headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey } }
-    );
-    if(!rA.ok){
-      const txt = await rA.text();
-      throw new Error(`활동 불러오기 실패 (${rA.status}): ${txt}`);
-    }
-    const dbActivities = await rA.json();
+    // activities 전체 페이지네이션
+    const dbActivities = await sbFetchAll('activities', 'select=*&order=date.desc', SB_ACT_PAGE);
 
-    const rCo = await fetch(
-      `${sbUrl}/rest/v1/companies?select=*&limit=50000`,
-      { headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey } }
-    );
+    // companies + types (작은 테이블 — 단순 fetch)
+    const [rCo, rT] = await Promise.all([
+      fetch(`${sbUrl}/rest/v1/companies?select=*&limit=10000`, { headers:{ 'apikey':sbKey,'Authorization':'Bearer '+sbKey } }),
+      fetch(`${sbUrl}/rest/v1/types?select=*&limit=100`,        { headers:{ 'apikey':sbKey,'Authorization':'Bearer '+sbKey } }),
+    ]);
     const dbCompanies = rCo.ok ? await rCo.json() : [];
+    const dbTypes     = rT.ok  ? await rT.json()  : [];
 
-    const rT = await fetch(
-      `${sbUrl}/rest/v1/types?select=*&limit=100`,
-      { headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey } }
-    );
-    const dbTypes = rT.ok ? await rT.json() : [];
+    console.log(`[sbLoad] contacts:${dbContacts.length} activities:${dbActivities.length}`);
 
-    console.log(`[sbLoad] contacts:${dbContacts.length} activities:${dbActivities.length} companies:${dbCompanies.length}`);
+    contacts   = dbContacts.map(sbRowToContact);
+    activities = dbActivities.map(sbRowToActivity);
 
-    // DB → CRM 형식 변환 (빈 배열이어도 덮어씀 — 다른 기기 삭제 반영)
-    contacts   = Array.isArray(dbContacts)   ? dbContacts.map(sbRowToContact)   : contacts;
-    activities = Array.isArray(dbActivities) ? dbActivities.map(sbRowToActivity): activities;
-
-    if(Array.isArray(dbCompanies) && dbCompanies.length){
+    if(Array.isArray(dbCompanies)&&dbCompanies.length){
       companies = {};
-      dbCompanies.forEach(r=>{
-        try{ companies[r.name] = JSON.parse(r.data||'{}'); }catch(e){}
-      });
+      dbCompanies.forEach(r=>{ try{ companies[r.name]=JSON.parse(r.data||'{}'); }catch(e){} });
     }
-
-    if(Array.isArray(dbTypes) && dbTypes.length){
+    if(Array.isArray(dbTypes)&&dbTypes.length){
       try{
-        const parsed = JSON.parse(dbTypes[0].data);
-        if(Array.isArray(parsed) && parsed.length){
-          actTypes = parsed;
-          safeStorage.setItem('crm_types', JSON.stringify(actTypes));
+        const parsed=JSON.parse(dbTypes[0].data);
+        if(Array.isArray(parsed)&&parsed.length){
+          actTypes=parsed;
+          safeStorage.setItem('crm_types',JSON.stringify(actTypes));
           rebuildTypeMaps(); injectTypeStyles(); refreshTypeSelect(); refreshFilterBar();
         }
-      }catch(e){ console.warn('[sbLoad] types 파싱 오류:', e); }
+      }catch(e){ console.warn('[sbLoad] types 파싱 오류:',e); }
     }
 
+    _idxDirty = true;
     localPersist();
     sbLastSync = new Date().toLocaleString('ko-KR');
     safeStorage.setItem('crm_sb_last_sync', sbLastSync);
-    sbUpdateStatus('ok', i18n('동기화 완료') + sbLastSync);
+    sbUpdateStatus('ok', `✓ ${contacts.length.toLocaleString()}명 · ${activities.length.toLocaleString()}건 · ${sbLastSync}`);
     renderStats(); renderContacts(); refreshTeamFilterBars();
+
+    // Realtime 구독 시작 (30명 동시접속 지원)
+    _sbStartRealtime();
 
   } catch(err){
     console.error('[sbLoad] 오류:', err);
@@ -2004,54 +2492,260 @@ async function sbLoad(){
   }
 }
 
-// ── 전체 저장 ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// SMART SAVE — 변경분만 저장 (전체 삭제→재삽입 폐기)
+// ══════════════════════════════════════════════════════════
+
+// 변경 추적용 Set
+let _dirtyContacts   = new Set(); // 수정/추가된 contact id
+let _dirtyActivities = new Set(); // 수정/추가된 activity id
+let _delContacts     = new Set(); // 삭제된 contact id
+let _delActivities   = new Set(); // 삭제된 activity id
+
+function markContactDirty(id)   { _dirtyContacts.add(id); }
+function markActivityDirty(id)  { _dirtyActivities.add(id); }
+function markContactDeleted(id) { _delContacts.add(id);   _dirtyContacts.delete(id); }
+function markActivityDeleted(id){ _delActivities.add(id); _dirtyActivities.delete(id); }
+
 async function sbSave(){
   if(!sbIsConnected()){ localPersist(); return; }
-  if(sbSyncing){ sbPendingSave = true; return; }
-  sbSyncing = true;
+  if(sbSyncing){ sbPendingSave=true; return; }
+  sbSyncing=true;
   sbUpdateStatus('syncing', i18n('저장 중...'));
   localPersist();
 
   try {
-    // contacts: 전체 삭제 후 재삽입 (변경/삭제 완벽 반영)
-    await sbDeleteAll('contacts');
-    if(contacts.length) await sbUpsert('contacts', contacts.map(contactToSbRow));
+    // ① 삭제
+    for(const id of _delContacts)   await sbDeleteById('contacts',   id);
+    for(const id of _delActivities) await sbDeleteById('activities', id);
 
-    // activities: 전체 삭제 후 재삽입
-    await sbDeleteAll('activities');
-    if(activities.length) await sbUpsert('activities', activities.map(activityToSbRow));
+    // ② 변경/추가 upsert
+    const cRows = [..._dirtyContacts].map(id=>contacts.find(c=>c.id===id)).filter(Boolean).map(contactToSbRow);
+    const aRows = [..._dirtyActivities].map(id=>activities.find(a=>a.id===id)).filter(Boolean).map(activityToSbRow);
+    if(cRows.length) await sbUpsert('contacts',   cRows);
+    if(aRows.length) await sbUpsert('activities', aRows);
 
-    // companies
+    // ③ companies (크기 작음 — 전체 갱신 유지)
     const coRows = Object.entries(companies).map(([name,data])=>({name, data:JSON.stringify(data)}));
-    if(coRows.length){
-      await sbDeleteAll('companies');
-      await sbUpsert('companies', coRows);
-    }
+    if(coRows.length){ await sbDeleteAll('companies'); await sbUpsert('companies', coRows); }
 
-    // types (id=1 고정 행)
-    await fetch(`${sbUrl}/rest/v1/types?id=eq.1`, {
-      method:'DELETE',
-      headers:{ 'apikey':sbKey, 'Authorization':'Bearer '+sbKey, 'Prefer':'return=minimal' }
-    });
-    await fetch(`${sbUrl}/rest/v1/types`, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'apikey':sbKey, 'Authorization':'Bearer '+sbKey, 'Prefer':'return=minimal' },
-      body: JSON.stringify([{id:1, data:JSON.stringify(actTypes)}])
-    });
+    // ④ types
+    await fetch(`${sbUrl}/rest/v1/types?id=eq.1`,{method:'DELETE',headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'}});
+    await fetch(`${sbUrl}/rest/v1/types`,{method:'POST',headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},body:JSON.stringify([{id:1,data:JSON.stringify(actTypes)}])});
+
+    // ⑤ dirty 클리어
+    _dirtyContacts.clear(); _dirtyActivities.clear();
+    _delContacts.clear();   _delActivities.clear();
 
     sbLastSync = new Date().toLocaleString('ko-KR');
     safeStorage.setItem('crm_sb_last_sync', sbLastSync);
-    sbUpdateStatus('ok', i18n('저장됨') + ' · ' + sbLastSync);
-    console.log(`[sbSave] 완료 — contacts:${contacts.length} activities:${activities.length}`);
+    sbUpdateStatus('ok', `✓ ${sbLastSync}`);
+    console.log(`[sbSave] 완료 contacts:${cRows.length} acts:${aRows.length}`);
 
   } catch(err){
     console.error('[sbSave] 오류:', err);
-    sbUpdateStatus('error', i18n('저장 실패') + ': ' + err.message);
+    sbUpdateStatus('error', i18n('저장 실패')+': '+err.message);
   } finally {
-    sbSyncing = false;
+    sbSyncing=false;
     if(sbPendingSave){ sbPendingSave=false; sbSave(); }
   }
 }
+
+// ══════════════════════════════════════════════════════════
+// REALTIME — 30명 동시접속 (Supabase Realtime WebSocket)
+// ══════════════════════════════════════════════════════════
+
+let _sbRtWs       = null;
+let _sbRtReconnT  = null;
+let _sbRtEnabled  = false;
+let _sbRtHeartT   = null;
+
+function _sbStartRealtime(){
+  if(!sbIsConnected() || _sbRtEnabled) return;
+  _sbRtEnabled = true;
+  _sbRtConnect();
+}
+
+function _sbStopRealtime(){
+  _sbRtEnabled = false;
+  clearTimeout(_sbRtReconnT);
+  clearInterval(_sbRtHeartT);
+  if(_sbRtWs){ try{ _sbRtWs.close(); }catch(e){} _sbRtWs=null; }
+}
+
+function _sbRtConnect(){
+  if(!_sbRtEnabled || !sbIsConnected()) return;
+
+  // Supabase Realtime WebSocket URL
+  const wsUrl = sbUrl.replace('https://','wss://').replace('http://','ws://')
+                + '/realtime/v1/websocket?apikey=' + encodeURIComponent(sbKey) + '&vsn=1.0.0';
+  try {
+    _sbRtWs = new WebSocket(wsUrl);
+  } catch(e) {
+    console.warn('[Realtime] WebSocket 생성 실패:', e.message);
+    _sbRtScheduleReconnect();
+    return;
+  }
+
+  _sbRtWs.onopen = function(){
+    console.log('[Realtime] 연결됨');
+    _sbUpdateRtBadge(true);
+
+    // Phoenix heartbeat (30초)
+    clearInterval(_sbRtHeartT);
+    let _heartRef = 1;
+    _sbRtHeartT = setInterval(function(){
+      if(_sbRtWs && _sbRtWs.readyState===1){
+        _sbRtWs.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:String(_heartRef++)}));
+      }
+    }, 30000);
+
+    // contacts 구독
+    _sbRtWs.send(JSON.stringify({
+      topic: 'realtime:public:contacts',
+      event: 'phx_join',
+      payload: { config:{ broadcast:{self:false}, presence:{key:''}, postgres_changes:[{event:'*',schema:'public',table:'contacts'}] } },
+      ref: '1'
+    }));
+    // activities 구독
+    _sbRtWs.send(JSON.stringify({
+      topic: 'realtime:public:activities',
+      event: 'phx_join',
+      payload: { config:{ broadcast:{self:false}, presence:{key:''}, postgres_changes:[{event:'*',schema:'public',table:'activities'}] } },
+      ref: '2'
+    }));
+    // companies 구독
+    _sbRtWs.send(JSON.stringify({
+      topic: 'realtime:public:companies',
+      event: 'phx_join',
+      payload: { config:{ broadcast:{self:false}, presence:{key:''}, postgres_changes:[{event:'*',schema:'public',table:'companies'}] } },
+      ref: '3'
+    }));
+  };
+
+  _sbRtWs.onmessage = function(e){
+    try { _sbRtHandleMsg(JSON.parse(e.data)); } catch(err){}
+  };
+
+  _sbRtWs.onclose = function(e){
+    console.log('[Realtime] 연결 끊김', e.code);
+    _sbUpdateRtBadge(false);
+    clearInterval(_sbRtHeartT);
+    if(_sbRtEnabled) _sbRtScheduleReconnect();
+  };
+
+  _sbRtWs.onerror = function(){
+    console.warn('[Realtime] WebSocket 오류');
+    _sbUpdateRtBadge(false);
+  };
+}
+
+function _sbRtScheduleReconnect(){
+  clearTimeout(_sbRtReconnT);
+  _sbRtReconnT = setTimeout(_sbRtConnect, 5000); // 5초 후 재연결
+}
+
+// Realtime 이벤트 처리
+let _sbRtPendingRefresh = false;
+function _sbRtHandleMsg(msg){
+  const ev = msg.event;
+  if(ev === 'phx_reply' || ev === 'heartbeat' || ev === 'phx_close') return;
+
+  const payload = msg.payload || {};
+  const type    = payload.type;    // INSERT / UPDATE / DELETE
+  const table   = payload.table;
+  const rec     = payload.record;
+  const old     = payload.old_record;
+
+  if(!type || !table) return;
+
+  let changed = false;
+
+  if(table === 'contacts'){
+    if(type === 'INSERT' || type === 'UPDATE'){
+      const c = sbRowToContact(rec);
+      const idx = contacts.findIndex(x=>x.id===c.id);
+      if(idx>=0) contacts[idx]=c; else contacts.unshift(c);
+      changed = true;
+    } else if(type === 'DELETE'){
+      const id = old&&old.id;
+      if(id){ contacts = contacts.filter(x=>x.id!==id); changed=true; }
+    }
+  } else if(table === 'activities'){
+    if(type === 'INSERT' || type === 'UPDATE'){
+      const a = sbRowToActivity(rec);
+      const idx = activities.findIndex(x=>x.id===a.id);
+      if(idx>=0) activities[idx]=a; else activities.push(a);
+      changed = true;
+    } else if(type === 'DELETE'){
+      const id = old&&old.id;
+      if(id){ activities = activities.filter(x=>x.id!==id); changed=true; }
+    }
+  } else if(table === 'companies'){
+    if(type === 'INSERT' || type === 'UPDATE'){
+      try{ companies[rec.name]=JSON.parse(rec.data||'{}'); }catch(e){}
+      changed = true;
+    } else if(type === 'DELETE'){
+      if(old&&old.name) delete companies[old.name];
+      changed = true;
+    }
+  }
+
+  if(changed){
+    _idxDirty = true;
+    // 디바운스 (50ms 내 여러 이벤트 묶어서 1회 렌더)
+    if(!_sbRtPendingRefresh){
+      _sbRtPendingRefresh = true;
+      setTimeout(function(){
+        _sbRtPendingRefresh = false;
+        _idxDirty = true;
+        localPersist();
+        renderStats();
+        renderContacts();
+        if(currentCid) showDetail(currentCid);
+        sbLastSync = new Date().toLocaleString('ko-KR');
+        sbUpdateStatus('ok', `✓ 실시간 동기화 · ${contacts.length.toLocaleString()}명`);
+        _sbUpdateRtBadge(true);
+        // 토스트 알림
+        _showRtToast(type, table, rec||old);
+      }, 50);
+    }
+  }
+}
+
+// Realtime 연결 상태 배지
+function _sbUpdateRtBadge(connected){
+  const els = document.querySelectorAll('.sb-rt-badge');
+  els.forEach(el=>{
+    el.textContent = connected ? '● 실시간' : '○ 오프라인';
+    el.style.color = connected ? 'var(--accent3)' : 'var(--muted)';
+  });
+}
+
+// 실시간 변경 토스트
+let _rtToastTimer = null;
+function _showRtToast(type, table, rec){
+  let el = document.getElementById('_rtToast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_rtToast';
+    el.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:12px;color:var(--text);box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(el);
+  }
+  const tableMap = {contacts:'연락처', activities:'활동', companies:'회사정보'};
+  const typeMap  = {INSERT:'추가됨', UPDATE:'수정됨', DELETE:'삭제됨'};
+  const who = rec && (rec.last||rec.company||rec.name||rec.title) ? (rec.last||'')+(rec.first||'')+(rec.company||rec.name||rec.title||'') : '';
+  el.textContent = `🔄 ${tableMap[table]||table} ${who?'"'+who+'" ':''} ${typeMap[type]||type}`;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(_rtToastTimer);
+  _rtToastTimer = setTimeout(()=>{
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2500);
+}
+
+
 
 // ── 데이터 변환 헬퍼 ─────────────────────────────────────
 function contactToSbRow(c){
@@ -2075,14 +2769,16 @@ function activityToSbRow(a){
   return {
     id: a.id, contact_id: a.contactId, type: a.type||'other',
     date: a.date||'', title: a.title||'', content: a.content||'',
-    amount: a.amount||'', created_at: a.createdAt||new Date().toISOString()
+    amount: a.amount||'', created_at: a.createdAt||new Date().toISOString(),
+    created_by: a.createdBy||''
   };
 }
 function sbRowToActivity(r){
   return {
     id: r.id, contactId: r.contact_id, type: r.type,
     date: r.date, title: r.title, content: r.content,
-    amount: r.amount, createdAt: r.created_at
+    amount: r.amount, createdAt: r.created_at,
+    createdBy: r.created_by||''
   };
 }
 
@@ -2094,7 +2790,19 @@ function localPersist(){
   safeStorage.setItem('crm_companies', JSON.stringify(companies));
 }
 
-function persist(){
+function persist(opts){
+  // opts: { cId, aId, delC, delA }
+  // 변경 추적 (스마트 save용)
+  opts = opts || {};
+  if(opts.cId)  markContactDirty(opts.cId);
+  if(opts.aId)  markActivityDirty(opts.aId);
+  if(opts.delC) markContactDeleted(opts.delC);
+  if(opts.delA) markActivityDeleted(opts.delA);
+  // opts 없이 호출된 경우(CSV import 등) 전체 dirty 처리
+  if(!opts.cId && !opts.aId && !opts.delC && !opts.delA){
+    contacts.forEach(c=>markContactDirty(c.id));
+    activities.forEach(a=>markActivityDirty(a.id));
+  }
   localPersist();
   renderStats();
   refreshTeamFilterBars();
@@ -2267,7 +2975,7 @@ function refreshTeamFilterBars(){
       return;
     }
     bar.style.display='';
-    bar.innerHTML = `<span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;align-self:center;margin-right:4px;white-space:nowrap">${i18n('👥 팀')}</span>`
+    bar.innerHTML = `<span style="font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace;align-self:center;margin-right:4px;white-space:nowrap">${i18n('👥 팀')}</span>`
       + `<button class="filter-chip${set.size===0?' active':''}" data-val="all" onclick="${fnName}('all',this)">${i18n('전체')}</button>`
       + teams.map(t=>`<button class="filter-chip${set.has(t)?' active':''}" data-val="${t.replace(/"/g,'&quot;')}" onclick="${fnName}('${t.replace(/'/g,"\\'")}',this)">👥 ${t}</button>`).join('');
   };
@@ -2322,7 +3030,6 @@ function contactActivities(contactId){
   _ensureIndex();
   return _idxIdToActs[contactId] || [];
 }
-function contactActivities(cid){ return activities.filter(a=>a.contactId===cid).sort((a,b)=>b.date.localeCompare(a.date)); }
 
 // ── RENDER CONTACTS ─────────────────────────────────────
 // ── 가상 스크롤 ───────────────────────────────────────────
@@ -2357,12 +3064,19 @@ function renderContacts(){
   const _newQ = (document.getElementById('searchInput')||{}).value||'';
   if(typeof _lastRenderQ !== 'undefined' && _lastRenderQ !== _newQ) _vsOffset = 0;
   _lastRenderQ = _newQ;
-  const q = _newQ.toLowerCase();
-  let list = contacts.filter(c=>{
-    const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase();
-    return s.includes(q);
-  });
-  // 팀 필터 (다중선택)
+  const q = _newQ.trim();
+
+  // Supabase 연결 + 검색어 있을 때 → 서버사이드 검색
+  if(sbIsConnected() && q.length >= 2){
+    _sbSearch(q); return;
+  }
+
+  // 로컬 필터 (검색어 없음 or 로컬모드)
+  let list = q
+    ? contacts.filter(c=>{ const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase(); return s.includes(q.toLowerCase()); })
+    : contacts;
+
+  // 팀 필터
   if(teamFilter.size){
     const cos = getCosByTeam(teamFilter);
     if(cos) list = list.filter(c => cos.includes(c.company||''));
@@ -2371,6 +3085,37 @@ function renderContacts(){
   if(viewMode==='list')  { renderFlatList(list); return; }
   if(viewMode==='glist') { renderGroupList(list); return; }
   renderGroupView(list);
+}
+
+// 서버사이드 검색 (Supabase ilike)
+let _sbSearchTimer = null;
+async function _sbSearch(q){
+  const enc = encodeURIComponent('%'+q+'%');
+  const filter = `or=(company.ilike.${enc},last.ilike.${enc},first.ilike.${enc},email.ilike.${enc},mobile.ilike.${enc})`;
+  const url = `${sbUrl}/rest/v1/contacts?select=*&${filter}&limit=500&order=created_at.asc`;
+  try {
+    const res = await fetch(url, { headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey} });
+    if(!res.ok) throw new Error('검색 실패');
+    let list = (await res.json()).map(sbRowToContact);
+    // 팀 필터 적용
+    if(teamFilter.size){
+      const cos = getCosByTeam(teamFilter);
+      if(cos) list = list.filter(c=>cos.includes(c.company||''));
+    }
+    document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',list.length) + ' 🔍';
+    if(viewMode==='list')  { renderFlatList(list); return; }
+    if(viewMode==='glist') { renderGroupList(list); return; }
+    renderGroupView(list);
+  } catch(e){
+    console.warn('[sbSearch] 실패, 로컬 검색으로 폴백:', e.message);
+    // 로컬 폴백
+    const ql = q.toLowerCase();
+    let list = contacts.filter(c=>{ const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase(); return s.includes(ql); });
+    document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',list.length);
+    if(viewMode==='list')  { renderFlatList(list); return; }
+    if(viewMode==='glist') { renderGroupList(list); return; }
+    renderGroupView(list);
+  }
 }
 
 function renderGroupView(list){
@@ -2454,7 +3199,7 @@ function renderGroupView(list){
           }).join('');
           return `<div class="fin-summary" id="fin-wrap-${coId}">
             <div class="fin-summary-preview" onclick="toggleFinDetail('${coId}')">
-              <span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;padding-right:10px;border-right:1px solid var(--border);flex-shrink:0">${r.year}${i18n('년')}</span>
+              <span style="font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace;padding-right:10px;border-right:1px solid var(--border);flex-shrink:0">${r.year}${i18n('년')}</span>
               ${chips}
             </div>
             <button class="fin-expand-btn" id="fin-btn-${coId}" onclick="toggleFinDetail('${coId}')">${i18n('전체')} ${fin.length}${i18n('년')} ▾</button>
@@ -2484,7 +3229,7 @@ function renderGroupView(list){
           return `<div class="ceo-bar" id="ceo-bar-${coId}" onclick="toggleCeoDetail('${coId}')">
             <span>👔 ${i18n('대표이사')}</span>
             <span class="ceo-bar-name">${cur.name}</span>
-            ${cur.from?`<span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent)">${cur.from} ~ ${cur.to&&cur.to&&cur.to!==i18n('현재')?cur.to:i18n('현재')}</span>`:''}
+            ${cur.from?`<span style="font-size:11px;font-family:IBM Plex Mono,monospace;color:var(--accent)">${cur.from} ~ ${cur.to&&cur.to&&cur.to!==i18n('현재')?cur.to:i18n('현재')}</span>`:''}
             ${ceos.length>1?`<span style="font-size:11px;color:var(--muted)">${i18n('총')} ${ceos.length}${i18n('명')}</span>`:''}
             <span class="ceo-bar-arrow">▾</span>
           </div>
@@ -2623,6 +3368,7 @@ function tlItem(a, opts){
         ${a.title?`<div style="font-size:13px;font-weight:600;margin-bottom:4px">${a.title}</div>`:''}
         ${a.content?`<div class="tl-text">${a.content}</div>`:''}
         ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
+        ${a.createdBy?`<div class="tl-creator">✍ ${a.createdBy}</div>`:''}
         <div class="tl-actions">
           <button class="tl-act-btn" onclick="openEditAct('${a.id}')">${i18n('✏ 수정')}</button>
           <button class="tl-act-btn danger" onclick="delAct('${a.id}',${opts.fromDetail?'true':'false'})">${i18n('🗑 삭제')}</button>
@@ -2855,8 +3601,8 @@ function personListRow(c, indented=true){
       </div>
     </td>
     <td style="color:var(--muted);font-size:12px">${title}</td>
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${phoneVal||'<span style="opacity:.3">—</span>'}</td>
-    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)">${emailVal||'<span style="opacity:.3">—</span>'}</td>
+    <td style="font-family:IBM Plex Mono,monospace;font-size:12px;color:var(--text)">${phoneVal||'<span style="opacity:.3">—</span>'}</td>
+    <td style="font-family:IBM Plex Mono,monospace;font-size:12px;color:var(--text)">${emailVal||'<span style="opacity:.3">—</span>'}</td>
     <td>${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]}${acts.filter(a=>a.type===t).length}</span>`).join(' ')||'<span style="color:var(--border);font-size:11px">—</span>'}</td>
   </tr>`;
 }
@@ -3015,8 +3761,10 @@ function saveContact(){
     email:document.getElementById('f_email').value.trim(), office:document.getElementById('f_office').value.trim(),
     mobile:document.getElementById('f_mobile').value.trim(), extra:document.getElementById('f_extra').value.trim(),
     address:addr, memo:document.getElementById('f_memo').value.trim()};
-  if(editCid){ const i=contacts.findIndex(x=>x.id===editCid); contacts[i]={...contacts[i],...data}; persist(); closeModal('contactModal'); showDetail(editCid); }
-  else { contacts.unshift({id:uid(),createdAt:new Date().toISOString(),...data}); persist(); closeModal('contactModal'); renderContacts(); }
+  if(editCid){ const i=contacts.findIndex(x=>x.id===editCid); contacts[i]={...contacts[i],...data}; persist({cId:editCid}); closeModal('contactModal'); showDetail(editCid); }
+  else { const _newCid = uid();
+    contacts.unshift({id:_newCid,createdAt:new Date().toISOString(),...data});
+    persist({cId:_newCid}); closeModal('contactModal'); renderContacts(); }
 }
 function delContact(id){
   const c = contacts.find(x=>x.id===id);
@@ -3026,9 +3774,12 @@ function delContact(id){
     `<strong>${c.last}${c.first}</strong>${c.company?' · '+c.company:''}<br>
      <span style="font-size:12px;color:var(--muted)">${actCnt} ${i18n('건')} ${i18n('활동 함께 삭제')}.</span>`;
   document.getElementById('delContactConfirmBtn').onclick = ()=>{
+    const _actIds = activities.filter(a=>a.contactId===id).map(a=>a.id);
     contacts = contacts.filter(x=>x.id!==id);
     activities = activities.filter(a=>a.contactId!==id);
-    persist();
+    const _delOpts = {delC:id};
+    _actIds.forEach(aid=>markActivityDeleted(aid));
+    persist(_delOpts);
     closeModal('delContactModal');
     backToList();
   };
@@ -3281,10 +4032,12 @@ function saveActivity(){
   if(editActId){
     // 수정
     const idx = activities.findIndex(a=>a.id===editActId);
-    if(idx>-1) activities[idx] = {...activities[idx], ...data};
+    if(idx>-1){ activities[idx] = {...activities[idx], ...data}; markActivityDirty(editActId); }
   } else {
     // 신규
-    activities.push({id:uid(), createdAt:new Date().toISOString(), ...data});
+    const _newAid = uid();
+    activities.push({id:_newAid, createdAt:new Date().toISOString(), createdBy:_curUserName(), ...data});
+    markActivityDirty(_newAid);
   }
   editActId = null;
   persist();
@@ -3299,15 +4052,15 @@ function delAct(id, fromDetail=false){
   const typeLabel = {visit:`🤝 ${i18n('방문')||'Visit'}`, call:`📞 ${i18n('통화')||'Call'}`, quote:`📄 ${i18n('견적')||'Quote'}`, order:`📦 ${i18n('발주')||'Order'}`, other:`📌 ${i18n('기타')||'Other'}`};
   document.getElementById('delActInfo').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:4px">
-      <div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">유형</span>&nbsp;&nbsp;${typeLabel[a.type]||a.type}</div>
-      <div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">날짜</span>&nbsp;&nbsp;${a.date}</div>
-      ${a.title?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">제목</span>&nbsp;&nbsp;${a.title}</div>`:''}
-      ${a.content?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">${i18n('내용')}</span>&nbsp;&nbsp;<span style="color:var(--muted)">${a.content.length>50?a.content.slice(0,50)+'…':a.content}</span></div>`:''}
-      ${c?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">${i18n('담당자')}</span>&nbsp;&nbsp;${c.last}${c.first}${c.company?' · '+c.company:''}</div>`:''}
+      <div><span style="color:var(--muted);font-size:11px;font-family:IBM Plex Mono,monospace">유형</span>&nbsp;&nbsp;${typeLabel[a.type]||a.type}</div>
+      <div><span style="color:var(--muted);font-size:11px;font-family:IBM Plex Mono,monospace">날짜</span>&nbsp;&nbsp;${a.date}</div>
+      ${a.title?`<div><span style="color:var(--muted);font-size:11px;font-family:IBM Plex Mono,monospace">제목</span>&nbsp;&nbsp;${a.title}</div>`:''}
+      ${a.content?`<div><span style="color:var(--muted);font-size:11px;font-family:IBM Plex Mono,monospace">${i18n('내용')}</span>&nbsp;&nbsp;<span style="color:var(--muted)">${a.content.length>50?a.content.slice(0,50)+'…':a.content}</span></div>`:''}
+      ${c?`<div><span style="color:var(--muted);font-size:11px;font-family:IBM Plex Mono,monospace">${i18n('담당자')}</span>&nbsp;&nbsp;${c.last}${c.first}${c.company?' · '+c.company:''}</div>`:''}
     </div>`;
   document.getElementById('delActConfirmBtn').onclick = ()=>{
     activities = activities.filter(x=>x.id!==id);
-    persist();
+    persist({delA:id});
     closeModal('delActModal');
     if(fromDetail && currentCid) showDetail(currentCid);
     else { renderContacts(); renderAllActs(); }
@@ -3359,7 +4112,7 @@ function renderStats(){
   const typeRows = null;
 
   document.getElementById('sidebarStats').innerHTML=`
-    <div style="font-size:9px;color:var(--border);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-align:right">${fmtDate(weekAgoStr)} ~ ${fmtDate(todayStr)}&nbsp;${i18n('신규')}</div>
+    <div style="font-size:9px;color:var(--border);font-family:IBM Plex Mono,monospace;margin-bottom:5px;text-align:right">${fmtDate(weekAgoStr)} ~ ${fmtDate(todayStr)}&nbsp;${i18n('신규')}</div>
     <div class="stat-row"><span>${i18n('회사')}</span><span style="color:var(--accent)">${weekCos.length}</span></div>
     <div class="stat-row"><span>${i18n('연락처')}</span><span style="color:var(--accent)">${weekContacts}</span></div>
     <div class="stat-row"><span>${i18n('활동')}</span><span style="color:var(--accent)">${weekActs}</span></div>`;
@@ -3732,7 +4485,7 @@ function renderPdfResults(){
     if(multiFile){
       const fname = grp.src === noSrc ? '파일' : grp.src;
       html += `<div style="display:flex;align-items:center;gap:8px;margin:${gi>0?'24px':0}px 0 10px">
-        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent2);font-weight:600;white-space:nowrap">📎 ${fname}</div>
+        <div style="font-size:11px;font-family:IBM Plex Mono,monospace;color:var(--accent2);font-weight:600;white-space:nowrap">📎 ${fname}</div>
         <div style="flex:1;height:1px;background:var(--border)"></div>
         <div style="font-size:10px;color:var(--muted)">${grp.contacts.length} ${i18n('명')} · ${i18n('활동')} ${grp.activities.length} ${i18n('건')}</div>
       </div>`;
@@ -3740,7 +4493,7 @@ function renderPdfResults(){
 
     // 연락처
     if(grp.contacts.length){
-      if(!multiFile) html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 ${i18n('연락처')} (${grp.contacts.length} ${i18n('명')})</div>`;
+      if(!multiFile) html += `<div style="font-size:11px;font-family:IBM Plex Mono,monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 ${i18n('연락처')} (${grp.contacts.length} ${i18n('명')})</div>`;
       html += grp.contacts.map(p=>{
         const i = p._idx;
         const name=(p.last||'')+(p.first||'')||i18n('이름 없음');
@@ -3768,15 +4521,15 @@ function renderPdfResults(){
 
     // 활동
     if(grp.activities.length){
-      html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:${grp.contacts.length?'14px':0}px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 ${i18n('활동')} (${grp.activities.length} ${i18n('건')})${multiFile?'':' — '+i18n('자동 연결 안내')}</div>`;
+      html += `<div style="font-size:11px;font-family:IBM Plex Mono,monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:${grp.contacts.length?'14px':0}px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 ${i18n('활동')} (${grp.activities.length} ${i18n('건')})${multiFile?'':' — '+i18n('자동 연결 안내')}</div>`;
       html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:4px">
         <table style="width:100%;border-collapse:collapse;font-size:12px">
           <thead><tr style="background:var(--surface)">
             <th style="padding:8px 10px;width:28px;border-bottom:1px solid var(--border)"></th>
-            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">${i18n('날짜')}</th>
-            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">${i18n('유형')}</th>
-            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border)">${i18n('내용')}</th>
-            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:90px">금액</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">${i18n('날짜')}</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">${i18n('유형')}</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace;font-weight:400;border-bottom:1px solid var(--border)">${i18n('내용')}</th>
+            <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-family:IBM Plex Mono,monospace;font-weight:400;border-bottom:1px solid var(--border);width:90px">금액</th>
           </tr></thead>
           <tbody>
             ${grp.activities.map(a=>{
@@ -3785,10 +4538,10 @@ function renderPdfResults(){
               const amtDisp = a.amount ? '₩'+Number(a.amount||0).toLocaleString() : '';
               return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:7px 10px"><input type="checkbox" id="paCheck${i}" checked style="accent-color:var(--accent3)"></td>
-                <td style="padding:7px 10px;font-family:'IBM Plex Mono',monospace;color:var(--muted)">${a.date||''}</td>
+                <td style="padding:7px 10px;font-family:IBM Plex Mono,monospace;color:var(--muted)">${a.date||''}</td>
                 <td style="padding:7px 10px">${tl}</td>
                 <td style="padding:7px 10px;color:var(--text)">${a.title||''}${a.content&&a.content!==a.title?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${a.content}</div>`:''}</td>
-                <td style="padding:7px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--accent3);font-size:11px">${amtDisp}</td>
+                <td style="padding:7px 10px;text-align:right;font-family:IBM Plex Mono,monospace;color:var(--accent3);font-size:11px">${amtDisp}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -4005,7 +4758,7 @@ function csvRenderMapping(){
           ${sel}
         </select>
       </td>
-      <td style="padding:6px 10px;color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${preview||'—'}</td>
+      <td style="padding:6px 10px;color:var(--muted);font-size:11px;font-family:IBM Plex Mono,monospace;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${preview||'—'}</td>
     </tr>`;
   });
   html += '</tbody></table>';
@@ -4241,10 +4994,20 @@ function sbSaveSettings(){
   safeStorage.setItem('crm_sb_key', sbKey);
   msg.style.color = 'var(--accent3)';
   msg.textContent = i18n('저장됐습니다');
-  setTimeout(()=>{ closeModal('gsModal'); sbLoad(); }, 800);
+  setTimeout(()=>{
+    closeModal('gsModal');
+    // 로그인 화면으로 복귀 (첫 관리자 계정 필요 안내)
+    var ov=document.getElementById('loginOverlay');
+    if(ov) ov.classList.remove('hidden');
+    var sub=ov?ov.querySelector('.login-sub'):null;
+    if(sub) sub.textContent='연동 완료! 관리자 계정으로 로그인하세요';
+    // 초기 관리자 계정 자동 생성 (최초 1회)
+    _initFirstAdmin();
+  }, 800);
 }
 
 function sbDisconnect(){
+  _sbStopRealtime();
   sbUrl = ''; sbKey = '';
   safeStorage.removeItem('crm_sb_url');
   safeStorage.removeItem('crm_sb_key');
@@ -4350,10 +5113,40 @@ function _crmInit(){
   }
 }
 
+// ── 앱 시작 진입점: 로그인 화면 먼저
+function _appStart(){
+  // Supabase 미연동이면 연동 안내 후 로그인 화면
+  if(!sbIsConnected()){
+    var ov=document.getElementById('loginOverlay');
+    if(ov){
+      var note=ov.querySelector('.login-sub');
+      if(note) note.textContent='Supabase 연동 후 사용 가능합니다';
+      // Supabase 연동 버튼 임시 추가
+      var card=ov.querySelector('.login-card');
+      if(card&&!document.getElementById('quickSbBtn')){
+        var btn=document.createElement('button');
+        btn.id='quickSbBtn';
+        btn.className='login-btn';
+        btn.style.cssText='margin-top:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted)';
+        btn.textContent='🗄 Supabase 연동 설정';
+        btn.onclick=function(){ ov.classList.add('hidden'); openGsModal(); };
+        card.appendChild(btn);
+      }
+    }
+    return;
+  }
+  // 세션 복원 시도
+  if(_restoreSession()){
+    document.getElementById('loginOverlay').classList.add('hidden');
+    _afterLogin();
+  }
+  // 세션 없으면 로그인 화면 유지
+}
+
 if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', _crmInit);
+  document.addEventListener('DOMContentLoaded', _appStart);
 } else {
-  _crmInit();
+  _appStart();
 }
 
 
@@ -4917,6 +5710,92 @@ function openLicenseModal(){
       <div id="pinSetupDeleteRow" style="display:none;margin-top:8px">
         <button class="btn btn-outline" style="width:100%;color:var(--accent2);border-color:var(--accent2)" onclick="_pinDelete()">🔓 PIN 잠금 해제</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════ 로그인 화면 ═══════════════════ -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">▸ Rela<span style="font-weight:400;color:var(--text)">CRM</span></div>
+    <div class="login-sub">스마트 고객관리 시스템</div>
+    <div class="login-field">
+      <label>사용자 이름</label>
+      <input class="login-input" id="loginName" type="text" placeholder="이름 입력"
+             autocomplete="username"
+             onkeydown="if(event.key==='Enter')document.getElementById('loginPw').focus()">
+    </div>
+    <div class="login-field">
+      <label>비밀번호</label>
+      <div style="position:relative">
+        <input class="login-input" id="loginPw" type="password" placeholder="비밀번호 입력"
+               autocomplete="current-password" style="padding-right:42px"
+               onkeydown="if(event.key==='Enter')_doLogin()">
+        <button onclick="var i=document.getElementById('loginPw');i.type=i.type==='password'?'text':'password'"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px">👁</button>
+      </div>
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="_doLogin()">로그인</button>
+    <div class="login-msg" id="loginMsg"></div>
+    <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--border);text-align:center;font-family:IBM Plex Mono,monospace">
+      계정 문의: 관리자에게 요청하세요
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 사용자 관리 모달 ═══════════════════ -->
+<div class="modal-overlay" id="userMgmtModal">
+  <div class="modal" style="width:500px;max-height:82vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('userMgmtModal')">✕</button>
+    <div class="modal-title">👥 사용자 관리</div>
+
+    <!-- 사용자 목록 -->
+    <div id="userMgmtList" style="margin-bottom:18px"></div>
+
+    <!-- 신규 추가 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:12px;font-family:IBM Plex Mono,monospace;text-transform:uppercase;letter-spacing:.5px">＋ 새 사용자 추가</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">이름</label>
+          <input id="newUserName" class="login-input" placeholder="홍길동" style="font-size:13px;padding:8px 10px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">비밀번호 (4자 이상)</label>
+          <input id="newUserPw" class="login-input" type="password" placeholder="초기 비밀번호" style="font-size:13px;padding:8px 10px">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">역할</label>
+          <select id="newUserRole" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px;outline:none">
+            <option value="user">일반 사용자</option>
+            <option value="admin">관리자</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" style="width:100%;padding:9px" onclick="_addUser()">추가</button>
+        </div>
+      </div>
+      <div id="userMgmtMsg" style="font-size:12px;color:var(--accent2);min-height:16px;margin-top:8px"></div>
+    </div>
+
+    <!-- 내 비밀번호 변경 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:12px;font-family:IBM Plex Mono,monospace;text-transform:uppercase;letter-spacing:.5px">🔑 내 비밀번호 변경</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:flex-end">
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">현재 비밀번호</label>
+          <input id="pwChangeCur" class="login-input" type="password" placeholder="현재 비밀번호" style="font-size:13px;padding:8px 10px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">새 비밀번호</label>
+          <input id="pwChangeNew" class="login-input" type="password" placeholder="새 비밀번호 (4자 이상)" style="font-size:13px;padding:8px 10px">
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="_changeMyPw()" style="height:36px;white-space:nowrap">변경</button>
+      </div>
+      <div id="pwChangeMsg" style="font-size:12px;min-height:16px;margin-top:8px"></div>
     </div>
   </div>
 </div>
