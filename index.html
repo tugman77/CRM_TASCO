@@ -51,7 +51,7 @@
     line-height: 16px; height: 16px; display: inline-block; flex-shrink: 0;
   }
   .sidebar-btn.active .today-badge { background: rgba(255,255,255,0.3); color: #fff; }
-  .sidebar-stats { margin-top: auto; padding: 14px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+  .sidebar-stats { padding: 0 4px 8px; font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
   .stat-row { display: flex; justify-content: space-between; margin: 3px 0; }
   .stat-row span:last-child { color: var(--accent); }
 
@@ -215,7 +215,7 @@
   .ungrouped-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 
   /* Modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 640px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 26px; position: relative; }
   .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
@@ -359,6 +359,106 @@
   .pdf-field input { padding: 6px 9px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; font-family: 'Noto Sans KR', sans-serif; outline: none; }
   .pdf-field input:focus { border-color: var(--accent); }
   .pdf-field.full { grid-column: 1 / -1; }
+
+  /* ── PIN LOCK ─────────────────────────────────────────── */
+  #pinOverlay {
+    position: fixed; inset: 0; z-index: 99000;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    transition: opacity 0.35s;
+  }
+  #pinOverlay.hiding { opacity: 0; pointer-events: none; }
+  #pinOverlay.hidden { display: none; }
+
+  .pin-logo {
+    font-size: 22px; font-weight: 700; color: var(--accent);
+    letter-spacing: -0.5px; margin-bottom: 6px;
+  }
+  .pin-subtitle {
+    font-size: 12px; color: var(--muted); margin-bottom: 32px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .pin-dots {
+    display: flex; gap: 14px; margin-bottom: 32px;
+  }
+  .pin-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  }
+  .pin-dot.filled {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.15);
+  }
+  .pin-dot.error {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    animation: pinShake 0.4s ease;
+  }
+  @keyframes pinShake {
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-6px); }
+    40%{ transform: translateX(6px); }
+    60%{ transform: translateX(-4px); }
+    80%{ transform: translateX(4px); }
+  }
+  .pin-pad {
+    display: grid; grid-template-columns: repeat(3, 72px);
+    gap: 12px; margin-bottom: 20px;
+  }
+  .pin-btn {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-size: 22px; font-weight: 600;
+    cursor: pointer; transition: background 0.12s, transform 0.1s;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .pin-btn:active { background: var(--surface2); transform: scale(0.93); }
+  .pin-btn.del { font-size: 18px; color: var(--muted); }
+  .pin-btn.empty { background: transparent; border-color: transparent; pointer-events: none; }
+  .pin-msg {
+    height: 20px; font-size: 12px; text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: color 0.2s;
+  }
+  .pin-msg.ok  { color: var(--accent3); }
+  .pin-msg.err { color: var(--accent2); }
+  .pin-msg.warn{ color: var(--accent4); }
+  .pin-locked-msg {
+    font-size: 13px; color: var(--accent2); text-align: center;
+    font-family: 'IBM Plex Mono', monospace; line-height: 1.7;
+  }
+  .pin-link {
+    font-size: 11px; color: var(--muted); text-decoration: underline;
+    cursor: pointer; margin-top: 16px; font-family: 'IBM Plex Mono', monospace;
+  }
+  .pin-link:hover { color: var(--accent); }
+
+  /* 사이드바 PIN 설정 버튼 */
+  .pin-setting-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 4px; font-size: 11px; color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .pin-toggle {
+    width: 34px; height: 18px; border-radius: 9px;
+    background: var(--border); border: none; cursor: pointer;
+    position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .pin-toggle::after {
+    content:''; position:absolute; width:12px; height:12px;
+    border-radius: 50%; background: #fff; top: 3px; left: 3px;
+    transition: transform 0.2s;
+  }
+  .pin-toggle.on { background: var(--accent); }
+  .pin-toggle.on::after { transform: translateX(16px); }
+
 </style>
 </head>
 <body>
@@ -375,18 +475,33 @@
 <aside class="sidebar">
   <div class="logo">
     <h1 style="font-size:20px;letter-spacing:-0.5px">▸ Rela<span style="color:var(--text);font-weight:400">CRM</span></h1>
-    <span>스마트 고객관리 시스템</span>
+    <span><span data-i18n="스마트 고객관리 시스템">스마트 고객관리 시스템</span></span>
   </div>
   <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> 연락처 <span class="today-badge" id="todayContacts" style="display:none"></span></button>
-  <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> 전체 활동 <span class="today-badge" id="todayActivities" style="display:none"></span></button>
-  <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> 활동 유형 관리</button>
-  <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> Supabase 연동</button>
+  <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> <span data-i18n="전체 활동">전체 활동</span> <span class="today-badge" id="todayActivities" style="display:none"></span></button>
+  <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> <span data-i18n="활동 유형 관리">활동 유형 관리</span></button>
+  <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> <span data-i18n="Supabase 연동">Supabase 연동</span></button>
   <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:'IBM Plex Mono',monospace;line-height:1.5"></div>
-  <div class="sidebar-stats" id="sidebarStats"></div>
   <div style="margin-top:auto;padding:12px 16px 16px;border-top:1px solid var(--border)">
-    <button class="sidebar-btn" onclick="openHelpModal()" style="font-size:11px;color:var(--muted)"><span>❓</span> 사용 가이드</button>
-    <button class="sidebar-btn" onclick="openLicenseModal()" style="font-size:11px;color:var(--muted)"><span>📄</span> 라이선스 정보</button>
+    <div class="sidebar-stats" id="sidebarStats"></div>
+    <div style="border-top:1px solid var(--border);margin:8px 0 10px;opacity:.4"></div>
+    <button class="sidebar-btn" onclick="openHelpModal()" style="font-size:11px;color:var(--muted)"><span>❓</span> <span data-i18n="사용 가이드">사용 가이드</span></button>
+    <button class="sidebar-btn" onclick="openLicenseModal()" style="font-size:11px;color:var(--muted)"><span>📄</span> <span data-i18n="라이선스 정보">라이선스 정보</span></button>
+    <div class="pin-setting-row">
+      <span>🔐 <span data-i18n="PIN 잠금">PIN 잠금</span></span>
+      <button class="pin-toggle" id="pinToggleBtn" onclick="openPinSetup()" title="PIN 설정/변경"></button>
+    </div>
     <div style="font-size:10px;color:var(--border);text-align:center;margin-top:8px;font-family:'IBM Plex Mono',monospace">RelaCRM v1.0</div>
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+      <select id="langSelect" onchange="setLang(this.value)"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+               font-size:11px;padding:5px 8px;border-radius:6px;cursor:pointer;outline:none;font-family:'IBM Plex Mono',monospace">
+        <option value="ko">🇰🇷 한국어</option>
+        <option value="en">🇺🇸 English</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="zh">🇨🇳 中文</option>
+      </select>
+    </div>
   </div>
 </aside>
 
@@ -394,20 +509,20 @@
   <div class="topbar" id="mainTopbar">
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="이름, 회사 검색..." oninput="renderContacts()">
+      <input type="text" id="searchInput" placeholder="이름, 회사 검색..." data-i18n-placeholder="이름, 회사 검색..." oninput="renderContacts()">
     </div>
     <div class="view-toggle">
       <button class="toggle-btn active" id="vBtn-group" title="회사별 카드" onclick="setViewMode('group')">⊞</button>
       <button class="toggle-btn" id="vBtn-glist" title="회사별 목록" onclick="setViewMode('glist')">▤</button>
       <button class="toggle-btn" id="vBtn-list" title="전체 목록" onclick="setViewMode('list')">☰</button>
     </div>
-    <button class="btn btn-outline pc-only" onclick="openPdfModal()" title="파일에서 연락처 자동 추출">🗂 파일 가져오기</button>
-    <button class="btn btn-primary pc-only" onclick="openAddContact(null)">＋ 연락처</button>
+    <button class="btn btn-outline pc-only" onclick="openPdfModal()" title="파일에서 연락처 자동 추출">🗂 <span data-i18n="파일 가져오기">파일 가져오기</span></button>
+    <button class="btn btn-primary pc-only" onclick="openAddContact(null)">＋ <span data-i18n="연락처">연락처</span></button>
   </div>
 
   <!-- Contacts View -->
   <div class="content" id="contactsView">
-    <div class="section-title">연락처</div>
+    <div class="section-title" data-i18n="연락처">연락처</div>
     <div class="section-sub" id="viewSub"></div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
       <div class="filter-bar" id="teamFilterBar"></div>
@@ -418,16 +533,16 @@
   <!-- Detail View -->
   <div id="detailView" class="detail-view">
     <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button class="btn btn-outline btn-sm" onclick="backToList()">← 목록으로</button>
-      <button class="btn btn-outline btn-sm" id="detailCoBtn" style="display:none">🏢 회사 보기</button>
+      <button class="btn btn-outline btn-sm" onclick="backToList()"><span data-i18n="← 목록으로">← 목록으로</span></button>
+      <button class="btn btn-outline btn-sm" id="detailCoBtn" style="display:none">🏢 <span data-i18n="회사 보기">회사 보기</span></button>
     </div>
     <div id="detailContent"></div>
   </div>
 
   <!-- Activities View -->
   <div class="content" id="activitiesView" style="display:none">
-    <div class="section-title">전체 활동</div>
-    <div class="section-sub" id="actsSub">모든 활동 내역 (최신순)</div>
+    <div class="section-title" data-i18n="전체 활동">전체 활동</div>
+    <div class="section-sub" id="actsSub" data-i18n="모든 활동 내역"></div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
       <div class="filter-bar" id="actFilterBar" style="margin-bottom:0"></div>
       <div class="filter-bar" id="actTeamFilterBar" style="margin-bottom:0"></div>
@@ -440,21 +555,21 @@
 <nav class="mobile-tabbar">
   <button class="mobile-tab active" id="mTabContacts" onclick="nav('contacts')">
     <span class="tab-icon">🏢</span>
-    <span>연락처</span>
+    <span data-i18n="연락처">연락처</span>
     <span class="today-badge" id="mTodayContacts" style="display:none"></span>
   </button>
   <button class="mobile-tab" id="mTabActivities" onclick="nav('activities')">
     <span class="tab-icon">📋</span>
-    <span>활동</span>
+    <span data-i18n="전체 활동">활동</span>
     <span class="today-badge" id="mTodayActivities" style="display:none"></span>
   </button>
   <button class="mobile-tab" id="mTabImport" onclick="openPdfModal()">
     <span class="tab-icon">🗂</span>
-    <span>가져오기</span>
+    <span data-i18n="파일 가져오기">가져오기</span>
   </button>
   <button class="mobile-tab" id="mTabGs" onclick="openGsModal()">
     <span class="tab-icon" id="mTabGsIcon">🗄</span>
-    <span>연동설정</span>
+    <span data-i18n="Supabase 연동">연동설정</span>
   </button>
 </nav>
 
@@ -462,55 +577,55 @@
 <div class="modal-overlay" id="contactModal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
-    <div class="modal-title" id="cModalTitle">새 연락처</div>
+    <div class="modal-title" id="cModalTitle" data-i18n="새 연락처">새 연락처</div>
     <div class="form-section">
-      <div class="form-section-title">소속 회사</div>
+      <div class="form-section-title" data-i18n="소속 회사">소속 회사</div>
       <div class="form-row single">
         <div class="form-group">
-          <label>회사명 (같은 회사 직원은 동일 이름 입력)</label>
+          <label data-i18n="회사명 라벨">회사명 (같은 회사 직원은 동일 이름 입력)</label>
           <input type="text" id="f_company" placeholder="(주)예시기업" list="coSuggestions" oninput="onCompanyInput()">
           <datalist id="coSuggestions"></datalist>
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>부서</label><input type="text" id="f_dept" placeholder="영업팀"></div>
-        <div class="form-group"><label>직책</label><input type="text" id="f_position" placeholder="과장"></div>
+        <div class="form-group"><label data-i18n='부서'>부서</label><input type="text" id="f_dept" placeholder="영업팀"></div>
+        <div class="form-group"><label data-i18n='직책'>직책</label><input type="text" id="f_position" placeholder="과장"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="form-section-title">개인 정보</div>
+      <div class="form-section-title" data-i18n="개인 정보">개인 정보</div>
       <div class="form-row">
-        <div class="form-group"><label>성 *</label><input type="text" id="f_last" placeholder="김"></div>
-        <div class="form-group"><label>이름 *</label><input type="text" id="f_first" placeholder="철수"></div>
+        <div class="form-group"><label data-i18n="성 *">성 *</label><input type="text" id="f_last" placeholder="김"></div>
+        <div class="form-group"><label data-i18n="이름 *">이름 *</label><input type="text" id="f_first" placeholder="철수"></div>
       </div>
       <div class="form-row single">
-        <div class="form-group"><label>이메일</label><input type="email" id="f_email" placeholder="example@email.com"></div>
+        <div class="form-group"><label data-i18n='이메일'>이메일</label><input type="email" id="f_email" placeholder="example@email.com"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="form-section-title">개인 연락처</div>
+      <div class="form-section-title" data-i18n="개인 연락처">개인 연락처</div>
       <div class="form-row three">
-        <div class="form-group"><label>사무실</label><input type="tel" id="f_office" placeholder="02-0000-0000"></div>
-        <div class="form-group"><label>휴대폰</label><input type="tel" id="f_mobile" placeholder="010-0000-0000"></div>
-        <div class="form-group"><label>추가</label><input type="tel" id="f_extra" placeholder="팩스 등"></div>
+        <div class="form-group"><label data-i18n='사무실'>사무실</label><input type="tel" id="f_office" placeholder="02-0000-0000"></div>
+        <div class="form-group"><label data-i18n='휴대폰'>휴대폰</label><input type="tel" id="f_mobile" placeholder="010-0000-0000"></div>
+        <div class="form-group"><label data-i18n="추가연락처">추가</label><input type="tel" id="f_extra" placeholder="팩스 등"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="form-section-title">주소 (회사 공유)</div>
-      <div id="addrNotice" style="font-size:11px;color:var(--accent);margin-bottom:7px;display:none">ℹ 등록된 회사 주소가 적용됩니다. 변경하면 회사 전체에 반영됩니다.</div>
+      <div class="form-section-title" data-i18n="주소 (회사 공유)">주소 (회사 공유)</div>
+      <div id="addrNotice" style="font-size:11px;color:var(--accent);margin-bottom:7px;display:none" data-i18n="주소 안내">ℹ 등록된 회사 주소가 적용됩니다. 변경하면 회사 전체에 반영됩니다.</div>
       <div class="form-row single">
-        <div class="form-group"><label>주소</label><input type="text" id="f_address" placeholder="서울시 강남구 테헤란로 123"></div>
+        <div class="form-group"><label data-i18n='주소'>주소</label><input type="text" id="f_address" placeholder="서울시 강남구 테헤란로 123"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="form-section-title">메모</div>
+      <div class="form-section-title" data-i18n="메모">메모</div>
       <div class="form-row single">
         <div class="form-group"><textarea id="f_memo" placeholder="특이사항, 관계 등"></textarea></div>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('contactModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveContact()">저장</button>
+      <button class="btn btn-outline" onclick="closeModal('contactModal')"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-primary" onclick="saveContact()"><span data-i18n="저장">저장</span></button>
     </div>
   </div>
 </div>
@@ -519,66 +634,66 @@
 <div class="modal-overlay" id="companyModal">
   <div class="modal" style="width:680px">
     <button class="modal-close" onclick="closeModal('companyModal')">✕</button>
-    <div class="modal-title" id="coModalTitle">회사 정보</div>
+    <div class="modal-title" id="coModalTitle" data-i18n="회사 정보">회사 정보</div>
 
     <!-- 탭 -->
     <div class="co-tabs">
-      <button class="co-tab active" id="coTab-basic" onclick="switchCoTab('basic')">기본 정보</button>
-      <button class="co-tab" id="coTab-finance" onclick="switchCoTab('finance')">재무 현황</button>
-      <button class="co-tab" id="coTab-ceo" onclick="switchCoTab('ceo')">대표이사 이력</button>
+      <button class="co-tab active" id="coTab-basic" onclick="switchCoTab('basic')" data-i18n="기본 정보">기본 정보</button>
+      <button class="co-tab" id="coTab-finance" onclick="switchCoTab('finance')" data-i18n="재무 현황">재무 현황</button>
+      <button class="co-tab" id="coTab-ceo" onclick="switchCoTab('ceo')" data-i18n="대표이사 이력">대표이사 이력</button>
     </div>
 
     <!-- 탭: 기본 정보 -->
     <div id="coPanel-basic" class="co-panel">
       <div class="form-section">
-        <div class="form-section-title">회사명</div>
+        <div class="form-section-title" data-i18n="회사명">회사명</div>
         <div class="form-row single">
           <div class="form-group">
-            <label>회사명 (수정 시 소속 직원 전체에 자동 반영)</label>
+            <label data-i18n="회사명 수정 라벨">회사명 (수정 시 소속 직원 전체에 자동 반영)</label>
             <input type="text" id="co_name" placeholder="회사명">
           </div>
         </div>
       </div>
       <div class="form-section">
-        <div class="form-section-title">우리 팀 담당자</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">이 회사를 담당하는 우리 팀 정보를 기록합니다.</p>
+        <div class="form-section-title" data-i18n="우리 팀 담당자">우리 팀 담당자</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6" data-i18n="우리팀 설명">이 회사를 담당하는 우리 팀 정보를 기록합니다.</p>
         <div class="form-row">
-          <div class="form-group"><label>팀명</label><input type="text" id="co_our_team" placeholder="영업1팀"></div>
-          <div class="form-group"><label>담당자 이름</label><input type="text" id="co_our_name" placeholder="홍길동"></div>
+          <div class="form-group"><label data-i18n="팀명">팀명</label><input type="text" id="co_our_team" placeholder="영업1팀" data-i18n-placeholder="팀명 placeholder"></div>
+          <div class="form-group"><label data-i18n="담당자 이름">담당자 이름</label><input type="text" id="co_our_name" placeholder="홍길동" data-i18n-placeholder="CEO placeholder 이름"></div>
         </div>
         <div class="form-row single">
-          <div class="form-group"><label>메모</label><input type="text" id="co_our_memo" placeholder="주담당자 / 2024.01 인수인계"></div>
+          <div class="form-group"><label data-i18n='메모'>메모</label><input type="text" id="co_our_memo" placeholder="주담당자 / 2024.01 인수인계"></div>
         </div>
       </div>
 
       <div class="form-section">
-        <div class="form-section-title">다른 회사와 병합</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">같은 회사가 다른 이름으로 등록된 경우 병합합니다. 병합 대상의 모든 직원이 현재 회사로 이동됩니다.</p>
+        <div class="form-section-title" data-i18n="다른 회사와 병합">다른 회사와 병합</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6" data-i18n="병합 설명">같은 회사가 다른 이름으로 등록된 경우 병합합니다. 병합 대상의 모든 직원이 현재 회사로 이동됩니다.</p>
         <div class="form-row single">
           <div class="form-group">
-            <label>병합할 회사 선택 (없애고 싶은 쪽)</label>
+            <label data-i18n="병합 라벨">병합할 회사 선택 (없애고 싶은 쪽)</label>
             <select id="co_merge_target" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:8px 10px;font-size:13px;font-family:inherit;outline:none;width:100%">
-              <option value="">— 병합 안 함 —</option>
+              <option value="" data-i18n="병합 안 함">— 병합 안 함 —</option>
             </select>
           </div>
         </div>
         <div id="co_merge_preview" style="display:none;font-size:12px;color:var(--accent);margin-top:6px;padding:8px 12px;background:rgba(79,124,255,0.08);border-radius:6px;border:1px solid rgba(79,124,255,0.2)"></div>
       </div>
       <div class="form-section">
-        <div class="form-section-title">대표 연락처</div>
+        <div class="form-section-title" data-i18n="대표 연락처">대표 연락처</div>
         <div class="form-row">
-          <div class="form-group"><label>대표 전화</label><input type="tel" id="co_phone" placeholder="02-0000-0000"></div>
-          <div class="form-group"><label>팩스</label><input type="tel" id="co_fax" placeholder="02-0000-0001"></div>
+          <div class="form-group"><label data-i18n="대표 전화">대표 전화</label><input type="tel" id="co_phone" placeholder="02-0000-0000"></div>
+          <div class="form-group"><label data-i18n="팩스">팩스</label><input type="tel" id="co_fax" placeholder="02-0000-0001"></div>
         </div>
       </div>
       <div class="form-section">
-        <div class="form-section-title">주소</div>
+        <div class="form-section-title" data-i18n="주소">주소</div>
         <div class="form-row single">
-          <div class="form-group"><label>주소</label><input type="text" id="co_address" placeholder="서울시 강남구 테헤란로 123"></div>
+          <div class="form-group"><label data-i18n='주소'>주소</label><input type="text" id="co_address" placeholder="서울시 강남구 테헤란로 123"></div>
         </div>
       </div>
       <div class="form-section">
-        <div class="form-section-title">메모</div>
+        <div class="form-section-title" data-i18n="메모">메모</div>
         <div class="form-row single">
           <div class="form-group"><textarea id="co_memo" placeholder="회사 관련 메모"></textarea></div>
         </div>
@@ -588,41 +703,41 @@
     <!-- 탭: 재무 현황 -->
     <div id="coPanel-finance" class="co-panel" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <p style="font-size:12px;color:var(--muted)">연도별 재무 데이터를 입력하세요. 단위: 백만원</p>
-        <button class="btn btn-primary btn-sm" onclick="addFinanceRow()">＋ 연도 추가</button>
+        <p style="font-size:12px;color:var(--muted)" data-i18n="재무 안내">연도별 재무 데이터를 입력하세요. 단위: 백만원</p>
+        <button class="btn btn-primary btn-sm" onclick="addFinanceRow()" data-i18n="연도 추가">＋ 연도 추가</button>
       </div>
       <div style="overflow-x:auto">
         <table class="fin-table" id="finTable">
           <thead>
             <tr>
-              <th style="width:80px">연도</th>
-              <th>인원(명)</th>
-              <th>매출</th>
-              <th>영업이익</th>
-              <th>순이익</th>
-              <th>자산</th>
-              <th>부채</th>
+              <th style="width:80px" data-i18n="연도">연도</th>
+              <th data-i18n="인원(명)">인원(명)</th>
+              <th data-i18n="매출">매출</th>
+              <th data-i18n="영업이익">영업이익</th>
+              <th data-i18n="순이익">순이익</th>
+              <th data-i18n="자산">자산</th>
+              <th data-i18n="부채">부채</th>
               <th style="width:36px"></th>
             </tr>
           </thead>
           <tbody id="finBody"></tbody>
         </table>
       </div>
-      <p style="font-size:11px;color:var(--muted);margin-top:10px">* 금액 단위: 백만원 / 빈칸은 미입력으로 처리</p>
+      <p style="font-size:11px;color:var(--muted);margin-top:10px" data-i18n="재무 단위 안내">* 금액 단위: 백만원 / 빈칸은 미입력으로 처리</p>
     </div>
 
     <!-- 탭: 대표이사 이력 -->
     <div id="coPanel-ceo" class="co-panel" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <p style="font-size:12px;color:var(--muted)">대표이사 변경 이력을 최신순으로 관리합니다.</p>
-        <button class="btn btn-primary btn-sm" onclick="addCeoRow()">＋ 추가</button>
+        <p style="font-size:12px;color:var(--muted)" data-i18n="CEO 안내">대표이사 변경 이력을 최신순으로 관리합니다.</p>
+        <button class="btn btn-primary btn-sm" onclick="addCeoRow()" data-i18n="＋ 추가">＋ 추가</button>
       </div>
       <div id="ceoList"></div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('companyModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveCompany()">저장</button>
+      <button class="btn btn-outline" onclick="closeModal('companyModal')"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-primary" onclick="saveCompany()"><span data-i18n="저장">저장</span></button>
     </div>
   </div>
 </div>
@@ -631,7 +746,7 @@
 <div class="modal-overlay" id="gsModal">
   <div class="modal" style="width:540px">
     <button class="modal-close" onclick="closeModal('gsModal')">✕</button>
-    <div class="modal-title">🗄 Supabase 연동</div>
+    <div class="modal-title" data-i18n="Supabase 연동 모달">🗄 Supabase 연동</div>
 
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;font-size:12px;line-height:2.1;color:var(--muted)">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">📋 최초 설정 방법 (한 번만)</div>
@@ -659,9 +774,9 @@ create policy "allow all" on companies for all using (true) with check (true);
 create policy "allow all" on types for all using (true) with check (true);</div>
       <button class="btn btn-outline btn-sm" style="margin-top:6px;width:100%" onclick="
         navigator.clipboard.writeText(document.getElementById('sbSqlBlock').textContent);
-        this.textContent='✅ 복사됨!';
-        setTimeout(()=>this.textContent='📋 SQL 전체 복사',1500)
-      ">📋 SQL 전체 복사</button>
+        this.textContent=i18n('복사됨');
+        setTimeout(()=>this.textContent=i18n('SQL 복사'),1500)
+      " data-i18n="SQL 복사">📋 SQL 전체 복사</button>
     </div>
 
     <!-- URL / Key 입력 -->
@@ -692,8 +807,8 @@ create policy "allow all" on types for all using (true) with check (true);</div>
     <div id="sbStatusMsg" style="font-size:11px;min-height:16px;margin-bottom:10px;word-break:break-all;line-height:1.6"></div>
 
     <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
-      <button class="btn btn-outline btn-sm" onclick="closeModal('gsModal')">닫기</button>
-      <button class="btn btn-outline btn-sm" id="sbDisconnectBtn" style="display:none;color:var(--danger);border-color:var(--danger)" onclick="sbDisconnect()">연동 해제</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('gsModal')"><span data-i18n="닫기">닫기</span></button>
+      <button class="btn btn-outline btn-sm" id="sbDisconnectBtn" style="display:none;color:var(--danger);border-color:var(--danger)" onclick="sbDisconnect()" data-i18n="연동 해제">연동 해제</button>
       <button class="btn btn-outline btn-sm" onclick="sbDiagnose()">🔍 연결 진단</button>
       <button class="btn btn-outline btn-sm" onclick="sbManualLoad()">☁ 지금 불러오기</button>
       <button class="btn btn-primary btn-sm" onclick="sbSaveSettings()">✅ 연결 저장</button>
@@ -705,12 +820,12 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 <div class="modal-overlay" id="delContactModal">
   <div class="modal" style="width:380px;text-align:center">
     <div style="font-size:40px;margin-bottom:14px">🗑</div>
-    <div class="modal-title" style="text-align:center;margin-bottom:8px">연락처 삭제</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px" data-i18n="연락처 삭제">연락처 삭제</div>
     <div id="delContactInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px"></div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:20px">이 연락처와 관련 활동이 모두 삭제됩니다. 복구할 수 없습니다.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:20px" data-i18n="연락처 삭제 경고">이 연락처와 관련 활동이 모두 삭제됩니다. 복구할 수 없습니다.</p>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-outline" onclick="closeModal('delContactModal')" style="min-width:100px">취소</button>
-      <button class="btn btn-danger" id="delContactConfirmBtn" style="min-width:100px">삭제</button>
+      <button class="btn btn-outline" onclick="closeModal('delContactModal')" style="min-width:100px"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-danger" id="delContactConfirmBtn" style="min-width:100px"><span data-i18n="삭제">삭제</span></button>
     </div>
   </div>
 </div>
@@ -719,12 +834,12 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 <div class="modal-overlay" id="mergeConfirmModal">
   <div class="modal" style="width:420px;text-align:center">
     <div style="font-size:40px;margin-bottom:14px">🔀</div>
-    <div class="modal-title" style="text-align:center;margin-bottom:8px">회사 병합</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px" data-i18n="회사 병합">회사 병합</div>
     <div id="mergeConfirmInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;font-size:13px;line-height:2"></div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:20px">병합 후에는 되돌릴 수 없습니다.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:20px" data-i18n="병합 경고">병합 후에는 되돌릴 수 없습니다.</p>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-outline" onclick="closeModal('mergeConfirmModal')" style="min-width:100px">취소</button>
-      <button class="btn btn-primary" id="mergeConfirmBtn" style="min-width:100px">병합 실행</button>
+      <button class="btn btn-outline" onclick="closeModal('mergeConfirmModal')" style="min-width:100px"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-primary" id="mergeConfirmBtn" style="min-width:100px" data-i18n="병합 실행">병합 실행</button>
     </div>
   </div>
 </div>
@@ -733,29 +848,29 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 <div class="modal-overlay" id="activityModal">
   <div class="modal" style="width:480px">
     <button class="modal-close" onclick="closeModal('activityModal')">✕</button>
-    <div class="modal-title" id="actModalTitle">활동 추가</div>
+    <div class="modal-title" id="actModalTitle" data-i18n="활동 추가">활동 추가</div>
     <div class="form-section" id="actWhoSection">
-      <div class="form-section-title">담당자</div>
+      <div class="form-section-title" data-i18n="담당자">담당자</div>
       <div id="actWho" style="font-size:14px;font-weight:600;color:var(--accent);padding:4px 0"></div>
     </div>
     <div class="form-row single">
-      <div class="form-group"><label>유형 *</label>
+      <div class="form-group"><label data-i18n="유형 *">유형 *</label>
         <select id="a_type"></select>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>날짜 *</label><input type="date" id="a_date"></div>
-      <div class="form-group"><label>금액</label><input type="text" id="a_amount" placeholder="₩"></div>
+      <div class="form-group"><label data-i18n="날짜 *">날짜 *</label><input type="date" id="a_date"></div>
+      <div class="form-group"><label data-i18n="금액">금액</label><input type="text" id="a_amount" placeholder="₩"></div>
     </div>
     <div class="form-row single">
-      <div class="form-group"><label>제목</label><input type="text" id="a_title" placeholder="간단한 제목"></div>
+      <div class="form-group"><label data-i18n="제목">제목</label><input type="text" id="a_title" placeholder="간단한 제목"></div>
     </div>
     <div class="form-row single">
-      <div class="form-group"><label>내용</label><textarea id="a_content" placeholder="상세 내용"></textarea></div>
+      <div class="form-group"><label data-i18n="내용">내용</label><textarea id="a_content" placeholder="상세 내용"></textarea></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('activityModal')">취소</button>
-      <button class="btn btn-primary" id="actSaveBtn" onclick="saveActivity()">저장</button>
+      <button class="btn btn-outline" onclick="closeModal('activityModal')"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-primary" id="actSaveBtn" onclick="saveActivity()"><span data-i18n="저장">저장</span></button>
     </div>
   </div>
 </div>
@@ -764,24 +879,24 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 <div class="modal-overlay" id="typeModal">
   <div class="modal" style="width:480px">
     <button class="modal-close" onclick="closeModal('typeModal')">✕</button>
-    <div class="modal-title">활동 유형 관리</div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7">유형을 추가하거나 순서를 변경할 수 있습니다.<br>기본 유형(발주·견적·방문·통화·기타)은 삭제할 수 없습니다.</p>
+    <div class="modal-title" data-i18n="활동 유형 관리">활동 유형 관리</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7" data-i18n="유형 관리 안내">유형을 추가하거나 순서를 변경할 수 있습니다.<br><span data-i18n="기본 유형 안내">기본 유형(발주·견적·방문·통화·기타)은 삭제할 수 없습니다.</span></p>
     <div id="typeList"></div>
     <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <div class="form-section-title" style="margin-bottom:10px">새 유형 추가</div>
+      <div class="form-section-title" data-i18n="새 유형 추가" style="margin-bottom:10px">새 유형 추가</div>
       <div style="display:grid;grid-template-columns:60px 1fr 120px auto;gap:8px;align-items:center">
         <input id="newTypeEmoji" placeholder="🔖" maxlength="2" style="padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:18px;text-align:center;outline:none;width:100%">
         <input id="newTypeLabel" placeholder="유형 이름" style="padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%">
         <div style="display:flex;align-items:center;gap:6px">
           <input type="color" id="newTypeColor" value="#4f7cff" style="width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;padding:2px">
-          <span style="font-size:11px;color:var(--muted)">색상</span>
+          <span style="font-size:11px;color:var(--muted)" data-i18n="색상">색상</span>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="addCustomType()">추가</button>
+        <button class="btn btn-primary btn-sm" onclick="addCustomType()" data-i18n="추가">추가</button>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal('typeModal')">취소</button>
-      <button class="btn btn-primary" onclick="saveTypes_modal()">저장</button>
+      <button class="btn btn-outline" onclick="closeModal('typeModal')"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-primary" onclick="saveTypes_modal()"><span data-i18n="저장">저장</span></button>
     </div>
   </div>
 </div>
@@ -790,12 +905,12 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 <div class="modal-overlay" id="delActModal">
   <div class="modal" style="width:400px;text-align:center">
     <div style="font-size:40px;margin-bottom:14px">🗑</div>
-    <div class="modal-title" style="text-align:center;margin-bottom:8px">활동 삭제</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px" data-i18n="활동 삭제">활동 삭제</div>
     <div id="delActInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px;text-align:left;font-size:13px;line-height:1.8"></div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">이 활동을 삭제하면 복구할 수 없습니다.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px" data-i18n="활동 삭제 경고">이 활동을 삭제하면 복구할 수 없습니다.</p>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-outline" onclick="closeModal('delActModal')" style="min-width:100px">취소</button>
-      <button class="btn btn-danger" id="delActConfirmBtn" style="min-width:100px">삭제</button>
+      <button class="btn btn-outline" onclick="closeModal('delActModal')" style="min-width:100px"><span data-i18n="취소">취소</span></button>
+      <button class="btn btn-danger" id="delActConfirmBtn" style="min-width:100px"><span data-i18n="삭제">삭제</span></button>
     </div>
   </div>
 </div>
@@ -804,12 +919,12 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 <div class="modal-overlay" id="pdfModal">
   <div class="modal" style="width:640px">
     <button class="modal-close" onclick="closeModal('pdfModal')">✕</button>
-    <div class="modal-title">🗂 파일에서 연락처 자동 추출</div>
+    <div class="modal-title" data-i18n="파일 모달 제목">🗂 파일에서 연락처 자동 추출</div>
 
     <!-- Step 1: API Key -->
     <div id="pdfStep0" class="pdf-step">
       <div class="form-section">
-        <div class="form-section-title">Claude API 키 설정</div>
+        <div class="form-section-title" data-i18n="Claude API 키 설정">Claude API 키 설정</div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
           파일 분석에는 Claude API가 사용됩니다.<br>
           <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> → API Keys 메뉴에서 발급하세요.<br>
@@ -821,7 +936,7 @@ create policy "allow all" on types for all using (true) with check (true);</div>
             <div style="position:relative">
               <input type="password" id="pdfApiKey" placeholder="sk-ant-api03-..."
                 style="padding-right:44px"
-                oninput="const v=this.value.trim();document.getElementById('pdfKeyValidMsg').textContent=v&&!v.startsWith('sk-')?'⚠ sk- 로 시작해야 합니다':''">
+                oninput="const v=this.value.trim();document.getElementById('pdfKeyValidMsg').textContent=v&&!v.startsWith('sk-')?i18n('sk- 시작 오류'):''">
               <button onclick="const i=document.getElementById('pdfApiKey');i.type=i.type==='password'?'text':'password'"
                 style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px">👁</button>
             </div>
@@ -830,17 +945,17 @@ create policy "allow all" on types for all using (true) with check (true);</div>
         </div>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="closeModal('pdfModal')">취소</button>
-        <button class="btn btn-primary" onclick="pdfSaveKey()">저장 후 계속</button>
+        <button class="btn btn-outline" onclick="closeModal('pdfModal')"><span data-i18n="취소">취소</span></button>
+        <button class="btn btn-primary" onclick="pdfSaveKey()" data-i18n="저장 후 계속">저장 후 계속</button>
       </div>
     </div>
 
     <!-- Step 2: Upload -->
     <div id="pdfStep1" class="pdf-step" style="display:none">
       <div class="form-section">
-        <div class="form-section-title">파일 업로드</div>
+        <div class="form-section-title" data-i18n="파일 업로드">파일 업로드</div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.8">
-          명함 사진, PDF, Word, 텍스트 파일, 그리고 Outlook·Gmail 등의 <strong style="color:var(--accent3)">대용량 CSV</strong>도 지원합니다.<br>
+          명함 사진, PDF, Word, 텍스트 파일, 그리고 Outlook·Gmail 등의 <strong style="color:var(--accent3)" data-i18n="대용량 CSV">대용량 CSV</strong><span data-i18n="도 지원합니다">도 지원합니다.</span><br>
           <span style="color:var(--accent)">📄 PDF</span> &nbsp;
           <span style="color:var(--accent)">🖼 사진 (JPG·PNG·WEBP)</span> &nbsp;
           <span style="color:var(--accent)">📝 텍스트 (TXT)</span> &nbsp;
@@ -848,7 +963,7 @@ create policy "allow all" on types for all using (true) with check (true);</div>
         </p>
         <div id="pdfDropzone" class="pdf-dropzone" onclick="document.getElementById('pdfFileInput').click()">
           <div class="pdf-drop-icon" id="dropIcon">🗂</div>
-          <div class="pdf-drop-text">클릭하거나 파일을 드래그하여 업로드</div>
+          <div class="pdf-drop-text" data-i18n="클릭하거나 파일을 드래그하여 업로드">클릭하거나 파일을 드래그하여 업로드</div>
           <div class="pdf-drop-sub">PDF · JPG · PNG · WEBP · TXT · CSV (CSV는 크기 제한 없음 / 기타 최대 10MB)</div>
           <input type="file" id="pdfFileInput"
             accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.xls,.xlsx,.doc,.docx"
@@ -859,7 +974,7 @@ create policy "allow all" on types for all using (true) with check (true);</div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="pdfChangeKey()">🔑 키 변경</button>
-        <button class="btn btn-outline" onclick="closeModal('pdfModal')">취소</button>
+        <button class="btn btn-outline" onclick="closeModal('pdfModal')"><span data-i18n="취소">취소</span></button>
         <button class="btn btn-primary" id="pdfAnalyzeBtn" onclick="pdfAnalyze()" disabled>🔍 분석 시작</button>
       </div>
     </div>
@@ -868,16 +983,16 @@ create policy "allow all" on types for all using (true) with check (true);</div>
     <div id="pdfStep2" class="pdf-step" style="display:none">
       <div style="text-align:center;padding:48px 20px">
         <div class="pdf-spinner"></div>
-        <div style="font-size:15px;font-weight:600;margin-top:20px" id="pdfLoadingMsg">파일 분석 중...</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:8px">Claude AI가 연락처 정보를 추출하고 있습니다</div>
+        <div style="font-size:15px;font-weight:600;margin-top:20px" id="pdfLoadingMsg"></div>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px" data-i18n="AI 분석 중 안내">Claude AI가 연락처 정보를 추출하고 있습니다</div>
       </div>
     </div>
 
     <!-- Step 4: Results -->
     <div id="pdfStep3" class="pdf-step" style="display:none">
       <div class="form-section">
-        <div class="form-section-title">추출된 연락처 확인 및 수정</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">내용을 확인하고 필요하면 수정 후 저장하세요. 체크된 항목만 CRM에 추가됩니다.</p>
+        <div class="form-section-title" data-i18n="추출된 연락처 확인 및 수정">추출된 연락처 확인 및 수정</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px" data-i18n="PDF 결과 안내">내용을 확인하고 필요하면 수정 후 저장하세요. 체크된 항목만 CRM에 추가됩니다.</p>
       </div>
       <div id="pdfResults"></div>
       <div class="modal-actions" style="margin-top:16px">
@@ -895,15 +1010,15 @@ create policy "allow all" on types for all using (true) with check (true);</div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-outline" onclick="pdfRetry()">← 다시 시도</button>
-        <button class="btn btn-outline" onclick="closeModal('pdfModal')">닫기</button>
+        <button class="btn btn-outline" onclick="closeModal('pdfModal')"><span data-i18n="닫기">닫기</span></button>
       </div>
     </div>
 
     <!-- Step 6 (CSV): 컬럼 매핑 -->
     <div id="pdfStep5" class="pdf-step" style="display:none">
       <div class="form-section">
-        <div class="form-section-title">📊 CSV 컬럼 매핑 확인</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">자동으로 감지된 매핑입니다. 필요하면 드롭다운으로 변경하세요.</p>
+        <div class="form-section-title" data-i18n="📊 CSV 컬럼 매핑 확인">📊 CSV 컬럼 매핑 확인</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px" data-i18n="CSV 매핑 안내">자동으로 감지된 매핑입니다. 필요하면 드롭다운으로 변경하세요.</p>
         <div id="csvMappingArea" style="overflow:auto;max-height:300px"></div>
         <div id="csvPreviewInfo" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
       </div>
@@ -933,8 +1048,8 @@ create policy "allow all" on types for all using (true) with check (true);</div>
         <div id="csvDoneSub" style="font-size:13px;color:var(--muted);line-height:1.9"></div>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-outline" onclick="pdfShowStep(1)">추가 파일 가져오기</button>
-        <button class="btn btn-primary" onclick="closeModal('pdfModal')">닫기</button>
+        <button class="btn btn-outline" onclick="pdfShowStep(1)" data-i18n="추가 파일 가져오기">추가 파일 가져오기</button>
+        <button class="btn btn-primary" onclick="closeModal('pdfModal')"><span data-i18n="닫기">닫기</span></button>
       </div>
     </div>
 
@@ -943,17 +1058,816 @@ create policy "allow all" on types for all using (true) with check (true);</div>
 
 
 <script>
+// ── 전역 에러 핸들러 (cross-origin "Script error." 대신 실제 에러 표시) ──
+window.addEventListener('error', function(e){
+  var msg = e.message || 'Unknown error';
+  var src  = (e.filename||'').split('/').pop();
+  var info = msg + (src ? ' [' + src + ':' + (e.lineno||'?') + ']' : '');
+  var el = document.getElementById('_crmErrBox');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_crmErrBox';
+    el.style.cssText = 'position:fixed;bottom:60px;left:0;right:0;background:#c0392b;color:#fff;padding:10px 14px;font-size:12px;font-family:monospace;z-index:99999;white-space:pre-wrap;word-break:break-all;max-height:120px;overflow:auto';
+    if(document.body) document.body.appendChild(el);
+  }
+  el.textContent = '⚠ ' + info;
+});
+window.addEventListener('unhandledrejection', function(e){
+  var msg = e.reason && e.reason.message ? e.reason.message : String(e.reason);
+  console.error('Unhandled Promise:', msg);
+});// CSS.escape polyfill (iOS Safari 호환)
+if(typeof CSS==='undefined'||!CSS.escape){
+  (typeof CSS==='undefined'?window.CSS={}:CSS).escape=function(v){
+    var s=String(v),r='',c;
+    for(var i=0;i<s.length;i++){
+      c=s.charCodeAt(i);
+      if(c===0){r+='\uFFFD';}
+      else if(c<32||(c>=127&&c<160)){r+='\\'+c.toString(16)+' ';}
+      else if(i===0&&c>=48&&c<=57){r+='\\'+c.toString(16)+' ';}
+      else if(i===1&&c>=48&&c<=57&&s.charCodeAt(0)===45){r+='\\'+c.toString(16)+' ';}
+      else if(c>=128||c===45||c===95||(c>=48&&c<=57)||(c>=65&&c<=90)||(c>=97&&c<=122)){r+=s[i];}
+      else{r+='\\'+s[i];}
+    }
+    return r;
+  };
+}
+
+const I18N = {
+  ko: {
+    '스마트 고객관리 시스템':'스마트 고객관리 시스템',
+    '연락처':'연락처','전체 활동':'전체 활동','파일 가져오기':'파일 가져오기',
+    '활동 유형 관리':'활동 유형 관리','Supabase 연동':'Supabase 연동',
+    '사용 가이드':'사용 가이드','라이선스 정보':'라이선스 정보',
+    '회사':'회사','활동':'활동','이름, 회사 검색...':'이름, 회사 검색...',
+    '이름을 입력하세요.':'이름을 입력하세요.','회사명을 입력하세요.':'회사명을 입력하세요.',
+    '먼저 담당자를 추가하세요.':'먼저 담당자를 추가하세요.',
+    '담당자를 선택하세요.':'담당자를 선택하세요.',
+    '날짜를 입력하세요.':'날짜를 입력하세요.',
+    'API 키가 없습니다.':'API 키가 없습니다.','API 키를 입력해주세요.':'API 키를 입력해주세요.',
+    '올바른 API 키':'올바른 API 키를 입력해주세요.',
+    '파일을 먼저 선택해주세요.':'파일을 먼저 선택해주세요.',
+    'CSV 파일은 1개씩':'CSV 파일은 1개씩 처리됩니다. 다른 파일은 무시됩니다.',
+    '파일 초과':'파일이 10MB를 초과합니다.',
+    '활동 연결 오류':'활동을 연결할 연락처가 없습니다. 연락처를 먼저 체크해주세요.',
+    '추출된 정보 없음':'추출된 정보가 없습니다.',
+    '추출된 연락처 없음':'추출된 연락처나 활동이 없습니다.',
+    '병합 안 함':'— 병합 안 함 —','동기화 완료':'동기화 완료 · ',
+    '아직 동기화 안 됨':'아직 동기화 안 됨','개 파일':'개 파일',
+    '현재키':'(현재: ','이름 없음':'이름 없음',
+    '신규':'신규','총':'총','명':'명','건':'건',
+    '담당자 추가':'담당자 추가','활동 없음':'활동 없음',
+    '연락처 없음':'연락처 없음','회사 전체 활동':'회사 전체 활동',
+    '팀 미등록':'팀 미등록 — 회사 수정에서 우리 팀 담당자를 입력하면 필터가 생깁니다',
+    '대표이사':'대표이사','새 연락처':'새 연락처','연락처 수정':'연락처 수정',
+    '활동 추가':'활동 추가','활동 수정':'활동 수정',
+    '저장':'저장','취소':'취소','수정':'수정','삭제':'삭제','확인':'확인','닫기':'닫기',
+    '연도':'연도','인원':'인원','매출':'매출','영업이익':'영업이익',
+    '순이익':'순이익','자산':'자산','부채':'부채',
+    '인원(명)':'인원(명)','매출(M)':'매출(M)',
+    '불러오는 중...':'불러오는 중...','저장 중...':'저장 중...',
+    '저장됨':'저장됨','로컬 저장 모드':'로컬 저장 모드',
+    '로컬 저장 모드_sync':'로컬 저장 모드 · 🗄 클릭해서 Supabase 연동',
+    '파일 분석 중...':'파일 분석 중...',
+    '분석 시작':'🔍 분석 시작','CSV 분석하기':'➡ CSV 분석하기',
+    'CSV 읽는 중':'📊 CSV 파일 읽는 중...','CSV 파싱 중':'📊 CSV 파싱 중...',
+    '명 추가 완료':'명 추가 완료!',
+    '추가':'추가','중복 건너뜀':'중복 건너뜀','빈 행 건너뜀':'빈 행 건너뜀',
+    '행 감지 메시지':'행 감지 · 아래에서 컬럼 매핑을 확인하세요.',
+    '저장됐습니다':'✅ 저장됐습니다. Supabase에서 불러오는 중...',
+    'URL과 Key 입력':'먼저 URL과 Key를 입력하고 저장해주세요.',
+    '날짜':'날짜','유형':'유형','내용':'내용','금액':'금액','담당자':'담당자',
+    '활동이 없습니다':'활동이 없습니다',
+    '오늘':'오늘','이동됩니다':'이동됩니다. 저장 시 적용됩니다.',
+    '전체 N년':'전체 {n}년','총 N명':'총 {n}명',
+    '+ 연락처':'+ 연락처',
+    '연락처가 없습니다':'연락처가 없습니다\n+ 버튼으로 추가하거나 파일을 가져오세요.',
+    '개 파일 선택됨':'개 파일 선택됨',
+    '가져오는 중...':'가져오는 중...',
+    '행 처리 시작':'행 처리 시작',
+    'CSV 파싱 오류':'CSV 파싱 오류',
+    '파일을 읽을 수 없습니다':'파일을 읽을 수 없습니다.',
+    '유형 이름을 입력하세요':'유형 이름을 입력하세요.',
+    '전체 필터':'전체',
+    '마지막 동기화':'마지막 동기화: ',
+    'URL Key 입력 경고':'⚠ URL과 API Key를 모두 입력해주세요.',
+    'Supabase URL 경고':'⚠ Supabase Project URL이 아닌 것 같습니다.',
+    'URL Key 먼저':'⚠ URL과 Key를 먼저 입력하세요.',
+    '진단 중':'🔍 진단 중...',
+    '추가되었습니다':'추가되었습니다!',
+    '파일 크기':'파일 크기',
+    'CEO placeholder 이름':'홍길동',
+    'CEO placeholder 현재':'현재',
+    'CEO placeholder 메모':'메모',
+    '← 목록으로':'← 목록으로',
+    '회사 보기':'회사 보기',
+    '모든 활동 내역':'모든 활동 내역 (최신순)',
+    '소속 회사':'소속 회사',
+    '개인 정보':'개인 정보',
+    '개인 연락처':'개인 연락처',
+    '주소 (회사 공유)':'주소 (회사 공유)',
+    '메모':'메모',
+    '회사명':'회사명',
+    '우리 팀 담당자':'우리 팀 담당자',
+    '다른 회사와 병합':'다른 회사와 병합',
+    '대표 연락처':'대표 연락처',
+    '주소':'주소',
+    '새 유형 추가':'새 유형 추가',
+    '발주':'발주','견적':'견적','방문':'방문','통화':'통화','기타':'기타',
+    '이메일':'이메일','부서':'부서','직책':'직책','성':'성','이름':'이름',
+    '사무실':'사무실','휴대폰':'휴대폰','추가연락처':'추가연락처',
+    '취임연도':'취임연도','퇴임연도':'퇴임연도','비고':'비고',
+    '없앨 회사':'없앨 회사','합칠 회사':'합칠 회사',
+    '활동 함께 삭제':'관련 활동도 함께 삭제됩니다',
+    'Supabase 자동동기화 안내':'Supabase 연동 시 자동 동기화됩니다.',
+    '순차 분석':'순차 분석합니다','감지 유형':'감지된 유형',
+    '대용량 파싱 모드':'대용량 직접 파싱 모드',
+    '행 처리 시작':'행 처리 시작','PDF 문서':'PDF 문서',
+    '이미지':'이미지 (명함·사진)','텍스트 파일':'텍스트 파일',
+    '사용 안 함':'— 사용 안 함 —','CRM 필드':'CRM 필드','미리보기':'미리보기',
+    '없음':'없음',
+    'Claude API 키 설정':'Claude API 키 설정',
+    '파일 업로드':'파일 업로드',
+    '추출된 연락처 확인 및 수정':'추출된 연락처 확인 및 수정',
+    '📊 CSV 컬럼 매핑 확인':'📊 CSV 컬럼 매핑 확인',
+    '공통':'공통','담당':'담당','✏ 수정':'✏ 수정',
+    '년':'년','전체':'전체','현재':'현재',
+
+    '👥 팀':'👥 팀',
+    '저장 실패':'저장 실패',
+    '회사 미지정':'회사 미지정',
+    '🗑 삭제':'🗑 삭제',
+    '＋ 추가':'＋ 추가',
+    '＋ 활동':'＋ 활동',
+    '행':'행',
+    '처리 시작':'처리 시작',
+    '자동 연결 안내':'(활동은 연락처 저장 후 자동 연결)',
+        'PIN을 입력하세요':'PIN을 입력하세요',
+    '잠금 상태':'잠금 상태',
+    '분 후 다시 시도하세요':'분 후 다시 시도하세요',
+    'PIN 오류':'PIN 오류',
+    '회 남음':'회 남음',
+    'PIN 초기화 확인':'PIN을 초기화하면 잠금이 해제됩니다.\n데이터는 유지됩니다. 계속할까요?',
+    'PIN 변경':'PIN 변경',
+    'PIN 설정':'PIN 설정',
+    '현재 PIN을 입력하세요':'현재 PIN을 입력하세요',
+    '새 PIN 4자리를 입력하세요':'새 PIN 4자리를 입력하세요',
+    'PIN을 한 번 더 입력하세요':'확인을 위해 한 번 더 입력하세요',
+    '현재 PIN이 틀렸습니다':'현재 PIN이 틀렸습니다',
+    'PIN이 일치하지 않습니다':'PIN이 일치하지 않습니다',
+    'PIN이 설정되었습니다':'✓ PIN이 설정되었습니다',
+    'PIN 잠금을 해제하시겠습니까?':'PIN 잠금을 해제하시겠습니까?\n데이터는 유지됩니다.',
+    'PIN 잠금':'PIN 잠금',
+    'AI 분석 중 안내':'Claude AI가 연락처 정보를 추출하고 있습니다',
+    'PDF 결과 안내':'내용을 확인하고 필요하면 수정 후 저장하세요. 체크된 항목만 CRM에 추가됩니다.',
+    'sk- 시작 오류':'⚠ sk- 로 시작해야 합니다',
+    '복사됨':'✅ 복사됨!',
+    'SQL 복사':'📋 SQL 전체 복사',
+    '아래는 파일 내용입니다':'아래는 파일 내용입니다:',
+    '확인 사항':'확인 사항',
+    'API키 시작 확인':'API 키가 sk-ant- 로 시작하는지 확인',
+    '대표전화 없음':'대표전화 없음',
+    '연락처 삭제 경고':'이 연락처와 관련 활동이 모두 삭제됩니다. 복구할 수 없습니다.',
+    '병합 경고':'병합 후에는 되돌릴 수 없습니다.',
+    '병합 실행':'병합 실행',
+    '날짜 *':'날짜 *','금액':'금액','제목':'제목','내용':'내용',
+    '유형 관리 안내':'유형을 추가하거나 순서를 변경할 수 있습니다.',
+    '기본 유형 안내':'기본 유형(발주·견적·방문·통화·기타)은 삭제할 수 없습니다.',
+    '색상':'색상',
+    '활동 삭제 경고':'이 활동을 삭제하면 복구할 수 없습니다.',
+    '저장 후 계속':'저장 후 계속',
+    '대용량 CSV':'대용량 CSV','도 지원합니다':'도 지원합니다.',
+    '클릭하거나 파일을 드래그하여 업로드':'클릭하거나 파일을 드래그하여 업로드',
+    '분석 실패':'분석 실패',
+    'CSV 매핑 안내':'자동으로 감지된 매핑입니다. 필요하면 드롭다운으로 변경하세요.',
+    '추가 파일 가져오기':'추가 파일 가져오기',
+    '시작하기 →':'시작하기 →',
+    '연동 해제':'연동 해제',
+    '이메일 라벨':'이메일',
+    // 신규 추가
+    '회사 정보':'회사 정보',
+    '기본 정보':'기본 정보','재무 현황':'재무 현황','대표이사 이력':'대표이사 이력',
+    '회사명 라벨':'회사명 (같은 회사 직원은 동일 이름 입력)',
+    '회사명 수정 라벨':'회사명 (수정 시 소속 직원 전체에 자동 반영)',
+    '성 *':'성 *','이름 *':'이름 *',
+    '팀명':'팀명','담당자 이름':'담당자 이름',
+    '팀명 placeholder':'영업1팀',
+    '병합 라벨':'병합할 회사 선택 (없애고 싶은 쪽)',
+    '대표 전화':'대표 전화','팩스':'팩스',
+    '재무 안내':'연도별 재무 데이터를 입력하세요. 단위: 백만원',
+    '재무 단위 안내':'* 금액 단위: 백만원 / 빈칸은 미입력으로 처리',
+    '연도 추가':'＋ 연도 추가',
+    'CEO 안내':'대표이사 변경 이력을 최신순으로 관리합니다.',
+    'Supabase 연동 모달':'🗄 Supabase 연동',
+    '파일 모달 제목':'🗂 파일에서 연락처 자동 추출',
+    '연락처 삭제':'연락처 삭제','회사 병합':'회사 병합','활동 삭제':'활동 삭제',
+    '우리팀 설명':'이 회사를 담당하는 우리 팀 정보를 기록합니다.',
+    '병합 설명':'같은 회사가 다른 이름으로 등록된 경우 병합합니다. 병합 대상의 모든 직원이 현재 회사로 이동됩니다.',
+    '주소 안내':'ℹ 등록된 회사 주소가 적용됩니다. 변경하면 회사 전체에 반영됩니다.',
+    '유형 *':'유형 *',
+    '이메일 th':'이메일',
+  },
+  en: {
+    '스마트 고객관리 시스템':'Smart CRM System',
+    '연락처':'Contacts','전체 활동':'All Activities','파일 가져오기':'Import File',
+    '활동 유형 관리':'Activity Types','Supabase 연동':'Supabase Sync',
+    '사용 가이드':'User Guide','라이선스 정보':'License',
+    '회사':'Companies','활동':'Activities','이름, 회사 검색...':'Search name, company...',
+    '이름을 입력하세요.':'Please enter a name.','회사명을 입력하세요.':'Please enter a company name.',
+    '먼저 담당자를 추가하세요.':'Please add a contact first.',
+    '담당자를 선택하세요.':'Please select a contact.',
+    '날짜를 입력하세요.':'Please enter a date.',
+    'API 키가 없습니다.':'No API key found.','API 키를 입력해주세요.':'Please enter your API key.',
+    '올바른 API 키':'Please enter a valid API key.',
+    '파일을 먼저 선택해주세요.':'Please select a file first.',
+    'CSV 파일은 1개씩':'CSV files are processed one at a time.',
+    '파일 초과':'File exceeds 10MB.',
+    '활동 연결 오류':'No contacts selected. Please check contacts first.',
+    '추출된 정보 없음':'No information extracted.',
+    '추출된 연락처 없음':'No contacts or activities found.',
+    '병합 안 함':'— No merge —','동기화 완료':'Synced · ',
+    '아직 동기화 안 됨':'Not synced yet','개 파일':' files',
+    '현재키':'(current: ','이름 없음':'Unnamed',
+    '신규':'new','총':'','명':'contacts','건':'activities',
+    '담당자 추가':'+ Add Contact','활동 없음':'No activities',
+    '연락처 없음':'No contact info','회사 전체 활동':'Company Activities',
+    '팀 미등록':'No team — add members in Company settings',
+    '대표이사':'CEO','새 연락처':'New Contact','연락처 수정':'Edit Contact',
+    '활동 추가':'Add Activity','활동 수정':'Edit Activity',
+    '저장':'Save','취소':'Cancel','수정':'Edit','삭제':'Delete','확인':'OK','닫기':'Close',
+    '연도':'Year','인원':'Staff','매출':'Revenue','영업이익':'Op.Profit',
+    '순이익':'Net Profit','자산':'Assets','부채':'Liabilities',
+    '인원(명)':'Employees','매출(M)':'Revenue(M)',
+    '불러오는 중...':'Loading...','저장 중...':'Saving...',
+    '저장됨':'Saved','로컬 저장 모드':'Local mode',
+    '로컬 저장 모드_sync':'Local mode · Click 🗄 to sync',
+    '파일 분석 중...':'Analyzing...',
+    '분석 시작':'🔍 Analyze','CSV 분석하기':'➡ Parse CSV',
+    'CSV 읽는 중':'📊 Reading CSV...','CSV 파싱 중':'📊 Parsing CSV...',
+    '명 추가 완료':' contacts added!',
+    '추가':'Added','중복 건너뜀':'Duplicates skipped','빈 행 건너뜀':'Empty rows skipped',
+    '행 감지 메시지':' rows detected · Check column mapping below.',
+    '저장됐습니다':'✅ Saved. Loading from Supabase...',
+    'URL과 Key 입력':'Please enter URL and Key first.',
+    '날짜':'Date','유형':'Type','내용':'Content','금액':'Amount','담당자':'Contact',
+    '활동이 없습니다':'No activities found',
+    '오늘':'today','이동됩니다':'will be moved. Applied on save.',
+    '전체 N년':'All {n} yr','총 N명':'{n} total',
+    '+ 연락처':'+ Contact',
+    '연락처가 없습니다':'No contacts yet.\nClick ＋ to add or import a file.',
+    '개 파일 선택됨':' files selected',
+    '가져오는 중...':'Importing...',
+    '행 처리 시작':'rows to process',
+    'CSV 파싱 오류':'CSV parse error',
+    '파일을 읽을 수 없습니다':'Unable to read file.',
+    '유형 이름을 입력하세요':'Please enter a type name.',
+    '전체 필터':'All',
+    '마지막 동기화':'Last sync: ',
+    'URL Key 입력 경고':'⚠ Please enter both URL and API Key.',
+    'Supabase URL 경고':'⚠ This does not appear to be a Supabase URL.',
+    'URL Key 먼저':'⚠ Please enter URL and Key first.',
+    '진단 중':'🔍 Diagnosing...',
+    '추가되었습니다':'added!',
+    '파일 크기':'File size',
+    'CEO placeholder 이름':'John Doe',
+    'CEO placeholder 현재':'present',
+    'CEO placeholder 메모':'note',
+    '← 목록으로':'← Back',
+    '회사 보기':'View Company',
+    '모든 활동 내역':'All Activities (latest first)',
+    '소속 회사':'Company',
+    '개인 정보':'Personal Info',
+    '개인 연락처':'Contact Info',
+    '주소 (회사 공유)':'Address (shared)',
+    '메모':'Memo',
+    '회사명':'Company Name',
+    '우리 팀 담당자':'Our Team Members',
+    '다른 회사와 병합':'Merge with Another Company',
+    '대표 연락처':'Main Contact',
+    '주소':'Address',
+    '새 유형 추가':'Add New Type',
+    '발주':'Order','견적':'Quote','방문':'Visit','통화':'Call','기타':'Other',
+    '이메일':'Email','부서':'Dept','직책':'Title','성':'Last','이름':'First',
+    '사무실':'Office','휴대폰':'Mobile','추가연락처':'Extra',
+    '취임연도':'From','퇴임연도':'To','비고':'Note',
+    '없앨 회사':'Remove','합칠 회사':'Keep',
+    '활동 함께 삭제':'activities will also be deleted',
+    'Supabase 자동동기화 안내':'Auto-synced if Supabase is connected.',
+    '순차 분석':'Processing sequentially','감지 유형':'Detected type',
+    '대용량 파싱 모드':'Large file direct parse mode',
+    '행 처리 시작':'rows to process','PDF 문서':'PDF',
+    '이미지':'Image','텍스트 파일':'Text file',
+    '사용 안 함':'— None —','CRM 필드':'CRM Field','미리보기':'Preview',
+    '없음':'None',
+    'Claude API 키 설정':'Claude API Key Setup',
+    '파일 업로드':'File Upload',
+    '추출된 연락처 확인 및 수정':'Review & Edit Extracted Contacts',
+    '📊 CSV 컬럼 매핑 확인':'📊 CSV Column Mapping',
+    '공통':'Shared','담당':'In charge','✏ 수정':'✏ Edit',
+    '년':' yr','전체':'All','현재':'present',
+
+    '👥 팀':'👥 Team',
+    '저장 실패':'Save failed',
+    '대표전화 없음':'No main phone',
+    '회사 미지정':'No Company',
+    '🗑 삭제':'🗑 Del',
+    '＋ 추가':'＋ Add',
+    '＋ 활동':'＋ Activity',
+    '행':' rows',
+    '처리 시작':'to process',
+    '자동 연결 안내':'(activities auto-linked after saving contacts)',
+        'PIN을 입력하세요':'Enter your PIN',
+    '잠금 상태':'Locked',
+    '분 후 다시 시도하세요':' min remaining',
+    'PIN 오류':'Wrong PIN',
+    '회 남음':' tries left',
+    'PIN 초기화 확인':'Reset PIN? This will disable the lock.\nYour data will be kept.',
+    'PIN 변경':'Change PIN',
+    'PIN 설정':'Set PIN',
+    '현재 PIN을 입력하세요':'Enter current PIN',
+    '새 PIN 4자리를 입력하세요':'Enter new 4-digit PIN',
+    'PIN을 한 번 더 입력하세요':'Confirm your new PIN',
+    '현재 PIN이 틀렸습니다':'Wrong current PIN',
+    'PIN이 일치하지 않습니다':'PINs do not match',
+    'PIN이 설정되었습니다':'✓ PIN set successfully',
+    'PIN 잠금을 해제하시겠습니까?':'Disable PIN lock?\nYour data will be kept.',
+    'PIN 잠금':'PIN Lock',
+    'AI 분석 중 안내':'Claude AI is extracting contact info',
+    'PDF 결과 안내':'Review extracted info and edit if needed. Only checked items will be added.',
+    'sk- 시작 오류':'⚠ Key must start with sk-',
+    '복사됨':'✅ Copied!',
+    'SQL 복사':'📋 Copy SQL',
+    '아래는 파일 내용입니다':'Here is the file content:',
+    '확인 사항':'Check these:',
+    'API키 시작 확인':'Confirm API key starts with sk-ant-',
+    '연락처 삭제 경고':'This contact and all related activities will be permanently deleted.',
+    '병합 경고':'This cannot be undone after merging.',
+    '병합 실행':'Merge Now',
+    '날짜 *':'Date *','금액':'Amount','제목':'Title','내용':'Content',
+    '유형 관리 안내':'Add types or reorder them.',
+    '기본 유형 안내':'Default types (Order/Quote/Visit/Call/Other) cannot be deleted.',
+    '색상':'Color',
+    '활동 삭제 경고':'This activity will be permanently deleted.',
+    '저장 후 계속':'Save & Continue',
+    '대용량 CSV':'Large CSV','도 지원합니다':' supported.',
+    '클릭하거나 파일을 드래그하여 업로드':'Click or drag file to upload',
+    '분석 실패':'Analysis Failed',
+    'CSV 매핑 안내':'Auto-detected mapping. Change via dropdown if needed.',
+    '추가 파일 가져오기':'Import More Files',
+    '시작하기 →':'Get Started →',
+    '연동 해제':'Disconnect',
+    '이메일 라벨':'Email',
+    // 신규 추가
+    '회사 정보':'Company Info',
+    '기본 정보':'Basic Info','재무 현황':'Financials','대표이사 이력':'CEO History',
+    '회사명 라벨':'Company name (use the same name for all employees)',
+    '회사명 수정 라벨':'Company name (changes apply to all employees)',
+    '성 *':'Last *','이름 *':'First *',
+    '팀명':'Team','담당자 이름':'Contact Name',
+    '팀명 placeholder':'Sales Team',
+    '병합 라벨':'Select company to merge (the one to remove)',
+    '대표 전화':'Main Phone','팩스':'Fax',
+    '재무 안내':'Enter annual financial data. Unit: million KRW',
+    '재무 단위 안내':'* Amount in millions / Leave blank if unknown',
+    '연도 추가':'＋ Add Year',
+    'CEO 안내':'Manage CEO history in reverse chronological order.',
+    'Supabase 연동 모달':'🗄 Supabase Sync',
+    '파일 모달 제목':'🗂 Import Contacts from File',
+    '연락처 삭제':'Delete Contact','회사 병합':'Merge Companies','활동 삭제':'Delete Activity',
+    '우리팀 설명':'Record which team in your organization handles this company.',
+    '병합 설명':'Use this if the same company has been registered under different names.',
+    '주소 안내':'ℹ Saved company address applied. Changes will reflect across the company.',
+    '유형 *':'Type *',
+    '이메일 th':'Email',
+  },
+  ja: {
+    '스마트 고객관리 시스템':'スマート顧客管理',
+    '연락처':'連絡先','전체 활동':'全活動','파일 가져오기':'ファイル取込',
+    '활동 유형 관리':'活動タイプ','Supabase 연동':'Supabase連携',
+    '사용 가이드':'ユーザーガイド','라이선스 정보':'ライセンス',
+    '회사':'会社','활동':'活動','이름, 회사 검색...':'名前・会社で検索...',
+    '이름을 입력하세요.':'名前を入力してください。','회사명을 입력하세요.':'会社名を入力してください。',
+    '먼저 담당자를 추가하세요.':'先に担当者を追加してください。',
+    '담당자를 선택하세요.':'担当者を選択してください。',
+    '날짜를 입력하세요.':'日付を入力してください。',
+    'API 키가 없습니다.':'APIキーがありません。','API 키를 입력해주세요.':'APIキーを入力してください。',
+    '올바른 API 키':'正しいAPIキーを入力してください。',
+    '파일을 먼저 선택해주세요.':'先にファイルを選択してください。',
+    'CSV 파일은 1개씩':'CSVは1ファイルずつ処理されます。',
+    '파일 초과':'ファイルが10MBを超えています。',
+    '활동 연결 오류':'連絡先が選択されていません。',
+    '추출된 정보 없음':'情報が抽出されませんでした。',
+    '추출된 연락처 없음':'連絡先や活動が見つかりませんでした。',
+    '병합 안 함':'— 統合しない —','동기화 완료':'同期完了 · ',
+    '아직 동기화 안 됨':'未同期','개 파일':'件ファイル',
+    '현재키':'(現在: ','이름 없음':'名前なし',
+    '신규':'新規','총':'計','명':'件','건':'件',
+    '담당자 추가':'＋ 担当者追加','활동 없음':'活動なし',
+    '연락처 없음':'連絡先なし','회사 전체 활동':'会社の活動',
+    '팀 미등록':'チーム未登録 — 会社設定で担当者を追加するとフィルターが表示されます',
+    '대표이사':'代表取締役','새 연락처':'新規連絡先','연락처 수정':'連絡先編集',
+    '활동 추가':'活動追加','활동 수정':'活動編集',
+    '저장':'保存','취소':'キャンセル','수정':'編集','삭제':'削除','확인':'確認','닫기':'閉じる',
+    '연도':'年度','인원':'人員','매출':'売上','영업이익':'営業利益',
+    '순이익':'純利益','자산':'資産','부채':'負債',
+    '인원(명)':'人員(名)','매출(M)':'売上(M)',
+    '불러오는 중...':'読込中...','저장 중...':'保存中...',
+    '저장됨':'保存済','로컬 저장 모드':'ローカルモード',
+    '로컬 저장 모드_sync':'ローカルモード · 🗄 クリックで同期',
+    '파일 분석 중...':'ファイル解析中...',
+    '분析 시작':'🔍 解析開始','CSV 분석하기':'➡ CSV解析',
+    'CSV 읽는 중':'📊 CSV読込中...','CSV 파싱 중':'📊 CSV解析中...',
+    '명 추가 완료':'件追加完了！',
+    '추가':'追加','중복 건너뜀':'重複スキップ','빈 행 건너뜀':'空行スキップ',
+    '행 감지 메시지':'行検出 · 列マッピングを確認してください。',
+    '저장됐습니다':'✅ 保存しました。Supabaseから読込中...',
+    'URL과 Key 입력':'URLとKeyを先に入力してください。',
+    '날짜':'日付','유형':'種別','내용':'内容','금액':'金額','담당자':'担当者',
+    '활동이 없습니다':'活動がありません',
+    '오늘':'本日','이동됩니다':'が移動されます。保存時に適用。',
+    '전체 N년':'全{n}年','총 N명':'計{n}名',
+    '+ 연락처':'+ 連絡先',
+    '연락처가 없습니다':'連絡先がまだありません。\n＋ボタンで追加またはファイルを取り込んでください。',
+    '개 파일 선택됨':'件ファイル選択済み',
+    '가져오는 중...':'インポート中...',
+    '행 처리 시작':'行処理開始',
+    'CSV 파싱 오류':'CSVパースエラー',
+    '파일을 읽을 수 없습니다':'ファイルを読み込めません。',
+    '유형 이름을 입력하세요':'タイプ名を入力してください。',
+    '전체 필터':'全体',
+    '마지막 동기화':'最終同期: ',
+    'URL Key 입력 경고':'⚠ URLとAPIキーを入力してください。',
+    'Supabase URL 경고':'⚠ Supabase URLではないようです。',
+    'URL Key 먼저':'⚠ URLとKeyを先に入力してください。',
+    '진단 중':'🔍 診断中...',
+    '추가되었습니다':'追加されました！',
+    '파일 크기':'ファイルサイズ',
+    'CEO placeholder 이름':'山田太郎',
+    'CEO placeholder 현재':'現在',
+    'CEO placeholder 메모':'メモ',
+    '← 목록으로':'← 一覧へ',
+    '회사 보기':'会社を見る',
+    '모든 활동 내역':'全活動履歴 (新着順)',
+    '소속 회사':'所属会社',
+    '개인 정보':'個人情報',
+    '개인 연락처':'連絡先情報',
+    '주소 (회사 공유)':'住所 (共有)',
+    '메모':'メモ',
+    '회사명':'会社名',
+    '우리 팀 담당자':'担当チーム',
+    '다른 회사와 병합':'他社と統合',
+    '대표 연락처':'代表連絡先',
+    '주소':'住所',
+    '새 유형 추가':'新タイプ追加',
+    '발주':'発注','견적':'見積','방문':'訪問','통화':'通話','기타':'その他',
+    '이메일':'メール','부서':'部署','직책':'役職','성':'姓','이름':'名',
+    '사무실':'会社','휴대폰':'携帯','추가연락처':'追加',
+    '취임연도':'就任年','퇴임연도':'退任年','비고':'備考',
+    '없앨 회사':'削除','합칠 회사':'統合先',
+    '활동 함께 삭제':'件の活動も削除されます',
+    'Supabase 자동동기화 안내':'Supabase連携時は自動同期されます。',
+    '순차 분석':'順次処理','감지 유형':'検出タイプ',
+    '대용량 파싱 모드':'大容量直接パースモード',
+    '행 처리 시작':'行処理開始','PDF 문서':'PDF',
+    '이미지':'画像','텍스트 파일':'テキスト',
+    '사용 안 함':'— なし —','CRM 필드':'CRMフィールド','미리보기':'プレビュー',
+    '없음':'なし',
+    'Claude API 키 설정':'Claude APIキー設定',
+    '파일 업로드':'ファイルアップロード',
+    '추출된 연락처 확인 및 수정':'抽出された連絡先の確認・編集',
+    '📊 CSV 컬럼 매핑 확인':'📊 CSV列マッピング確認',
+    '공통':'共通','담당':'担当','✂️ 수정':'✂️ 編集',
+    '년':'年','전체':'全体','현재':'現在',
+
+    '👥 팀':'👥 チーム',
+    '저장 실패':'保存失敗',
+    '대표전화 없음':'代表電話なし',
+    '회사 미지정':'会社未指定',
+    '✏ 수정':'✏ 編集',
+    '🗑 삭제':'🗑 削除',
+    '＋ 추가':'＋ 追加',
+    '＋ 활동':'＋ 活動',
+    '행':'行',
+    '처리 시작':'処理開始',
+    '자동 연결 안내':'(活動は連絡先保存後に自動連結)',
+        'PIN을 입력하세요':'PINを入力してください',
+    '잠금 상태':'ロック中',
+    '분 후 다시 시도하세요':'分後に再試行してください',
+    'PIN 오류':'PIN誤り',
+    '회 남음':'回残り',
+    'PIN 초기화 확인':'PINをリセットしますか？\nデータは保持されます。',
+    'PIN 변경':'PIN変更',
+    'PIN 설정':'PIN設定',
+    '현재 PIN을 입력하세요':'現在のPINを入力してください',
+    '새 PIN 4자리를 입력하세요':'新しい4桁のPINを入力してください',
+    'PIN을 한 번 더 입력하세요':'確認のため再度入力してください',
+    '현재 PIN이 틀렸습니다':'現在のPINが違います',
+    'PIN이 일치하지 않습니다':'PINが一致しません',
+    'PIN이 설정되었습니다':'✓ PINを設定しました',
+    'PIN 잠금을 해제하시겠습니까?':'PINロックを解除しますか？',
+    'PIN 잠금':'PINロック',
+    'AI 분석 중 안내':'Claude AIが連絡先情報を抽出しています',
+    'PDF 결과 안내':'内容を確認し、必要なら編集後に保存してください。',
+    'sk- 시작 오류':'⚠ sk- で始まる必要があります',
+    '복사됨':'✅ コピーしました！',
+    'SQL 복사':'📋 SQLをコピー',
+    '아래는 파일 내용입니다':'以下はファイルの内容です:',
+    '확인 사항':'確認事項:',
+    'API키 시작 확인':'APIキーがsk-ant-で始まることを確認',
+    '대표전화 없음':'代表電話なし',
+    '연락처 삭제 경고':'この連絡先と関連活動がすべて削除されます。元に戻せません。',
+    '병합 경고':'統合後は元に戻せません。',
+    '병합 실행':'統合実行',
+    '날짜 *':'日付 *','금액':'金額','제목':'件名','내용':'内容',
+    '유형 관리 안내':'タイプを追加または並び替えできます。',
+    '기본 유형 안내':'デフォルトタイプ（発注・見積・訪問・通話・その他）は削除できません。',
+    '색상':'カラー',
+    '활동 삭제 경고':'この活動は削除すると元に戻せません。',
+    '저장 후 계속':'保存して続ける',
+    '대용량 CSV':'大容量CSV','도 지원합니다':'もサポートします。',
+    '클릭하거나 파일을 드래그하여 업로드':'クリックまたはドラッグでアップロード',
+    '분석 실패':'解析失敗',
+    'CSV 매핑 안내':'自動検出されたマッピングです。必要に応じて変更してください。',
+    '추가 파일 가져오기':'さらにファイルを取込',
+    '시작하기 →':'はじめる →',
+    '연동 해제':'連携解除',
+    '이메일 라벨':'メール',
+    // 신규 추가
+    '회사 정보':'会社情報',
+    '기본 정보':'基本情報','재무 현황':'財務状況','대표이사 이력':'代表取締役履歴',
+    '회사명 라벨':'会社名（同じ会社の社員は同じ名前を入力）',
+    '회사명 수정 라벨':'会社名（変更すると所属社員全体に反映）',
+    '성 *':'姓 *','이름 *':'名 *',
+    '팀명':'チーム名','담당자 이름':'担当者名',
+    '팀명 placeholder':'営業1チーム',
+    '병합 라벨':'統合する会社を選択（削除する方）',
+    '대표 전화':'代表電話','팩스':'FAX',
+    '재무 안내':'年度別財務データを入力してください。単位：百万円',
+    '재무 단위 안내':'* 金額単位：百万円 / 空欄は未入力として処理',
+    '연도 추가':'＋ 年度追加',
+    'CEO 안내':'代表取締役の変更履歴を新しい順に管理します。',
+    'Supabase 연동 모달':'🗄 Supabase連携',
+    '파일 모달 제목':'🗂 ファイルから連絡先を取込',
+    '연락처 삭제':'連絡先削除','회사 병합':'会社統合','활동 삭제':'活動削除',
+    '우리팀 설명':'この会社を担当する自社チームの情報を記録します。',
+    '병합 설명':'同じ会社が別の名前で登録されている場合に統合します。',
+    '주소 안내':'ℹ 登録済みの会社住所が適用されます。変更すると全社員に反映されます。',
+    '유형 *':'種別 *',
+    '이메일 th':'メール',
+  },
+  zh: {
+    '스마트 고객관리 시스템':'智能客户管理',
+    '연락처':'联系人','전체 활동':'全部活动','파일 가져오기':'导入文件',
+    '활동 유형 관리':'活动类型','Supabase 연동':'Supabase同步',
+    '사용 가이드':'使用指南','라이선스 정보':'许可证',
+    '회사':'公司','활동':'活动','이름, 회사 검색...':'搜索姓名、公司...',
+    '이름을 입력하세요.':'请输入姓名。','회사명을 입력하세요.':'请输入公司名称。',
+    '먼저 담당자를 추가하세요.':'请先添加联系人。',
+    '담당자를 선택하세요.':'请选择联系人。',
+    '날짜를 입력하세요.':'请输入日期。',
+    'API 키가 없습니다.':'未找到API密钥。','API 키를 입력해주세요.':'请输入API密钥。',
+    '올바른 API 키':'请输入正确的API密钥。',
+    '파일을 먼저 선택해주세요.':'请先选择文件。',
+    'CSV 파일은 1개씩':'CSV文件每次处理一个。',
+    '파일 초과':'文件超过10MB。',
+    '활동 연결 오류':'未选择联系人，请先勾选联系人。',
+    '추출된 정보 없음':'未提取到任何信息。',
+    '추출된 연락처 없음':'未找到联系人或活动信息。',
+    '병합 안 함':'— 不合并 —','동기화 완료':'同步完成 · ',
+    '아직 동기화 안 됨':'尚未同步','개 파일':'个文件',
+    '현재키':'(当前: ','이름 없음':'无名称',
+    '신규':'新增','총':'共','명':'条','건':'条',
+    '담당자 추가':'＋ 添加联系人','활동 없음':'暂无活动',
+    '연락처 없음':'无联系方式','회사 전체 활동':'公司活动',
+    '팀 미등록':'未分配团队 — 在公司设置中添加负责人后将显示筛选器',
+    '대표이사':'法人代表','새 연락처':'新建联系人','연락처 수정':'编辑联系人',
+    '활동 추가':'添加活动','활동 수정':'编辑活动',
+    '저장':'保存','취소':'取消','수정':'编辑','삭제':'删除','확인':'确认','닫기':'关闭',
+    '연도':'年度','인원':'人数','매출':'营收','영업이익':'营业利润',
+    '순이익':'净利润','자산':'资产','부채':'负债',
+    '인원(명)':'人数(名)','매출(M)':'营收(M)',
+    '불러오는 중...':'加载中...','저장 중...':'保存中...',
+    '저장됨':'已保存','로컬 저장 모드':'本地模式',
+    '로컬 저장 모드_sync':'本地模式 · 点击🗄同步',
+    '파일 분석 중...':'文件解析中...',
+    '분석 시작':'🔍 开始分析','CSV 분석하기':'➡ 解析CSV',
+    'CSV 읽는 중':'📊 读取CSV中...','CSV 파싱 중':'📊 解析CSV中...',
+    '명 추가 완료':'条联系人已添加！',
+    '추가':'已添加','중복 건너뜀':'跳过重复','빈 행 건너뜀':'跳过空行',
+    '행 감지 메시지':'行已检测 · 请确认列映射。',
+    '저장됐습니다':'✅ 已保存，正在从Supabase加载...',
+    'URL과 Key 입력':'请先输入URL和Key。',
+    '날짜':'日期','유형':'类型','내용':'内容','금액':'金额','담당자':'联系人',
+    '활동이 없습니다':'暂无活动记录',
+    '오늘':'今日','이동됩니다':'将被移动。保存时生效。',
+    '전체 N년':'全{n}年','총 N명':'共{n}名',
+    '+ 연락처':'+ 联系人',
+    '연락처가 없습니다':'暂无联系人。\n点击＋添加或导入文件。',
+    '개 파일 선택됨':'个文件已选择',
+    '가져오는 중...':'导入中...',
+    '행 처리 시작':'行待处理',
+    'CSV 파싱 오류':'CSV解析错误',
+    '파일을 읽을 수 없습니다':'无法读取文件。',
+    '유형 이름을 입력하세요':'请输入类型名称。',
+    '전체 필터':'全部',
+    '마지막 동기화':'最后同步: ',
+    'URL Key 입력 경고':'⚠ 请输入URL和API密钥。',
+    'Supabase URL 경고':'⚠ 这不是Supabase项目URL。',
+    'URL Key 먼저':'⚠ 请先输入URL和Key。',
+    '진단 중':'🔍 诊断中...',
+    '추가되었습니다':'已添加！',
+    '파일 크기':'文件大小',
+    'CEO placeholder 이름':'张三',
+    'CEO placeholder 현재':'至今',
+    'CEO placeholder 메모':'备注',
+    '← 목록으로':'← 返回列表',
+    '회사 보기':'查看公司',
+    '모든 활동 내역':'全部活动记录 (最新优先)',
+    '소속 회사':'所属公司',
+    '개인 정보':'个人信息',
+    '개인 연락처':'联系方式',
+    '주소 (회사 공유)':'地址 (共享)',
+    '메모':'备注',
+    '회사명':'公司名称',
+    '우리 팀 담당자':'我方负责人',
+    '다른 회사와 병합':'与其他公司合并',
+    '대표 연락처':'主要联系人',
+    '주소':'地址',
+    '새 유형 추가':'添加新类型',
+    '발주':'发货','견적':'报价','방문':'拜访','통화':'通话','기타':'其他',
+    '이메일':'邮箱','부서':'部门','직책':'职位','성':'姓','이름':'名',
+    '사무실':'公司','휴대폰':'手机','추가연락처':'其他',
+    '취임연도':'就任年','퇴임연도':'离任年','비고':'备注',
+    '없앨 회사':'删除方','합칠 회사':'保留方',
+    '활동 함께 삭제':'条活动也将一并删除',
+    'Supabase 자동동기화 안내':'已连接Supabase时将自动同步。',
+    '순차 분석':'逐一处理','감지 유형':'检测类型',
+    '대용량 파싱 모드':'大文件直接解析模式',
+    '행 처리 시작':'行待处理','PDF 문서':'PDF',
+    '이미지':'图片','텍스트 파일':'文本',
+    '사용 안 함':'— 无 —','CRM 필드':'CRM字段','미리보기':'预览',
+    '없음':'无',
+    'Claude API 키 설정':'Claude API密钥设置',
+    '파일 업로드':'文件上传',
+    '추출된 연락처 확인 및 수정':'确认并编辑提取的联系人',
+    '📊 CSV 컬럼 매핑 확인':'📊 CSV列映射确认',
+    '공통':'共用','담당':'负责','✂️ 수정':'✂️ 编辑',
+    '년':'年','전체':'全部','현재':'至今',
+
+    '👥 팀':'👥 团队',
+    '저장 실패':'保存失败',
+    '대표전화 없음':'无主电话',
+    '회사 미지정':'未指定公司',
+    '✏ 수정':'✏ 编辑',
+    '🗑 삭제':'🗑 删除',
+    '＋ 추가':'＋ 添加',
+    '＋ 활동':'＋ 活动',
+    '행':'行',
+    '처리 시작':'开始处理',
+    '자동 연결 안내':'(活动在保存联系人后自动关联)',
+        'PIN을 입력하세요':'请输入PIN码',
+    '잠금 상태':'已锁定',
+    '분 후 다시 시도하세요':'分钟后重试',
+    'PIN 오류':'PIN错误',
+    '회 남음':'次剩余',
+    'PIN 초기화 확인':'重置PIN码？数据将保留。',
+    'PIN 변경':'修改PIN',
+    'PIN 설정':'设置PIN',
+    '현재 PIN을 입력하세요':'请输入当前PIN码',
+    '새 PIN 4자리를 입력하세요':'请输入新的4位PIN码',
+    'PIN을 한 번 더 입력하세요':'请再次确认PIN码',
+    '현재 PIN이 틀렸습니다':'当前PIN码错误',
+    'PIN이 일치하지 않습니다':'两次PIN码不一致',
+    'PIN이 설정되었습니다':'✓ PIN码已设置',
+    'PIN 잠금을 해제하시겠습니까?':'解除PIN锁定？数据将保留。',
+    'PIN 잠금':'PIN锁定',
+    'AI 분석 중 안내':'Claude AI正在提取联系人信息',
+    'PDF 결과 안내':'请确认提取内容，如需修改后保存。只有勾选项才会添加。',
+    'sk- 시작 오류':'⚠ 密钥必须以sk-开头',
+    '복사됨':'✅ 已复制！',
+    'SQL 복사':'📋 复制SQL',
+    '아래는 파일 내용입니다':'以下是文件内容:',
+    '확인 사항':'检查事项:',
+    'API키 시작 확인':'确认API密钥以sk-ant-开头',
+    '대표전화 없음':'无代表电话',
+    '연락처 삭제 경고':'该联系人及相关活动将全部删除，无法恢复。',
+    '병합 경고':'合并后无法撤销。',
+    '병합 실행':'执行合并',
+    '날짜 *':'日期 *','금액':'金额','제목':'标题','내용':'内容',
+    '유형 관리 안내':'可添加类型或调整顺序。',
+    '기본 유형 안내':'默认类型（发货/报价/拜访/通话/其他）不可删除。',
+    '색상':'颜色',
+    '활동 삭제 경고':'此活动删除后无法恢复。',
+    '저장 후 계속':'保存并继续',
+    '대용량 CSV':'大文件CSV','도 지원합니다':'也受支持。',
+    '클릭하거나 파일을 드래그하여 업로드':'点击或拖拽文件上传',
+    '분석 실패':'解析失败',
+    'CSV 매핑 안내':'已自动检测映射关系，如需修改请通过下拉菜单更改。',
+    '추가 파일 가져오기':'继续导入文件',
+    '시작하기 →':'开始使用 →',
+    '연동 해제':'断开连接',
+    '이메일 라벨':'邮箱',
+    // 신규 추가
+    '회사 정보':'公司信息',
+    '기본 정보':'基本信息','재무 현황':'财务状况','대표이사 이력':'法人代表历史',
+    '회사명 라벨':'公司名称（同公司员工输入相同名称）',
+    '회사명 수정 라벨':'公司名称（修改后将自动反映到所有员工）',
+    '성 *':'姓 *','이름 *':'名 *',
+    '팀명':'团队名称','담당자 이름':'负责人姓名',
+    '팀명 placeholder':'销售一组',
+    '병합 라벨':'选择要合并的公司（要删除的那个）',
+    '대표 전화':'总机电话','팩스':'传真',
+    '재무 안내':'请输入年度财务数据。单位：百万元',
+    '재무 단위 안내':'* 金额单位：百万元 / 空白视为未填',
+    '연도 추가':'＋ 添加年度',
+    'CEO 안내':'按最新顺序管理法人代表变更历史。',
+    'Supabase 연동 모달':'🗄 Supabase同步',
+    '파일 모달 제목':'🗂 从文件导入联系人',
+    '연락처 삭제':'删除联系人','회사 병합':'合并公司','활동 삭제':'删除活动',
+    '우리팀 설명':'记录负责该公司的我方团队信息。',
+    '병합 설명':'当同一公司以不同名称注册时可进行合并。',
+    '주소 안내':'ℹ 已应用注册的公司地址。修改后将反映到整个公司。',
+    '유형 *':'类型 *',
+    '이메일 th':'邮箱',
+  },
+};
+// ── Safe localStorage (iOS Safari iframe / Private mode / SecurityError fallback) ──
+const _memStore = {};
+var _lsAvailable = (function(){
+  try {
+    var t = '__crm_test__';
+    localStorage.setItem(t, '1');
+    localStorage.removeItem(t);
+    return true;
+  } catch(e) { return false; }
+})();
+const safeStorage = {
+  getItem: function(k){
+    if(_lsAvailable){ try { return localStorage.getItem(k); } catch(e){ _lsAvailable=false; } }
+    return _memStore[k] !== undefined ? _memStore[k] : null;
+  },
+  setItem: function(k, v){
+    if(_lsAvailable){ try { localStorage.setItem(k, v); return; } catch(e){ _lsAvailable=false; } }
+    _memStore[k] = String(v);
+  },
+  removeItem: function(k){
+    if(_lsAvailable){ try { localStorage.removeItem(k); return; } catch(e){ _lsAvailable=false; } }
+    delete _memStore[k];
+  }
+};
+
+let _lang = safeStorage.getItem('crm_lang') || 'ko';
+
+function i18n(key){ var d=(I18N[_lang]||I18N.ko); return d[key]!==undefined?d[key]:key; }
+
+function setLang(lang){
+  _lang = lang;
+  safeStorage.setItem('crm_lang', lang);
+  // data-i18n 정적 텍스트 교체
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent = i18n(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    el.placeholder = i18n(el.getAttribute('data-i18n-placeholder'));
+  });
+  const sel = document.getElementById('langSelect');
+  if(sel) sel.value = lang;
+  // 모든 동적 뷰 무조건 재렌더 (현재 보이는 뷰와 상관없이)
+  renderStats();
+  renderContacts();
+  renderAllActs();
+  if(typeof refreshFilterBar      === 'function') refreshFilterBar();
+  if(typeof refreshTeamFilterBars === 'function') refreshTeamFilterBars();
+  if(typeof injectTypeStyles      === 'function') injectTypeStyles();
+  if(typeof refreshTypeSelect     === 'function') refreshTypeSelect();
+  // 상세 뷰가 열려있으면 재렌더
+  const dView = document.getElementById('detailView');
+  if(dView && dView.classList.contains('open') && currentCid) showDetail(currentCid);
+}
+
+function initLang(){ setLang(_lang); }
+let pdfBase64 = null;
+let pdfFileType = null;
+let pdfExtracted = [];
+let pdfActivities = [];
+// 다중 파일 큐
+let _pdfQueue = [];
+let _pdfQueueIdx = 0;
+let _pdfAllExtracted = [];
+let _pdfAllActivities = [];
+
+
+
 // ── DATA ────────────────────────────────────────────────
-let contacts  = JSON.parse(localStorage.getItem('crm_contacts')  || '[]');
-let activities= JSON.parse(localStorage.getItem('crm_activities')|| '[]');
-let companies = JSON.parse(localStorage.getItem('crm_companies') || '{}');
+let contacts  = JSON.parse(safeStorage.getItem('crm_contacts')  || '[]');
+let activities= JSON.parse(safeStorage.getItem('crm_activities')|| '[]');
+let companies = JSON.parse(safeStorage.getItem('crm_companies') || '{}');
 
 // ── SUPABASE 연동 ─────────────────────────────────────────
-let sbUrl   = localStorage.getItem('crm_sb_url')   || '';
-let sbKey   = localStorage.getItem('crm_sb_key')   || '';
+let sbUrl   = safeStorage.getItem('crm_sb_url')   || '';
+let sbKey   = safeStorage.getItem('crm_sb_key')   || '';
 let sbSyncing    = false;
 let sbPendingSave= false;
-let sbLastSync   = localStorage.getItem('crm_sb_last_sync') || '';
+let sbLastSync   = safeStorage.getItem('crm_sb_last_sync') || '';
 
 function sbIsConnected(){ return !!(sbUrl && sbKey); }
 
@@ -1019,7 +1933,7 @@ async function sbDeleteAll(table){
 // ── 전체 불러오기 ────────────────────────────────────────
 async function sbLoad(){
   if(!sbIsConnected()) return;
-  sbUpdateStatus('syncing','불러오는 중...');
+  sbUpdateStatus('syncing', i18n('불러오는 중...'));
   try {
     // 연락처와 활동 가져오기 (순차적으로 — 오류 위치 파악 쉽게)
     const rC = await fetch(
@@ -1072,7 +1986,7 @@ async function sbLoad(){
         const parsed = JSON.parse(dbTypes[0].data);
         if(Array.isArray(parsed) && parsed.length){
           actTypes = parsed;
-          localStorage.setItem('crm_types', JSON.stringify(actTypes));
+          safeStorage.setItem('crm_types', JSON.stringify(actTypes));
           rebuildTypeMaps(); injectTypeStyles(); refreshTypeSelect(); refreshFilterBar();
         }
       }catch(e){ console.warn('[sbLoad] types 파싱 오류:', e); }
@@ -1080,8 +1994,8 @@ async function sbLoad(){
 
     localPersist();
     sbLastSync = new Date().toLocaleString('ko-KR');
-    localStorage.setItem('crm_sb_last_sync', sbLastSync);
-    sbUpdateStatus('ok', '동기화 완료 · ' + sbLastSync);
+    safeStorage.setItem('crm_sb_last_sync', sbLastSync);
+    sbUpdateStatus('ok', i18n('동기화 완료') + sbLastSync);
     renderStats(); renderContacts(); refreshTeamFilterBars();
 
   } catch(err){
@@ -1095,7 +2009,7 @@ async function sbSave(){
   if(!sbIsConnected()){ localPersist(); return; }
   if(sbSyncing){ sbPendingSave = true; return; }
   sbSyncing = true;
-  sbUpdateStatus('syncing','저장 중...');
+  sbUpdateStatus('syncing', i18n('저장 중...'));
   localPersist();
 
   try {
@@ -1126,13 +2040,13 @@ async function sbSave(){
     });
 
     sbLastSync = new Date().toLocaleString('ko-KR');
-    localStorage.setItem('crm_sb_last_sync', sbLastSync);
-    sbUpdateStatus('ok', '저장됨 · ' + sbLastSync);
+    safeStorage.setItem('crm_sb_last_sync', sbLastSync);
+    sbUpdateStatus('ok', i18n('저장됨') + ' · ' + sbLastSync);
     console.log(`[sbSave] 완료 — contacts:${contacts.length} activities:${activities.length}`);
 
   } catch(err){
     console.error('[sbSave] 오류:', err);
-    sbUpdateStatus('error', '저장 실패 (로컬 백업됨): ' + err.message);
+    sbUpdateStatus('error', i18n('저장 실패') + ': ' + err.message);
   } finally {
     sbSyncing = false;
     if(sbPendingSave){ sbPendingSave=false; sbSave(); }
@@ -1174,9 +2088,9 @@ function sbRowToActivity(r){
 
 // ── 로컬 저장 ────────────────────────────────────────────
 function localPersist(){
-  localStorage.setItem('crm_contacts',  JSON.stringify(contacts));
-  localStorage.setItem('crm_activities',JSON.stringify(activities));
-  localStorage.setItem('crm_companies', JSON.stringify(companies));
+  safeStorage.setItem('crm_contacts',  JSON.stringify(contacts));
+  safeStorage.setItem('crm_activities',JSON.stringify(activities));
+  safeStorage.setItem('crm_companies', JSON.stringify(companies));
 }
 
 function persist(){
@@ -1196,18 +2110,18 @@ let expanded = new Set();
 
 // ── 활동 유형 (사용자 정의 가능) ──────────────────────────
 const DEFAULT_TYPES = [
-  {id:'order', label:'발주', emoji:'📦', color:'#43e97b'},
-  {id:'quote', label:'견적', emoji:'📄', color:'#f7971e'},
-  {id:'visit', label:'방문', emoji:'🤝', color:'#ff6b6b'},
-  {id:'call',  label:'통화', emoji:'📞', color:'#4f7cff'},
-  {id:'other', label:'기타', emoji:'📌', color:'#7986cb'},
+  {id:'order', get label(){ return i18n('발주')||'발주'; }, emoji:'📦', color:'#43e97b'},
+  {id:'quote', get label(){ return i18n('견적')||'견적'; }, emoji:'📄', color:'#f7971e'},
+  {id:'visit', get label(){ return i18n('방문')||'방문'; }, emoji:'🤝', color:'#ff6b6b'},
+  {id:'call',  get label(){ return i18n('통화')||'통화'; }, emoji:'📞', color:'#4f7cff'},
+  {id:'other', get label(){ return i18n('기타')||'기타'; }, emoji:'📌', color:'#7986cb'},
 ];
 
 function loadTypes(){
-  try { return JSON.parse(localStorage.getItem('crm_types')) || DEFAULT_TYPES; }
+  try { return JSON.parse(safeStorage.getItem('crm_types')) || DEFAULT_TYPES; }
   catch(e){ return DEFAULT_TYPES; }
 }
-function saveTypes(types){ localStorage.setItem('crm_types',JSON.stringify(types)); }
+function saveTypes(types){ safeStorage.setItem('crm_types',JSON.stringify(types)); }
 
 let actTypes = loadTypes();
 
@@ -1259,8 +2173,9 @@ function nav(p){
   document.getElementById('navContacts').classList.toggle('active', p==='contacts');
   document.getElementById('navActivities').classList.toggle('active', p==='activities');
   // 모바일 탭바
-  document.getElementById('mTabContacts').classList.toggle('active', p==='contacts');
-  document.getElementById('mTabActivities').classList.toggle('active', p==='activities');
+  const mTabC=document.getElementById('mTabContacts'), mTabA=document.getElementById('mTabActivities');
+  if(mTabC) mTabC.classList.toggle('active', p==='contacts');
+  if(mTabA) mTabA.classList.toggle('active', p==='activities');
   // 연락처 탭일 때만 검색/뷰토글 topbar 표시
   const topbar = document.getElementById('mainTopbar');
   if(topbar) topbar.style.display = p==='contacts' ? '' : 'none';
@@ -1347,12 +2262,12 @@ function refreshTeamFilterBars(){
     if(!bar) return;
     if(!teams.length){
       bar.style.display='';
-      bar.innerHTML = `<span style="font-size:11px;color:var(--muted);padding:2px 6px">팀 미등록 — 회사 수정에서 우리 팀 담당자를 입력하면 필터가 생깁니다</span>`;
+      bar.innerHTML = `<span style="font-size:11px;color:var(--muted);padding:2px 6px">${i18n('팀 미등록')}</span>`;
       return;
     }
     bar.style.display='';
-    bar.innerHTML = `<span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;align-self:center;margin-right:4px;white-space:nowrap">👥 팀</span>`
-      + `<button class="filter-chip${set.size===0?' active':''}" data-val="all" onclick="${fnName}('all',this)">전체</button>`
+    bar.innerHTML = `<span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;align-self:center;margin-right:4px;white-space:nowrap">${i18n('👥 팀')}</span>`
+      + `<button class="filter-chip${set.size===0?' active':''}" data-val="all" onclick="${fnName}('all',this)">${i18n('전체')}</button>`
       + teams.map(t=>`<button class="filter-chip${set.has(t)?' active':''}" data-val="${t.replace(/"/g,'&quot;')}" onclick="${fnName}('${t.replace(/'/g,"\\'")}',this)">👥 ${t}</button>`).join('');
   };
   makeChips('teamFilterBar',    teamFilter,    'setTeamFilter');
@@ -1378,7 +2293,7 @@ function renderContacts(){
     const cos = getCosByTeam(teamFilter);
     if(cos) list = list.filter(c => cos.includes(c.company||''));
   }
-  document.getElementById('viewSub').textContent = `총 ${list.length}명`;
+  document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',list.length);
   if(viewMode==='list')  { renderFlatList(list); return; }
   if(viewMode==='glist') { renderGroupList(list); return; }
   renderGroupView(list);
@@ -1409,9 +2324,9 @@ function renderGroupView(list){
         <div class="company-info">
           <div class="company-name">${co}</div>
           <div class="company-meta">
-            <span>👤 ${members.length}명</span>
+            <span>👤 ${members.length}${i18n('명')}</span>
             ${ci.phone?`<span>☎ ${ci.phone}</span>`:''}
-            ${coActs.length?`<span>📋 ${coActs.length}건</span>`:''}
+            ${coActs.length?`<span>📋 ${coActs.length}${i18n('건')}</span>`:''}
           </div>
         </div>
         <div class="company-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${coActs.filter(a=>a.type===t).length}</span>`).join('')}</div>
@@ -1420,12 +2335,12 @@ function renderGroupView(list){
       <div class="company-body">
         <!-- shared bar -->
         <div class="shared-bar">
-          <span class="shared-tag">공통</span>
-          ${ci.phone?`<span>☎ ${ci.phone}</span>`:'<span style="opacity:.4">대표전화 없음</span>'}
+          <span class="shared-tag">${i18n('공통')}</span>
+          ${ci.phone?'<span>☎ '+ci.phone+'</span>':i18n('대표전화 없음')+'</span>'}
           ${ci.fax?`<span>📠 ${ci.fax}</span>`:''}
-          ${ci.address?`<span>📍 ${ci.address}</span>`:'<span style="opacity:.4">주소 없음</span>'}
-          ${ci.ourName?`<span style="color:var(--accent3)">👤 담당 ${ci.ourTeam?ci.ourTeam+' ':''}<strong>${ci.ourName}</strong></span>`:''}
-          <button class="shared-edit-btn" onclick="openCompanyModal('${esc(co)}')">✏ 수정</button>
+          ${ci.address?'<span>📍 '+ci.address+'</span>':'<span>📍 '+i18n('없음')+'</span>'}
+          ${ci.ourName?`<span style="color:var(--accent3)">👤 ${i18n('담당')} ${ci.ourTeam?ci.ourTeam+' ':''}<strong>${ci.ourName}</strong></span>`:''}
+          <button class="shared-edit-btn" onclick="openCompanyModal('${esc(co)}')">${i18n('✏ 수정')}</button>
         </div>
         <!-- 재무 요약 (1줄 + 펼치기) -->
         ${(()=>{
@@ -1436,18 +2351,18 @@ function renderGroupView(list){
           const profitVal=Number((r.net_profit||'').toString().replace(/[^0-9.-]/g,'')||0);
           const coId=_cid;
           const chips=[
-            r.headcount?`<div class="fin-chip"><span class="fin-chip-label">인원</span><span class="fin-chip-value neu">${r.headcount}명</span></div>`:'',
-            r.revenue?`<div class="fin-chip"><span class="fin-chip-label">매출</span><span class="fin-chip-value neu">${fmtFin(r.revenue)}</span></div>`:'',
-            r.op_profit?`<div class="fin-chip"><span class="fin-chip-label">영업이익</span><span class="fin-chip-value ${Number((r.op_profit||'').toString().replace(/[^0-9.-]/g,''))||0>=0?'pos':'neg'}">${fmtFin(r.op_profit)}</span></div>`:'',
-            r.net_profit?`<div class="fin-chip"><span class="fin-chip-label">순이익</span><span class="fin-chip-value ${profitVal>=0?'pos':'neg'}">${fmtFin(r.net_profit)}</span></div>`:'',
-            r.assets?`<div class="fin-chip"><span class="fin-chip-label">자산</span><span class="fin-chip-value neu">${fmtFin(r.assets)}</span></div>`:'',
-            r.liabilities?`<div class="fin-chip"><span class="fin-chip-label">부채</span><span class="fin-chip-value neg">${fmtFin(r.liabilities)}</span></div>`:'',
+            r.headcount?`<div class="fin-chip"><span class="fin-chip-label">${i18n('인원')}</span><span class="fin-chip-value neu">${r.headcount}${i18n('명')}</span></div>`:'',
+            r.revenue?`<div class="fin-chip"><span class="fin-chip-label">${i18n('매출')}</span><span class="fin-chip-value neu">${fmtFin(r.revenue)}</span></div>`:'',
+            r.op_profit?`<div class="fin-chip"><span class="fin-chip-label">${i18n('영업이익')}</span><span class="fin-chip-value ${Number((r.op_profit||'').toString().replace(/[^0-9.-]/g,''))||0>=0?'pos':'neg'}">${fmtFin(r.op_profit)}</span></div>`:'',
+            r.net_profit?`<div class="fin-chip"><span class="fin-chip-label">${i18n('순이익')}</span><span class="fin-chip-value ${profitVal>=0?'pos':'neg'}">${fmtFin(r.net_profit)}</span></div>`:'',
+            r.assets?`<div class="fin-chip"><span class="fin-chip-label">${i18n('자산')}</span><span class="fin-chip-value neu">${fmtFin(r.assets)}</span></div>`:'',
+            r.liabilities?`<div class="fin-chip"><span class="fin-chip-label">${i18n('부채')}</span><span class="fin-chip-value neg">${fmtFin(r.liabilities)}</span></div>`:'',
           ].filter(Boolean).join('');
           const allRows=fin.map(yr=>{
             const fv=v=>v?(Number(v.toString().replace(/[^0-9.-]/g,''))||0).toLocaleString():'—';
             return `<tr>
               <td>${yr.year}</td>
-              <td>${yr.headcount?yr.headcount+'명':'—'}</td>
+              <td>${yr.headcount?yr.headcount+i18n('명'):'—'}</td>
               <td>${fv(yr.revenue)}</td>
               <td class="${Number((yr.op_profit||'').toString().replace(/[^0-9.-]/g,'')||0)>=0?'pos':'neg'}">${fv(yr.op_profit)}</td>
               <td class="${Number((yr.net_profit||'').toString().replace(/[^0-9.-]/g,'')||0)>=0?'pos':'neg'}">${fv(yr.net_profit)}</td>
@@ -1457,14 +2372,14 @@ function renderGroupView(list){
           }).join('');
           return `<div class="fin-summary" id="fin-wrap-${coId}">
             <div class="fin-summary-preview" onclick="toggleFinDetail('${coId}')">
-              <span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;padding-right:10px;border-right:1px solid var(--border);flex-shrink:0">${r.year}년</span>
+              <span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;padding-right:10px;border-right:1px solid var(--border);flex-shrink:0">${r.year}${i18n('년')}</span>
               ${chips}
             </div>
-            <button class="fin-expand-btn" id="fin-btn-${coId}" onclick="toggleFinDetail('${coId}')">전체 ${fin.length}년 ▾</button>
+            <button class="fin-expand-btn" id="fin-btn-${coId}" onclick="toggleFinDetail('${coId}')">${i18n('전체')} ${fin.length}${i18n('년')} ▾</button>
           </div>
           <div class="fin-detail" id="fin-detail-${coId}">
             <table class="fin-table">
-              <thead><tr><th>연도</th><th>인원</th><th>매출(M)</th><th>영업이익</th><th>순이익</th><th>자산</th><th>부채</th></tr></thead>
+              <thead><tr>${['연도','인원','매출(M)','영업이익','순이익','자산','부채'].map(k=>`<th>${i18n(k)}</th>`).join('')}</tr></thead>
               <tbody>${allRows}</tbody>
             </table>
           </div>`;
@@ -1477,18 +2392,18 @@ function renderGroupView(list){
             return yb-ya;
           });
           if(!ceos.length) return '';
-          const cur=ceos.find(ceo=>!ceo.to||ceo.to==='현재')||ceos[0];
+          const cur=ceos.find(ceo=>!ceo.to||ceo.to===i18n('현재'))||ceos[0];
           const coId=_cid;
           const allRows=ceos.map(ceo=>`<div class="ceo-row-item">
             <span class="ceo-row-name">${ceo.name}</span>
-            <span class="ceo-row-period">${ceo.from||''}${ceo.from&&(ceo.to||'현재')?' ~ '+(ceo.to||'현재'):ceo.to?'~ '+ceo.to:''}</span>
+            <span class="ceo-row-period">${ceo.from||''}${ceo.from&&(ceo.to||i18n('현재'))?' ~ '+(ceo.to||i18n('현재')):ceo.to?'~ '+ceo.to:''}</span>
             ${ceo.memo?`<span class="ceo-row-memo">${ceo.memo}</span>`:''}
           </div>`).join('');
           return `<div class="ceo-bar" id="ceo-bar-${coId}" onclick="toggleCeoDetail('${coId}')">
-            <span>👔 대표이사</span>
+            <span>👔 ${i18n('대표이사')}</span>
             <span class="ceo-bar-name">${cur.name}</span>
-            ${cur.from?`<span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent)">${cur.from} ~ ${cur.to&&cur.to!=='현재'?cur.to:'현재'}</span>`:''}
-            ${ceos.length>1?`<span style="font-size:11px;color:var(--muted)">총 ${ceos.length}명</span>`:''}
+            ${cur.from?`<span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent)">${cur.from} ~ ${cur.to&&cur.to&&cur.to!==i18n('현재')?cur.to:i18n('현재')}</span>`:''}
+            ${ceos.length>1?`<span style="font-size:11px;color:var(--muted)">${i18n('총')} ${ceos.length}${i18n('명')}</span>`:''}
             <span class="ceo-bar-arrow">▾</span>
           </div>
           <div class="ceo-detail" id="ceo-detail-${coId}">
@@ -1498,16 +2413,16 @@ function renderGroupView(list){
         <!-- members -->
         <div class="members-row">
           ${members.map(c=>personCard(c)).join('')}
-          <button class="add-card" onclick="openAddContact('${esc(co)}')">＋ 담당자 추가</button>
+          <button class="add-card" onclick="openAddContact('${esc(co)}')">${i18n('담당자 추가')}</button>
         </div>
         <!-- timeline -->
         <div class="co-timeline-section">
           <div class="co-timeline-head">
-            <span class="co-timeline-label">📋 회사 전체 활동 (${coActs.length}건)</span>
-            <button class="btn btn-primary btn-xs" onclick="openActModal_co('${esc(co)}')">＋ 추가</button>
+            <span class="co-timeline-label">📋 ${i18n('회사 전체 활동')} (${coActs.length}${i18n('건')})</span>
+            <button class="btn btn-primary btn-xs" onclick="openActModal_co('${esc(co)}')">${i18n('＋ 추가')}</button>
           </div>
           ${coActs.length===0
-            ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">활동 없음</div>`
+            ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">${i18n('활동 없음')}</div>`
             : `<div class="acts-filter" id="coActsFilter-${CSS.escape(co)}"></div>
                <div id="tl-${CSS.escape(co)}"></div>`
           }
@@ -1518,12 +2433,12 @@ function renderGroupView(list){
 
   if(none.length){
     html+=`<div style="margin-top:16px">
-      <div class="ungrouped-label">── 회사 미지정 (${none.length}명)</div>
+      <div class="ungrouped-label">${i18n('회사 미지정')} (${none.length}${i18n('명')})</div>
       <div class="ungrouped-grid">${none.map(c=>personCard(c,true)).join('')}</div>
     </div>`;
   }
 
-  if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>연락처가 없습니다.</p></div>`;
+  if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>${i18n('연락처가 없습니다')}</p></div>`;
   document.getElementById('mainGrid').innerHTML=html;
 
   // 회사별 활동 필터 초기화
@@ -1533,7 +2448,7 @@ function renderGroupView(list){
     const allActs = coActivities(co);
     if(!allActs.length) return;
     filterBar.innerHTML =
-      `<button class="filter-chip active" data-val="all" onclick="setCoActFilter('${esc(co)}',this,'all')">전체</button>`
+      `<button class="filter-chip active" data-val="all" onclick="setCoActFilter('${esc(co)}',this,'all')">${i18n('전체')}</button>`
       + actTypes.map(t=>{
           const cnt = allActs.filter(a=>a.type===t.id).length;
           return cnt ? `<button class="filter-chip" data-val="${t.id}" onclick="setCoActFilter('${esc(co)}',this,'${t.id}')">${t.emoji} ${t.label}</button>` : '';
@@ -1562,7 +2477,7 @@ function _renderCoActs(co){
   const all = coActivities(co);
   const filtered = set.size===0 ? all : all.filter(a=>set.has(a.type));
   tl.innerHTML = filtered.length===0
-    ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">해당 유형의 활동이 없습니다.</div>`
+    ? `<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">${i18n('활동이 없습니다')}</div>`
     : `<div class="timeline">${filtered.map(a=>tlItem(a,{showWho:true})).join('')}</div>`;
 }
 
@@ -1582,10 +2497,10 @@ function personCard(c, standalone=false){
     </div>
     <div class="person-contacts">
       ${c.mobile
-        ? `<span><span class="pc-label">핸드폰</span>${c.mobile}</span>`
-        : c.office ? `<span><span class="pc-label">직통</span>${c.office}</span>` : ''}
-      ${c.email?`<span><span class="pc-label">이메일</span>${c.email}</span>`:''}
-      ${!c.mobile&&!c.office&&!c.email?`<span style="opacity:.4">연락처 없음</span>`:''}
+        ? `<span><span class="pc-label">${i18n('핸드폰')}</span>${c.mobile}</span>`
+        : c.office ? `<span><span class="pc-label">${i18n('직통')}</span>${c.office}</span>` : ''}
+      ${c.email?`<span><span class="pc-label">${i18n('이메일')}</span>${c.email}</span>`:''}
+      ${!c.mobile&&!c.office&&!c.email?`<span style="opacity:.4">${i18n('연락처 없음')}</span>`:''}
     </div>
     ${types.length?`<div class="person-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${acts.filter(a=>a.type===t).length}</span>`).join('')}</div>`:''}
   </div>`;
@@ -1625,8 +2540,8 @@ function tlItem(a, opts){
         ${a.content?`<div class="tl-text">${a.content}</div>`:''}
         ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
         <div class="tl-actions">
-          <button class="tl-act-btn" onclick="openEditAct('${a.id}')">✏ 수정</button>
-          <button class="tl-act-btn danger" onclick="delAct('${a.id}',${opts.fromDetail?'true':'false'})">🗑 삭제</button>
+          <button class="tl-act-btn" onclick="openEditAct('${a.id}')">${i18n('✏ 수정')}</button>
+          <button class="tl-act-btn danger" onclick="delAct('${a.id}',${opts.fromDetail?'true':'false'})">${i18n('🗑 삭제')}</button>
         </div>
       </div>
     </div>
@@ -1645,7 +2560,7 @@ function renderActsFilter(containerId, filterSet, onChangeFn){
   const bar = document.getElementById(containerId);
   if(!bar) return;
   bar.innerHTML =
-    `<button class="filter-chip${filterSet.size===0?' active':''}" data-val="all" onclick="${onChangeFn}('all',this)">전체</button>`
+    `<button class="filter-chip${filterSet.size===0?' active':''}" data-val="all" onclick="${onChangeFn}('all',this)">${i18n('전체')}</button>`
     + actTypes.map(t=>`<button class="filter-chip${filterSet.has(t.id)?' active':''}" data-val="${t.id}" onclick="${onChangeFn}('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
 }
 
@@ -1672,7 +2587,7 @@ function _renderDetailActs(id){
   const el = document.getElementById('detailActsList');
   if(!el) return;
   el.innerHTML = filtered.length===0
-    ? `<div class="empty-state"><div class="empty-icon">📋</div><p>${detailActFilter.size===0?'아직 활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`
+    ? `<div class="empty-state"><div class="empty-icon">📋</div><p>${detailActFilter.size===0?i18n('활동이 없습니다'):i18n('활동이 없습니다')}</p></div>`
     : `<div class="timeline">${filtered.map(a=>tlItem(a,{fromDetail:true})).join('')}</div>`;
 }
 
@@ -1682,7 +2597,7 @@ function _renderCoDetailActs(){
   const el = document.getElementById('coDetailActsList');
   if(!el) return;
   el.innerHTML = filtered.length===0
-    ? `<div class="empty-state" style="padding:20px"><div class="empty-icon">📋</div><p>${coDetailActFilter.size===0?'활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`
+    ? `<div class="empty-state" style="padding:20px"><div class="empty-icon">📋</div><p>${coDetailActFilter.size===0?i18n('활동이 없습니다'):i18n('활동이 없습니다')}</p></div>`
     : `<div class="timeline">${filtered.map(a=>tlItem(a,{showWho:true})).join('')}</div>`;
 }
 
@@ -1737,9 +2652,9 @@ function renderGroupList(list){
         <div class="company-info">
           <div class="company-name">${co}</div>
           <div class="company-meta">
-            <span>👤 ${members.length}명</span>
+            <span>👤 ${members.length}${i18n('명')}</span>
             ${ci.phone?`<span>☎ ${ci.phone}</span>`:''}
-            ${coActs.length?`<span>📋 ${coActs.length}건</span>`:''}
+            ${coActs.length?`<span>📋 ${coActs.length} ${i18n('건')}</span>`:''}}
           </div>
         </div>
         <div class="company-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${coActs.filter(a=>a.type===t).length}</span>`).join('')}</div>
@@ -1748,20 +2663,20 @@ function renderGroupList(list){
       </div>
       <div class="company-body">
         <div class="shared-bar">
-          <span class="shared-tag">공통</span>
-          ${ci.phone?`<span>☎ ${ci.phone}</span>`:'<span style="opacity:.4">대표전화 없음</span>'}
+          <span class="shared-tag">${i18n('공통')}</span>
+          ${ci.phone?'<span>☎ '+ci.phone+'</span>':i18n('대표전화 없음')}
           ${ci.fax?`<span>📠 ${ci.fax}</span>`:''}
-          ${ci.address?`<span>📍 ${ci.address}</span>`:'<span style="opacity:.4">주소 없음</span>'}
-          <button class="shared-edit-btn" onclick="openAddContact('${esc(co)}')">＋ 담당자</button>
+          ${ci.address?'<span>📍 '+ci.address+'</span>':'<span style="opacity:.4">'+i18n('주소 없음')+'</span>'}
+          <button class="shared-edit-btn" onclick="openAddContact('${esc(co)}')">${i18n('담당자 추가')}</button>
         </div>
         <div class="list-wrap" style="margin:0;border-radius:0;border-left:none;border-right:none;border-bottom:none">
           <table class="list-table">
             <thead><tr>
-              <th style="width:130px">이름</th>
-              <th style="width:160px">직함</th>
-              <th style="width:150px">핸드폰</th>
+              <th style="width:130px">${i18n('이름')}</th>
+              <th style="width:160px">${i18n('직함')}</th>
+              <th style="width:150px">${i18n('핸드폰')}</th>
               <th style="width:150px">이메일</th>
-              <th style="width:110px">활동</th>
+              <th style="width:110px">${i18n("활동")}</th>
             </tr></thead>
             <tbody>
               ${members.map(c=>personListRow(c)).join('')}
@@ -1774,17 +2689,17 @@ function renderGroupList(list){
 
   if(none.length){
     html+=`<div style="margin-top:16px">
-      <div class="ungrouped-label">── 회사 미지정 (${none.length}명)</div>
+      <div class="ungrouped-label">${i18n('회사 미지정')} (${none.length}${i18n('명')})</div>
       <div class="list-wrap">
         <table class="list-table">
-          <thead><tr><th style="width:130px">이름</th><th style="width:160px">직함</th><th style="width:150px">핸드폰</th><th style="width:150px">이메일</th><th style="width:110px">활동</th></tr></thead>
+          <thead><tr><th style="width:130px">${i18n('이름')}</th><th style="width:160px">${i18n('직함')}</th><th style="width:150px">${i18n('핸드폰')}</th><th style="width:150px">${i18n('이메일')}</th><th style="width:110px">${i18n('활동')}</th></tr></thead>
           <tbody>${none.map(c=>personListRow(c)).join('')}</tbody>
         </table>
       </div>
     </div>`;
   }
 
-  if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>연락처가 없습니다.</p></div>`;
+  if(!named.length&&!none.length) html=`<div class="empty-state"><div class="empty-icon">👥</div><p>${i18n('연락처가 없습니다')}</p></div>`;
   document.getElementById('mainGrid').innerHTML=html;
 }
 
@@ -1798,7 +2713,7 @@ function renderFlatList(list){
   });
 
   if(!sorted.length){
-    document.getElementById('mainGrid').innerHTML=`<div class="empty-state"><div class="empty-icon">👥</div><p>연락처가 없습니다.</p></div>`;
+    document.getElementById('mainGrid').innerHTML=`<div class="empty-state"><div class="empty-icon">👥</div><p>${i18n('연락처가 없습니다')}</p></div>`;
     return;
   }
 
@@ -1814,7 +2729,7 @@ function renderFlatList(list){
           <div style="display:flex;align-items:center;gap:10px">
             <div style="width:26px;height:26px;border-radius:6px;background:${ac(co)};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${co[0]}</div>
             <span>${co}</span>
-            <span style="font-size:11px;color:var(--muted);font-weight:400">${cnt}명${ci.phone?' · ☎ '+ci.phone:''}</span>
+            <span style="font-size:11px;color:var(--muted);font-weight:400">${cnt}${i18n("명")}${ci.phone?' · ☎ '+ci.phone:''}</span>
           </div>
         </td>
       </tr>`;
@@ -1827,11 +2742,11 @@ function renderFlatList(list){
     <div class="list-wrap">
       <table class="list-table">
         <thead><tr>
-          <th style="width:130px">이름</th>
-          <th style="width:160px">직함</th>
-          <th style="width:150px">핸드폰</th>
-          <th style="width:180px">이메일</th>
-          <th style="width:110px">활동</th>
+          <th style="width:130px">${i18n('이름')}</th>
+          <th style="width:160px">${i18n('직함')}</th>
+          <th style="width:150px">${i18n('핸드폰')}</th>
+          <th style="width:180px">${i18n('이메일')}</th>
+          <th style="width:110px">${i18n("활동")}</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -1874,12 +2789,12 @@ function showDetail(id){
 
   const memoVal = c.memo||ci.memo||'';
   const info=[
-    {l:'이메일',      v:c.email||'—',                   cls:''},
-    {l:'휴대폰',      v:c.mobile||'—',                  cls:''},
-    {l:'사무실',      v:c.office||'—',                  cls:''},
-    {l:'추가 연락처',  v:c.extra||'—',                  cls:''},
-    {l:'주소',        v:ci.address||c.address||'—',     cls:'wide'},
-    {l:'메모', v:`<textarea id="detailMemoArea" rows="3" onblur="saveMemoInline('${id}')" style="width:100%;background:transparent;border:none;resize:vertical;font-size:13px;line-height:1.8;color:var(--text);font-family:inherit;outline:none;padding:0">${memoVal}</textarea>`, cls:'full'},
+    {l:i18n('이메일'),      v:c.email||'—',                   cls:''},
+    {l:i18n('휴대폰'),      v:c.mobile||'—',                  cls:''},
+    {l:i18n('사무실'),      v:c.office||'—',                  cls:''},
+    {l:i18n('추가 연락처'),  v:c.extra||'—',                  cls:''},
+    {l:i18n('주소'),        v:ci.address||c.address||'—',     cls:'wide'},
+    {l:i18n('메모'), v:`<textarea id="detailMemoArea" rows="3" onblur="saveMemoInline('${id}')" style="width:100%;background:transparent;border:none;resize:vertical;font-size:13px;line-height:1.8;color:var(--text);font-family:inherit;outline:none;padding:0">${memoVal}</textarea>`, cls:'full'},
   ];
 
   document.getElementById('detailContent').innerHTML=`
@@ -1890,8 +2805,8 @@ function showDetail(id){
         <div class="detail-sub">${c.company||''}${c.dept?' · '+c.dept:''}${c.position?' / '+c.position:''}</div>
       </div>
       <div class="detail-actions">
-        <button class="btn btn-outline btn-sm" onclick="openEditContact('${id}')">✏ 수정</button>
-        <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">＋ 활동</button>
+        <button class="btn btn-outline btn-sm" onclick="openEditContact('${id}')">${i18n('✏ 수정')}</button>
+        <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">${i18n('＋ 활동')}</button>
         <button class="btn btn-danger btn-sm" onclick="delContact('${id}')">🗑</button>
       </div>
     </div>
@@ -1899,8 +2814,8 @@ function showDetail(id){
       ${info.map(i=>`<div class="info-card${i.cls?' '+i.cls:''}"><div class="info-card-label">${i.l}</div><div class="info-card-value">${i.v}</div></div>`).join('')}
     </div>
     <div class="acts-section">
-      <div class="acts-head"><span class="acts-title">활동 (${acts.length})</span>
-        <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">＋ 추가</button>
+      <div class="acts-head"><span class="acts-title">${i18n('활동')} (${acts.length})</span>
+        <button class="btn btn-primary btn-sm" onclick="openActModal_contact('${id}')">${i18n('＋ 추가')}</button>
       </div>
       <div class="acts-filter" id="detailActsFilter"></div>
       <div id="detailActsList"></div>
@@ -1949,13 +2864,13 @@ function renderAllActs(){
   // 건수 표시
   const subEl = document.getElementById('actsSub');
   if(subEl){
-    let desc = actFilter.size===0 ? '전체'
+    let desc = actFilter.size===0 ? i18n('전체')
       : [...actFilter].map(f=>TL[f]||f).join('+');
-    if(actTeamFilter.size) desc += ` · 👥 ${[...actTeamFilter].join('+')}팀`;
-    subEl.textContent = `${desc} ${acts.length}건 / 전체 ${total}건`;
+    if(actTeamFilter.size) desc += ` · 👥 ${[...actTeamFilter].join('+')}`;
+    subEl.textContent = `${desc} ${acts.length}${i18n('건')} / ${i18n('전체')} ${total}${i18n('건')}`;
   }
 
-  if(!acts.length){ div.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>${actFilter.size===0?'활동이 없습니다.':'해당 유형의 활동이 없습니다.'}</p></div>`; return; }
+  if(!acts.length){ div.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>${actFilter.size===0?i18n('활동이 없습니다'):i18n('활동이 없습니다')}</p></div>`; return; }
   div.innerHTML=`<div class="timeline">${acts.map(a=>tlItem(a,{showWho:true})).join('')}</div>`;
 }
 
@@ -1975,7 +2890,7 @@ function onCompanyInput(){
 
 function openAddContact(preCo){
   editCid=null;
-  document.getElementById('cModalTitle').textContent='새 연락처';
+  document.getElementById('cModalTitle').textContent=i18n('새 연락처');
   ['f_dept','f_position','f_last','f_first','f_email','f_office','f_mobile','f_extra','f_address','f_memo']
     .forEach(id=>document.getElementById(id).value='');
   document.getElementById('f_company').value=preCo||'';
@@ -1987,7 +2902,7 @@ function openAddContact(preCo){
 function openEditContact(id){
   editCid=id;
   const c=contacts.find(x=>x.id===id);
-  document.getElementById('cModalTitle').textContent='연락처 수정';
+  document.getElementById('cModalTitle').textContent=i18n('연락처 수정');
   document.getElementById('f_company').value=c.company||'';
   document.getElementById('f_dept').value=c.dept||'';
   document.getElementById('f_position').value=c.position||'';
@@ -2006,7 +2921,7 @@ function openEditContact(id){
 function saveContact(){
   const last=document.getElementById('f_last').value.trim();
   const first=document.getElementById('f_first').value.trim();
-  if(!last&&!first){ alert('이름을 입력하세요.'); return; }
+  if(!last&&!first){ alert(i18n('이름을 입력하세요.')); return; }
   const co=document.getElementById('f_company').value.trim();
   const addr=document.getElementById('f_address').value.trim();
   // Sync address to company info
@@ -2025,7 +2940,7 @@ function delContact(id){
   const actCnt = activities.filter(a=>a.contactId===id).length;
   document.getElementById('delContactInfo').innerHTML =
     `<strong>${c.last}${c.first}</strong>${c.company?' · '+c.company:''}<br>
-     <span style="font-size:12px;color:var(--muted)">관련 활동 ${actCnt}건도 함께 삭제됩니다.</span>`;
+     <span style="font-size:12px;color:var(--muted)">${actCnt} ${i18n('건')} ${i18n('활동 함께 삭제')}.</span>`;
   document.getElementById('delContactConfirmBtn').onclick = ()=>{
     contacts = contacts.filter(x=>x.id!==id);
     activities = activities.filter(a=>a.contactId!==id);
@@ -2076,17 +2991,17 @@ function addCeoRow(data={}){
 function renderCeoList(){
   const div=document.getElementById('ceoList');
   if(!_ceoRows.length){
-    div.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">등록된 대표이사 이력이 없습니다.</div>`;
+    div.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">${i18n('대표이사')+ ' ' + i18n('활동이 없습니다')}</div>`;
     return;
   }
   div.innerHTML=`
-    <div class="ceo-header"><span>취임연도</span><span>이름</span><span>퇴임연도</span><span>비고</span><span></span></div>
+    <div class="ceo-header"><span>${i18n('취임연도')||'From'}</span><span>${i18n('이름')||'Name'}</span><span>${i18n('퇴임연도')||'To'}</span><span>${i18n('비고')||'Note'}</span><span></span></div>
     ${_ceoRows.map((r,i)=>`
     <div class="ceo-row">
       <input class="ceo-input" value="${r.from}" onchange="_ceoRows[${i}].from=this.value" placeholder="2020">
       <input class="ceo-input" value="${r.name}" onchange="_ceoRows[${i}].name=this.value" placeholder="홍길동">
-      <input class="ceo-input" value="${r.to}" onchange="_ceoRows[${i}].to=this.value" placeholder="현재">
-      <input class="ceo-input" value="${r.memo}" onchange="_ceoRows[${i}].memo=this.value" placeholder="메모">
+      <input class="ceo-input" value="${r.to}" onchange="_ceoRows[${i}].to=this.value" placeholder="${i18n('CEO placeholder 현재')}">
+      <input class="ceo-input" value="${r.memo}" onchange="_ceoRows[${i}].memo=this.value" placeholder="${i18n('CEO placeholder 메모')}">
       <button class="ceo-del" onclick="_ceoRows.splice(${i},1);renderCeoList()">✕</button>
     </div>`).join('')}`;
 }
@@ -2116,10 +3031,10 @@ function openCompanyModal(co){
   // 병합 대상 목록
   const sel=document.getElementById('co_merge_target');
   const allCos=[...new Set(contacts.map(c=>c.company).filter(Boolean))].sort();
-  sel.innerHTML='<option value="">— 병합 안 함 —</option>'
+  sel.innerHTML=`<option value="">${i18n('병합 안 함')}</option>`
     +allCos.filter(n=>n!==co).map(n=>{
       const cnt=contacts.filter(c=>c.company===n).length;
-      return `<option value="${n.replace(/"/g,'&quot;')}">${n} (${cnt}명)</option>`;
+      return `<option value="${n.replace(/"/g,'&quot;')}">${n} (${cnt} ${i18n('명')})</option>`;
     }).join('');
   sel.value='';
   document.getElementById('co_merge_preview').style.display='none';
@@ -2129,7 +3044,7 @@ function openCompanyModal(co){
     if(!target){ prev.style.display='none'; return; }
     const cnt=contacts.filter(c=>c.company===target).length;
     prev.style.display='';
-    prev.textContent=`⚠ "${target}" 소속 ${cnt}명이 "${co}"로 이동됩니다. 저장 시 적용됩니다.`;
+    prev.textContent=`⚠ "${target}" ${i18n('총')} ${cnt}${i18n('명')} → "${co}" ${i18n('이동됩니다')}`;
   };
 
   switchCoTab('basic');
@@ -2140,15 +3055,15 @@ function saveCompany(){
   if(!editCoName) return;
   const newName=document.getElementById('co_name').value.trim();
   const mergeTarget=document.getElementById('co_merge_target').value;
-  if(!newName){ alert('회사명을 입력하세요.'); return; }
+  if(!newName){ alert(i18n('회사명을 입력하세요.')); return; }
 
   // ① 병합 — confirm 대신 전용 모달
   if(mergeTarget){
     const cnt=contacts.filter(c=>c.company===mergeTarget).length;
     document.getElementById('mergeConfirmInfo').innerHTML=
-      `<div>없앨 회사&nbsp;&nbsp;<strong style="color:var(--accent2)">${mergeTarget}</strong> <span style="color:var(--muted)">(${cnt}명)</span></div>
-       <div>합칠 회사&nbsp;&nbsp;<strong style="color:var(--accent3)">${newName}</strong></div>
-       <div style="margin-top:8px;font-size:12px;color:var(--muted)">→ "${mergeTarget}" 소속 ${cnt}명이 "${newName}"으로 이동됩니다.</div>`;
+      `<div>${i18n('없앨 회사')||'Remove'}&nbsp;&nbsp;<strong style="color:var(--accent2)">${mergeTarget}</strong> <span style="color:var(--muted)">(${cnt} ${i18n('명')})</span></div>
+       <div>${i18n('합칠 회사')||'Keep'}&nbsp;&nbsp;<strong style="color:var(--accent3)">${newName}</strong></div>
+       <div style="margin-top:8px;font-size:12px;color:var(--muted)">→ ${cnt} ${i18n('명')} ${i18n('이동됩니다')}.</div>`;
     document.getElementById('mergeConfirmBtn').onclick=()=>{
       closeModal('mergeConfirmModal');
       _doSaveCompany(newName, mergeTarget);
@@ -2212,7 +3127,7 @@ function openActModal_contact(cid){
   editActId = null;
   actCid = cid;
   const c = contacts.find(x=>x.id===cid);
-  document.getElementById('actModalTitle').textContent = '활동 추가';
+  document.getElementById('actModalTitle').textContent = i18n('활동 추가');
   document.getElementById('actWhoSection').style.display = '';
   document.getElementById('actWho').innerHTML = `${c?c.last+c.first:''} ${c&&c.company?'<span style="font-size:12px;color:var(--muted)">· '+c.company+'</span>':''}`;
   _resetActForm();
@@ -2221,10 +3136,10 @@ function openActModal_contact(cid){
 
 function openActModal_co(co){
   const members = contacts.filter(c=>(c.company||'').trim()===co);
-  if(!members.length){ alert('먼저 담당자를 추가하세요.'); return; }
+  if(!members.length){ alert(i18n('먼저 담당자를 추가하세요.')); return; }
   editActId = null;
   actCid = members[0].id;
-  document.getElementById('actModalTitle').textContent = '활동 추가';
+  document.getElementById('actModalTitle').textContent = i18n('활동 추가');
   document.getElementById('actWhoSection').style.display = '';
   if(members.length===1){
     const c = members[0];
@@ -2247,7 +3162,7 @@ function openEditAct(id){
   editActId = id;
   actCid = a.contactId;
   const c = contacts.find(x=>x.id===a.contactId);
-  document.getElementById('actModalTitle').textContent = '활동 수정';
+  document.getElementById('actModalTitle').textContent = i18n('활동 수정');
   document.getElementById('actWhoSection').style.display = '';
   document.getElementById('actWho').innerHTML = c ? `${c.last}${c.first} <span style="font-size:12px;color:var(--muted)">· ${c.company||''}</span>` : '';
   document.getElementById('a_type').value   = a.type  || 'other';
@@ -2268,9 +3183,9 @@ function _resetActForm(){
 function saveActivity(){
   const picker = document.getElementById('actPicker');
   if(picker) actCid = picker.value;
-  if(!actCid){ alert('담당자를 선택하세요.'); return; }
+  if(!actCid){ alert(i18n('담당자를 선택하세요.')); return; }
   const date = document.getElementById('a_date').value;
-  if(!date){ alert('날짜를 입력하세요.'); return; }
+  if(!date){ alert(i18n('날짜를 입력하세요.')); return; }
   const data = {
     contactId: actCid,
     type:    document.getElementById('a_type').value,
@@ -2297,14 +3212,14 @@ function delAct(id, fromDetail=false){
   const a = activities.find(x=>x.id===id);
   if(!a) return;
   const c = contacts.find(x=>x.id===a.contactId);
-  const typeLabel = {visit:'🤝 방문', call:'📞 통화', quote:'📄 견적', order:'📦 발주', other:'📌 기타'};
+  const typeLabel = {visit:`🤝 ${i18n('방문')||'Visit'}`, call:`📞 ${i18n('통화')||'Call'}`, quote:`📄 ${i18n('견적')||'Quote'}`, order:`📦 ${i18n('발주')||'Order'}`, other:`📌 ${i18n('기타')||'Other'}`};
   document.getElementById('delActInfo').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:4px">
       <div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">유형</span>&nbsp;&nbsp;${typeLabel[a.type]||a.type}</div>
       <div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">날짜</span>&nbsp;&nbsp;${a.date}</div>
       ${a.title?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">제목</span>&nbsp;&nbsp;${a.title}</div>`:''}
-      ${a.content?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">내용</span>&nbsp;&nbsp;<span style="color:var(--muted)">${a.content.length>50?a.content.slice(0,50)+'…':a.content}</span></div>`:''}
-      ${c?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">담당자</span>&nbsp;&nbsp;${c.last}${c.first}${c.company?' · '+c.company:''}</div>`:''}
+      ${a.content?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">${i18n('내용')}</span>&nbsp;&nbsp;<span style="color:var(--muted)">${a.content.length>50?a.content.slice(0,50)+'…':a.content}</span></div>`:''}
+      ${c?`<div><span style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace">${i18n('담당자')}</span>&nbsp;&nbsp;${c.last}${c.first}${c.company?' · '+c.company:''}</div>`:''}
     </div>`;
   document.getElementById('delActConfirmBtn').onclick = ()=>{
     activities = activities.filter(x=>x.id!==id);
@@ -2323,7 +3238,7 @@ function closeModal(id){
   el.classList.remove('open');
   if(id==='onboardingModal'){
     const chk = document.getElementById('onboardingSkip');
-    if(chk && chk.checked) localStorage.setItem('crm_onboarding_skip','1');
+    if(chk && chk.checked) safeStorage.setItem('crm_onboarding_skip','1');
   }
 }
 document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }); });
@@ -2331,26 +3246,23 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('cli
 function renderStats(){
   const today = new Date();
   const todayStr = today.toISOString().slice(0,10);
-
-  // 1주일 전 날짜 (오늘 포함 7일)
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 6);
   const weekAgoStr = weekAgo.toISOString().slice(0,10);
 
+  // 최근 7일 신규 건수
   const cos = [...new Set(contacts.map(c=>c.company).filter(Boolean))];
+  const weekCos = [...new Set(
+    contacts.filter(c=>(c.createdAt||'').slice(0,10)>=weekAgoStr).map(c=>c.company).filter(Boolean)
+  )];
+  const weekContacts = contacts.filter(c=>(c.createdAt||'').slice(0,10)>=weekAgoStr).length;
+  const weekActs     = activities.filter(a=>(a.createdAt||'').slice(0,10)>=weekAgoStr).length;
 
-  // 당일 신규 연락처 (createdAt 기준)
+  // 당일 신규 (배지용)
   const newContacts = contacts.filter(c=>(c.createdAt||'').slice(0,10)===todayStr).length;
-  // 당일 신규 활동 (등록일 createdAt 기준)
-  const newActs = activities.filter(a=>(a.createdAt||'').slice(0,10)===todayStr).length;
+  const newActs     = activities.filter(a=>(a.createdAt||'').slice(0,10)===todayStr).length;
 
-  // 활동 유형별 — 활동의 date 필드 기준, 최근 7일
-  const weekActs = activities.filter(a=>{
-    const d = (a.date||'').slice(0,10);
-    return d >= weekAgoStr && d <= todayStr;
-  });
-
-  // 사이드바 배지 업데이트
+  // 사이드바 배지
   const cBadge  = document.getElementById('todayContacts');
   const aBadge  = document.getElementById('todayActivities');
   const mcBadge = document.getElementById('mTodayContacts');
@@ -2358,58 +3270,33 @@ function renderStats(){
   [cBadge, mcBadge].forEach(b=>{ if(b){ b.textContent='+'+newContacts; b.style.display=newContacts>0?'inline-block':'none'; }});
   [aBadge, maBadge].forEach(b=>{ if(b){ b.textContent='+'+newActs;     b.style.display=newActs>0?'inline-block':'none'; }});
 
-  const typeRows = actTypes.map(t=>{
-    const cnt = weekActs.filter(a=>a.type===t.id).length;
-    if(!cnt) return '';
-    return `<div class="stat-row"><span>${t.emoji} ${t.label}</span><span>${cnt}</span></div>`;
-  }).join('');
+  const fmtDate = s => s.slice(5).replace('-','/');  // 01/19 형식
+
+  const typeRows = null;
 
   document.getElementById('sidebarStats').innerHTML=`
-    <div class="stat-row"><span>회사</span><span>${cos.length}</span></div>
-    <div class="stat-row">
-      <span>연락처</span>
-      <span>${contacts.length}${newContacts>0?` <span style="color:#ff6b6b;font-size:10px;font-weight:700">+${newContacts}오늘</span>`:''}</span>
-    </div>
-    <div class="stat-row">
-      <span>총 활동</span>
-      <span>${activities.length}${newActs>0?` <span style="color:#ff6b6b;font-size:10px;font-weight:700">+${newActs}오늘</span>`:''}</span>
-    </div>
-    <div style="border-top:1px solid var(--border);margin:6px 0;opacity:.3"></div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'IBM Plex Mono',monospace">
-      활동 유형별 <span style="opacity:.6">(최근 7일)</span>
-    </div>
-    ${typeRows || `<div style="font-size:10px;color:var(--border);padding:2px 0">최근 7일 활동 없음</div>`}
-    <div style="border-top:1px solid var(--border);margin:6px 0;opacity:.3"></div>
-    <div style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-align:right">
-      ${weekAgoStr} ~ ${todayStr}
-    </div>`;
+    <div style="font-size:9px;color:var(--border);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;text-align:right">${fmtDate(weekAgoStr)} ~ ${fmtDate(todayStr)}&nbsp;${i18n('신규')}</div>
+    <div class="stat-row"><span>${i18n('회사')}</span><span style="color:var(--accent)">${weekCos.length}</span></div>
+    <div class="stat-row"><span>${i18n('연락처')}</span><span style="color:var(--accent)">${weekContacts}</span></div>
+    <div class="stat-row"><span>${i18n('활동')}</span><span style="color:var(--accent)">${weekActs}</span></div>`;
 }
 
-// ── PDF IMPORT ────────────────────────────────────────────
-let pdfBase64 = null;
-let pdfFileType = null;
-let pdfExtracted = [];
-let pdfActivities = [];
-// 다중 파일 큐
-let _pdfQueue = [];
-let _pdfQueueIdx = 0;
-let _pdfAllExtracted = [];
-let _pdfAllActivities = [];
+// ── 다국어 ──────────────────────────────────────────────────
 
 function _loadNextPdfFile(){
   if(_pdfQueueIdx >= _pdfQueue.length){
     // 모든 파일 로딩 완료 → 분석 버튼 활성화
     const names = _pdfQueue.map(f=>f.name).join(', ');
     const nameEl = document.getElementById('pdfFileName');
-    nameEl.innerHTML = `🗂 <strong>${_pdfQueue.length}개 파일</strong>: ${names}`;
+    nameEl.innerHTML = `🗂 <strong>${_pdfQueue.length}${i18n('개 파일')}</strong>: ${names}`;
     nameEl.style.display = '';
     document.getElementById('pdfFileTypeNote').innerHTML =
-      `<span style="color:var(--accent)">파일 ${_pdfQueue.length}개 선택됨 — 순차 분석합니다</span>`;
+      `<span style="color:var(--accent)">${_pdfQueue.length}${i18n('개 파일 선택됨')} — ${i18n('순차 분석')}</span>`;
     document.getElementById('pdfFileTypeNote').style.display = '';
     document.getElementById('dropIcon').textContent = '🗂';
     const btn = document.getElementById('pdfAnalyzeBtn');
     btn.disabled = false;
-    btn.textContent = `🔍 ${_pdfQueue.length}개 파일 분석`;
+    btn.textContent = `🔍 ${_pdfQueue.length}${i18n('개 파일')}`;
     btn.onclick = pdfAnalyzeAll;
     return;
   }
@@ -2438,8 +3325,8 @@ function _loadNextPdfFile(){
 }
 
 async function pdfAnalyzeAll(){
-  const apiKey = localStorage.getItem('crm_api_key');
-  if(!apiKey){ alert('API 키가 없습니다.'); pdfShowStep(0); return; }
+  const apiKey = safeStorage.getItem('crm_api_key');
+  if(!apiKey){ alert(i18n('API 키가 없습니다.')); pdfShowStep(0); return; }
   _pdfAllExtracted = [];
   _pdfAllActivities = [];
 
@@ -2448,7 +3335,7 @@ async function pdfAnalyzeAll(){
     const ft = file._ft || detectFileType(file);
     const b64 = file._b64;
     const loadMsg = document.getElementById('pdfLoadingMsg');
-    if(loadMsg) loadMsg.textContent = `${ft.icon} ${file.name} 분석 중... (${i+1}/${_pdfQueue.length})`;
+    if(loadMsg) loadMsg.textContent = `${ft.icon} ${file.name} ${i18n('파일 분석 중...')} (${i+1}/${_pdfQueue.length})`;
     pdfShowStep(2);
     try {
       const result = await _callPdfApi(b64, ft, apiKey);
@@ -2465,7 +3352,7 @@ async function pdfAnalyzeAll(){
   pdfExtracted = _pdfAllExtracted;
   pdfActivities = _pdfAllActivities;
   if(!pdfExtracted.length && !pdfActivities.length){
-    document.getElementById('pdfErrorMsg').innerHTML = '추출된 연락처나 활동이 없습니다.';
+    document.getElementById('pdfErrorMsg').innerHTML = i18n('추출된 연락처 없음');
     pdfShowStep(4); return;
   }
   renderPdfResults();
@@ -2491,32 +3378,32 @@ function openPdfModal(){
   document.getElementById('pdfFileTypeNote').style.display='none';
   const analyzeBtn = document.getElementById('pdfAnalyzeBtn');
   analyzeBtn.disabled = true;
-  analyzeBtn.textContent = '🔍 분석 시작';
+  analyzeBtn.textContent = i18n('분석 시작');
   analyzeBtn.onclick = pdfAnalyze;
   document.getElementById('dropIcon').textContent='🗂';
-  const key = localStorage.getItem('crm_api_key');
+  const key = safeStorage.getItem('crm_api_key');
   // 키 미리보기 표시
   const prev = document.getElementById('keyPreview');
-  if(prev && key) prev.textContent = '(현재: ' + key.slice(0,12) + '...)';
+  if(prev && key) prev.textContent = i18n('현재키') + key.slice(0,12) + '...';
   pdfShowStep(key ? 1 : 0);
   document.getElementById('pdfModal').classList.add('open');
 }
 
 function pdfSaveKey(){
   const key = document.getElementById('pdfApiKey').value.trim();
-  if(!key){ alert('API 키를 입력해주세요.'); return; }
-  if(!key.startsWith('sk-')){ alert('올바른 API 키를 입력해주세요.\n키는 sk- 로 시작해야 합니다.'); return; }
-  localStorage.setItem('crm_api_key', key);
+  if(!key){ alert(i18n('API 키를 입력해주세요.')); return; }
+  if(!key.startsWith('sk-')){ alert(i18n('올바른 API 키')); return; }
+  safeStorage.setItem('crm_api_key', key);
   pdfShowStep(1);
 }
 
 function pdfChangeKey(){
-  const key = localStorage.getItem('crm_api_key')||'';
+  const key = safeStorage.getItem('crm_api_key')||'';
   const input = document.getElementById('pdfApiKey');
   input.value = key;
   input.type = 'password';
   const prev = document.getElementById('keyPreview');
-  if(prev && key) prev.textContent = '(현재: ' + key.slice(0,12) + '...)';
+  if(prev && key) prev.textContent = i18n('현재키') + key.slice(0,12) + '...';
   pdfShowStep(0);
 }
 
@@ -2525,19 +3412,19 @@ function detectFileType(file){
   const name = file.name.toLowerCase();
   const mime = file.type;
   if(mime==='application/pdf' || name.endsWith('.pdf'))
-    return {kind:'pdf', mediaType:'application/pdf', icon:'📄', label:'PDF 문서'};
+    return {kind:'pdf', mediaType:'application/pdf', icon:'📄', label:i18n('PDF 문서')||'PDF'};
   if(['image/jpeg','image/jpg','image/png','image/webp','image/gif'].includes(mime) ||
      /\.(jpg|jpeg|png|webp|gif)$/.test(name))
-    return {kind:'image', mediaType: mime||'image/jpeg', icon:'🖼', label:'이미지 (명함·사진)'};
+    return {kind:'image', mediaType: mime||'image/jpeg', icon:'🖼', label:i18n('이미지')||'Image'};
   if(mime==='text/plain' || name.endsWith('.txt'))
-    return {kind:'text', mediaType:'text/plain', icon:'📝', label:'텍스트 파일'};
+    return {kind:'text', mediaType:'text/plain', icon:'📝', label:i18n('텍스트 파일')||'Text'};
   if(mime==='text/csv' || name.endsWith('.csv'))
-    return {kind:'text', mediaType:'text/csv', icon:'📊', label:'CSV 파일'};
+    return {kind:'text', mediaType:'text/csv', icon:'📊', label:'CSV'};
   if(/\.(xls|xlsx)$/.test(name))
-    return {kind:'text', mediaType:'text/plain', icon:'📊', label:'엑셀 파일'};
+    return {kind:'text', mediaType:'text/plain', icon:'📊', label:'Excel'};
   if(/\.(doc|docx)$/.test(name))
-    return {kind:'text', mediaType:'text/plain', icon:'📋', label:'Word 파일'};
-  return {kind:'text', mediaType:'text/plain', icon:'📎', label:'파일'};
+    return {kind:'text', mediaType:'text/plain', icon:'📋', label:'Word'};
+  return {kind:'text', mediaType:'text/plain', icon:'📎', label:i18n('파일 가져오기')||'File'};
 }
 
 
@@ -2559,19 +3446,19 @@ function onPdfSelected(input){
   // CSV 파일이 포함되어 있으면 CSV 전용 플로우로
   const csvFile = files.find(f=>f.name.toLowerCase().endsWith('.csv') || f.type==='text/csv');
   if(csvFile){
-    if(files.length > 1) alert('CSV 파일은 1개씩 처리됩니다. 다른 파일은 무시됩니다.');
+    if(files.length > 1) alert(i18n('CSV 파일은 1개씩'));
     _csvFile = csvFile;
     const sizeMB = (csvFile.size/1024/1024).toFixed(1);
     const nameEl = document.getElementById('pdfFileName');
-    nameEl.innerHTML = `📊 <strong>${csvFile.name}</strong> <span style="color:var(--muted)">(${sizeMB}MB · CSV 자동 처리)</span>`;
+    nameEl.innerHTML = `📊 <strong>${csvFile.name}</strong> <span style="color:var(--muted)">(${sizeMB}MB · CSV)</span>`;
     nameEl.style.display = '';
     document.getElementById('pdfFileTypeNote').innerHTML =
-      `감지된 유형: <span style="color:var(--accent3)">CSV 파일 — 대용량 직접 파싱 모드</span>`;
+      `${i18n('감지 유형')}: <span style="color:var(--accent3)">CSV — ${i18n('대용량 파싱 모드')}</span>`;
     document.getElementById('pdfFileTypeNote').style.display = '';
     document.getElementById('dropIcon').textContent = '📊';
     const btn = document.getElementById('pdfAnalyzeBtn');
     btn.disabled = false;
-    btn.textContent = '➡ CSV 분석하기';
+    btn.textContent = i18n('CSV 분석하기');
     btn.onclick = csvParse;
     return;
   }
@@ -2579,7 +3466,7 @@ function onPdfSelected(input){
   // 비CSV: 다중 파일 처리
   const oversized = files.filter(f=>f.size > 10*1024*1024);
   if(oversized.length){
-    alert(`${oversized.map(f=>f.name).join(', ')}\n파일이 10MB를 초과합니다.`);
+    alert(oversized.map(f=>f.name).join(', ') + '\n' + i18n('파일 초과'));
     return;
   }
 
@@ -2614,7 +3501,7 @@ const PDF_PROMPT = `이 파일에서 연락처 정보와 거래/활동 내역을
   "contacts": [
     {
       "company": "회사명", "dept": "부서", "position": "직책",
-      "last": "성", "first": "이름", "email": "이메일",
+      "last": "성", "first": "이름", "email": "이메일주소",
       "office": "사무실전화", "mobile": "휴대폰",
       "extra": "팩스 등 추가연락처", "address": "주소", "memo": "기타정보"
     }
@@ -2650,7 +3537,7 @@ async function _callPdfApi(b64, ft, apiKey){
     let textContent = '';
     try { textContent = decodeURIComponent(escape(atob(b64))); }
     catch(e){ textContent = atob(b64); }
-    contentParts = [{ type:'text', text: '아래는 파일 내용입니다:\n\n' + textContent + '\n\n' + PDF_PROMPT }];
+    contentParts = [{ type:'text', text: i18n('아래는 파일 내용입니다')+'\n\n' + textContent + '\n\n' + PDF_PROMPT }];
   } else {
     contentParts = [
       { type:'document', source:{ type:'base64', media_type:'application/pdf', data: b64 } },
@@ -2688,12 +3575,12 @@ async function pdfAnalyze(){
   // 다중 파일 모드
   if(_pdfQueue.length > 0){ await pdfAnalyzeAll(); return; }
   // 단일 파일 모드 (레거시)
-  if(!pdfBase64){ alert('파일을 먼저 선택해주세요.'); return; }
-  const apiKey = localStorage.getItem('crm_api_key');
-  if(!apiKey){ alert('API 키가 없습니다.'); pdfShowStep(0); return; }
+  if(!pdfBase64){ alert(i18n('파일을 먼저 선택해주세요.')); return; }
+  const apiKey = safeStorage.getItem('crm_api_key');
+  if(!apiKey){ alert(i18n('API 키가 없습니다.')); pdfShowStep(0); return; }
   const ft = pdfFileType || {kind:'pdf', mediaType:'application/pdf', icon:'📄', label:'파일'};
   const loadMsg = document.getElementById('pdfLoadingMsg');
-  if(loadMsg) loadMsg.textContent = ft.icon + ' ' + ft.label + ' 분석 중...';
+  if(loadMsg) loadMsg.textContent = ft.icon + ' ' + ft.label + ' ' + i18n('파일 분석 중...');
   pdfShowStep(2);
   try {
     const result = await _callPdfApi(pdfBase64, ft, apiKey);
@@ -2708,8 +3595,8 @@ async function pdfAnalyze(){
     document.getElementById('pdfErrorMsg').innerHTML =
       `<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:8px;padding:12px 14px;margin-bottom:12px;text-align:left;word-break:break-all">${msg}</div>
        <div style="font-size:11px;color:var(--muted);line-height:1.8;text-align:left">
-         <b>확인 사항:</b><br>
-         • API 키가 <code>sk-ant-</code>로 시작하는지 확인<br>
+         <b data-i18n="확인 사항">확인 사항:</b><br>
+         • <span data-i18n="API키 시작 확인">API 키가 sk-ant- 로 시작하는지 확인</span><br>
          • PDF가 암호화되어 있지 않은지 확인<br>
          • 이미지는 JPG · PNG · WEBP 권장<br>
          • 파일이 너무 크거나 손상되지 않았는지 확인
@@ -2725,7 +3612,7 @@ function pdfRetry(){
   document.getElementById('pdfFileName').style.display='none';
   document.getElementById('pdfFileTypeNote').style.display='none';
   const btn = document.getElementById('pdfAnalyzeBtn');
-  btn.disabled=true; btn.textContent='🔍 분석 시작'; btn.onclick=pdfAnalyze;
+  btn.disabled=true; btn.textContent=i18n('분석 시작'); btn.onclick=pdfAnalyze;
   document.getElementById('dropIcon').textContent='🗂';
   pdfShowStep(1);
 }
@@ -2763,33 +3650,33 @@ function renderPdfResults(){
       html += `<div style="display:flex;align-items:center;gap:8px;margin:${gi>0?'24px':0}px 0 10px">
         <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent2);font-weight:600;white-space:nowrap">📎 ${fname}</div>
         <div style="flex:1;height:1px;background:var(--border)"></div>
-        <div style="font-size:10px;color:var(--muted)">${grp.contacts.length}명 · 활동 ${grp.activities.length}건</div>
+        <div style="font-size:10px;color:var(--muted)">${grp.contacts.length} ${i18n('명')} · ${i18n('활동')} ${grp.activities.length} ${i18n('건')}</div>
       </div>`;
     }
 
     // 연락처
     if(grp.contacts.length){
-      if(!multiFile) html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 연락처 (${grp.contacts.length}명)</div>`;
+      if(!multiFile) html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">👤 ${i18n('연락처')} (${grp.contacts.length} ${i18n('명')})</div>`;
       html += grp.contacts.map(p=>{
         const i = p._idx;
-        const name=(p.last||'')+(p.first||'')||'이름 없음';
+        const name=(p.last||'')+(p.first||'')||i18n('이름 없음');
         return `<div class="pdf-contact-card checked" id="pdfCard${i}">
           <div class="pdf-card-header">
             <input type="checkbox" class="pdf-card-check" id="pdfCheck${i}" checked onchange="document.getElementById('pdfCard${i}').classList.toggle('checked',this.checked)">
             <div class="pdf-card-name">${name}${p.company?` <span style="font-size:12px;color:var(--muted);font-weight:400">· ${p.company}</span>`:''}</div>
           </div>
           <div class="pdf-fields">
-            <div class="pdf-field"><label>회사</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
-            <div class="pdf-field"><label>부서</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
-            <div class="pdf-field"><label>직책</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
-            <div class="pdf-field"><label>성</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
-            <div class="pdf-field"><label>이름</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
-            <div class="pdf-field"><label>이메일</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
-            <div class="pdf-field"><label>사무실</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
-            <div class="pdf-field"><label>휴대폰</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
-            <div class="pdf-field"><label>추가연락처</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
+            <div class="pdf-field"><label>${i18n('회사명')||'Company'}</label><input id="pr${i}_company" value="${esc2(p.company)}"></div>
+            <div class="pdf-field"><label>${i18n('부서')}</label><input id="pr${i}_dept" value="${esc2(p.dept)}"></div>
+            <div class="pdf-field"><label>${i18n('직책')}</label><input id="pr${i}_position" value="${esc2(p.position)}"></div>
+            <div class="pdf-field"><label>${i18n('성')||'Last'}</label><input id="pr${i}_last" value="${esc2(p.last)}"></div>
+            <div class="pdf-field"><label>${i18n('이름')||'First'}</label><input id="pr${i}_first" value="${esc2(p.first)}"></div>
+            <div class="pdf-field"><label>${i18n('이메일')}</label><input id="pr${i}_email" value="${esc2(p.email)}"></div>
+            <div class="pdf-field"><label>${i18n('사무실')}</label><input id="pr${i}_office" value="${esc2(p.office)}"></div>
+            <div class="pdf-field"><label>${i18n('휴대폰')}</label><input id="pr${i}_mobile" value="${esc2(p.mobile)}"></div>
+            <div class="pdf-field"><label>${i18n('추가연락처')||'Extra'}</label><input id="pr${i}_extra" value="${esc2(p.extra)}"></div>
             <div class="pdf-field full"><label>주소</label><input id="pr${i}_address" value="${esc2(p.address)}"></div>
-            <div class="pdf-field full"><label>메모</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
+            <div class="pdf-field full"><label>${i18n('메모')}</label><input id="pr${i}_memo" value="${esc2(p.memo)}"></div>
           </div>
         </div>`;
       }).join('');
@@ -2797,14 +3684,14 @@ function renderPdfResults(){
 
     // 활동
     if(grp.activities.length){
-      html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:${grp.contacts.length?'14px':0}px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 활동 내역 (${grp.activities.length}건)${multiFile?'':' — 연락처 저장 후 자동 연결됩니다'}</div>`;
+      html += `<div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent3);text-transform:uppercase;letter-spacing:1px;margin:${grp.contacts.length?'14px':0}px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📋 ${i18n('활동')} (${grp.activities.length} ${i18n('건')})${multiFile?'':' — '+i18n('자동 연결 안내')}</div>`;
       html += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:4px">
         <table style="width:100%;border-collapse:collapse;font-size:12px">
           <thead><tr style="background:var(--surface)">
             <th style="padding:8px 10px;width:28px;border-bottom:1px solid var(--border)"></th>
-            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">날짜</th>
-            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">유형</th>
-            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border)">내용</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:100px">${i18n('날짜')}</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:80px">${i18n('유형')}</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border)">${i18n('내용')}</th>
             <th style="padding:8px 10px;text-align:right;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:400;border-bottom:1px solid var(--border);width:90px">금액</th>
           </tr></thead>
           <tbody>
@@ -2826,7 +3713,7 @@ function renderPdfResults(){
     }
   });
 
-  div.innerHTML = html || '<div style="text-align:center;padding:24px;color:var(--muted)">추출된 정보가 없습니다.</div>';
+  div.innerHTML = html || `<div style="text-align:center;padding:24px;color:var(--muted)">${i18n('추출된 정보 없음')}</div>`;
 }
 
 function pdfImportAll(){
@@ -2865,15 +3752,15 @@ function pdfImportAll(){
       addedActs++;
     }
   } else if(pdfActivities.length && !targetId){
-    alert('활동을 연결할 연락처가 없습니다. 연락처를 먼저 체크해주세요.');
+    alert(i18n('활동 연결 오류'));
     return;
   }
 
   persist();
   closeModal('pdfModal');
   renderContacts();
-  const msg = [addedContacts?`연락처 ${addedContacts}명`:'', addedActs?`활동 ${addedActs}건`:''].filter(Boolean).join(', ');
-  if(msg) alert(`✅ ${msg} 추가되었습니다!`);
+  const msg = [addedContacts?`${i18n('연락처')} ${addedContacts} ${i18n('명')}`:'', addedActs?`${i18n('활동')} ${addedActs} ${i18n('건')}`:''].filter(Boolean).join(', ');
+  if(msg) alert(`✅ ${msg} ${i18n('추가되었습니다')}`);
 }
 
 
@@ -2906,19 +3793,19 @@ const CSV_FIELD_LABELS = {
 let _csvFile = null;
 
 function csvParse(){
-  if(!_csvFile){ alert('파일을 먼저 선택해주세요.'); return; }
+  if(!_csvFile){ alert(i18n('파일을 먼저 선택해주세요.')); return; }
   // 분석 버튼 원상복구 (다음 비CSV 파일을 위해)
   const btn = document.getElementById('pdfAnalyzeBtn');
-  if(btn){ btn.textContent = '🔍 분석 시작'; btn.onclick = pdfAnalyze; }
+  if(btn){ btn.textContent = i18n('분석 시작'); btn.onclick = pdfAnalyze; }
 
   // 로딩 표시
   pdfShowStep(6);
-  document.getElementById('csvProgressMsg').textContent = '📊 CSV 파일 읽는 중...';
+  document.getElementById('csvProgressMsg').textContent = i18n('CSV 읽는 중');
   document.getElementById('csvProgressBar').style.width = '10%';
-  document.getElementById('csvProgressSub').textContent = `파일 크기: ${(_csvFile.size/1024/1024).toFixed(1)}MB`;
+  document.getElementById('csvProgressSub').textContent = `${i18n('파일 크기')}: ${(_csvFile.size/1024/1024).toFixed(1)}MB`;
 
   const processText = text => {
-    document.getElementById('csvProgressMsg').textContent = '📊 CSV 파싱 중...';
+    document.getElementById('csvProgressMsg').textContent = i18n('CSV 파싱 중');
     document.getElementById('csvProgressBar').style.width = '40%';
     setTimeout(()=>{
       try {
@@ -2933,7 +3820,7 @@ function csvParse(){
         }, 200);
       } catch(err){
         pdfShowStep(1);
-        alert('CSV 파싱 오류: ' + err.message);
+        alert(i18n('CSV 파싱 오류') + ': ' + err.message);
       }
     }, 50);
   };
@@ -2943,7 +3830,7 @@ function csvParse(){
   reader.onerror = () => {
     const r2 = new FileReader();
     r2.onload = e2 => processText(e2.target.result);
-    r2.onerror = () => { pdfShowStep(1); alert('파일을 읽을 수 없습니다.'); };
+    r2.onerror = () => { pdfShowStep(1); alert(i18n('파일을 읽을 수 없습니다')); };
     r2.readAsText(_csvFile, 'EUC-KR');
   };
   reader.readAsText(_csvFile, 'UTF-8');
@@ -3011,16 +3898,16 @@ function csvAutoMap(headers){
 function csvRenderMapping(){
   const area = document.getElementById('csvMappingArea');
   const previewInfo = document.getElementById('csvPreviewInfo');
-  previewInfo.textContent = `총 ${_csvRawRows.length.toLocaleString()}행 감지 · 아래에서 컬럼 매핑을 확인하세요.`;
+  previewInfo.textContent = `${_csvRawRows.length.toLocaleString()} ${i18n('행 감지 메시지')}`;
 
-  const opts = `<option value="">— 사용 안 함 —</option>`
+  const opts = `<option value="">${i18n('사용 안 함')||'— None —'}</option>`
     + _csvHeaders.map(h=>`<option value="${h.replace(/"/g,'&quot;')}">${h}</option>`).join('');
 
   let html = `<table style="width:100%;border-collapse:collapse;font-size:12px">
     <thead><tr>
-      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">CRM 필드</th>
+      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">${i18n('CRM 필드')||'CRM Field'} 필드</th>
       <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">CSV 컬럼 매핑</th>
-      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">미리보기 (첫 행)</th>
+      <th style="padding:6px 10px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)">${i18n('미리보기')||'Preview'} (첫 행)</th>
     </tr></thead><tbody>`;
 
   Object.entries(CSV_FIELD_LABELS).forEach(([field, label])=>{
@@ -3055,8 +3942,8 @@ function csvUpdatePreview(){
 async function csvImport(){
   pdfShowStep(6);
   document.getElementById('csvProgressBar').style.width = '0%';
-  document.getElementById('csvProgressMsg').textContent = '가져오는 중...';
-  document.getElementById('csvProgressSub').textContent = `총 ${_csvRawRows.length.toLocaleString()}행 처리 시작`;
+  document.getElementById('csvProgressMsg').textContent = i18n('가져오는 중...');
+  document.getElementById('csvProgressSub').textContent = `${i18n('총')} ${_csvRawRows.length.toLocaleString()}${i18n('행')} ${i18n('처리 시작')}`;
   await new Promise(r=>setTimeout(r,50));
 
   const total = _csvRawRows.length;
@@ -3128,15 +4015,15 @@ async function csvImport(){
     if(i % CHUNK === 0){
       const pct = Math.round((i/total)*100);
       document.getElementById('csvProgressBar').style.width = pct+'%';
-      document.getElementById('csvProgressMsg').textContent = `가져오는 중... (${i.toLocaleString()} / ${total.toLocaleString()})`;
-      document.getElementById('csvProgressSub').textContent = `추가: ${added.toLocaleString()}명 · 중복 건너뜀: ${dupCount.toLocaleString()}건`;
+      document.getElementById('csvProgressMsg').textContent = `${i18n('가져오는 중...')} (${i.toLocaleString()} / ${total.toLocaleString()})`;
+      document.getElementById('csvProgressSub').textContent = `${i18n('추가')}: ${added.toLocaleString()}${i18n('명')} · ${i18n('중복 건너뜀')}: ${dupCount.toLocaleString()}${i18n('건')}`;
       await new Promise(r=>setTimeout(r,0)); // UI 업데이트 양보
     }
   }
 
   // 저장
   document.getElementById('csvProgressBar').style.width = '100%';
-  document.getElementById('csvProgressMsg').textContent = '저장 중...';
+  document.getElementById('csvProgressMsg').textContent = i18n('저장 중...');
   await new Promise(r=>setTimeout(r,30));
   persist();
   renderContacts();
@@ -3144,12 +4031,12 @@ async function csvImport(){
 
   // 완료 화면
   pdfShowStep(7);
-  document.getElementById('csvDoneMsg').textContent = `${added.toLocaleString()}명 추가 완료!`;
+  document.getElementById('csvDoneMsg').textContent = `${added.toLocaleString()}${i18n('명 추가 완료')}`;
   document.getElementById('csvDoneSub').innerHTML =
-    `전체 ${total.toLocaleString()}행 처리<br>`
-    + (dupCount ? `중복 건너뜀: ${dupCount.toLocaleString()}건<br>` : '')
-    + (skipped-dupCount ? `빈 행 건너뜀: ${(skipped-dupCount).toLocaleString()}건<br>` : '')
-    + `<br>Supabase 연동이 설정되어 있으면 자동으로 동기화됩니다.`;
+    `${i18n('총')} ${total.toLocaleString()} ${i18n('행 처리 시작')}<br>`
+    + (dupCount ? `${i18n('중복 건너뜀')}: ${dupCount.toLocaleString()}${i18n('건')}<br>` : '')
+    + (skipped-dupCount ? `${i18n('빈 행 건너뜀')}: ${(skipped-dupCount).toLocaleString()}${i18n('건')}<br>` : '')
+    + `<br>${i18n('Supabase 자동동기화 안내')}`;
 }
 
 // ── TYPE MANAGER ──────────────────────────────────────────
@@ -3189,7 +4076,7 @@ function addCustomType(){
   const emoji = document.getElementById('newTypeEmoji').value.trim()||'🔖';
   const label = document.getElementById('newTypeLabel').value.trim();
   const color = document.getElementById('newTypeColor').value;
-  if(!label){ alert('유형 이름을 입력하세요.'); return; }
+  if(!label){ alert(i18n('유형 이름을 입력하세요')); return; }
   const id = 'custom_'+Date.now();
   _editTypes.push({id, label, emoji, color});
   document.getElementById('newTypeEmoji').value='';
@@ -3219,7 +4106,7 @@ function refreshTypeSelect(){
 function refreshFilterBar(){
   const bar = document.getElementById('actFilterBar');
   if(!bar) return;
-  bar.innerHTML = `<button class="filter-chip${actFilter.size===0?' active':''}" data-val="all" onclick="setActFilter('all',this)">전체</button>`
+  bar.innerHTML = `<button class="filter-chip${actFilter.size===0?' active':''}" data-val="all" onclick="setActFilter('all',this)">${i18n('전체 필터')}</button>`
     + actTypes.map(t=>`<button class="filter-chip${actFilter.has(t.id)?' active':''}" data-val="${t.id}" onclick="setActFilter('${t.id}',this)">${t.emoji} ${t.label}</button>`).join('');
 }
 
@@ -3239,7 +4126,7 @@ function openGsModal(){
     status.style.display  = '';
     discBtn.style.display = '';
     curUrl.textContent    = sbUrl;
-    lastSy.textContent    = sbLastSync ? '마지막 동기화: ' + sbLastSync : '아직 동기화 안 됨';
+    lastSy.textContent    = sbLastSync ? i18n('마지막 동기화') + sbLastSync : i18n('아직 동기화 안 됨');
   } else {
     status.style.display  = 'none';
     discBtn.style.display = 'none';
@@ -3255,35 +4142,35 @@ function sbSaveSettings(){
 
   if(!url || !key){
     msg.style.color = 'var(--accent2)';
-    msg.textContent = '⚠ URL과 API Key를 모두 입력해주세요.';
+    msg.textContent = i18n('URL Key 입력 경고');
     return;
   }
   if(!url.includes('supabase.co')){
     msg.style.color = 'var(--accent2)';
-    msg.textContent = '⚠ Supabase Project URL이 아닌 것 같습니다.';
+    msg.textContent = i18n('Supabase URL 경고');
     return;
   }
 
   sbUrl = url;
   sbKey = key;
-  localStorage.setItem('crm_sb_url', sbUrl);
-  localStorage.setItem('crm_sb_key', sbKey);
+  safeStorage.setItem('crm_sb_url', sbUrl);
+  safeStorage.setItem('crm_sb_key', sbKey);
   msg.style.color = 'var(--accent3)';
-  msg.textContent = '✅ 저장됐습니다. Supabase에서 불러오는 중...';
+  msg.textContent = i18n('저장됐습니다');
   setTimeout(()=>{ closeModal('gsModal'); sbLoad(); }, 800);
 }
 
 function sbDisconnect(){
   sbUrl = ''; sbKey = '';
-  localStorage.removeItem('crm_sb_url');
-  localStorage.removeItem('crm_sb_key');
-  sbUpdateStatus('offline', '로컬 저장 모드');
+  safeStorage.removeItem('crm_sb_url');
+  safeStorage.removeItem('crm_sb_key');
+  sbUpdateStatus('offline', i18n('로컬 저장 모드'));
   closeModal('gsModal');
 }
 
 function sbManualLoad(){
   if(!sbUrl || !sbKey){
-    document.getElementById('sbStatusMsg').textContent = '먼저 URL과 Key를 입력하고 저장해주세요.';
+    document.getElementById('sbStatusMsg').textContent = i18n('URL과 Key 입력');
     return;
   }
   closeModal('gsModal');
@@ -3298,11 +4185,11 @@ async function sbDiagnose(){
 
   if(!url || !key){
     msg.style.color='var(--accent2)';
-    msg.innerHTML='⚠ URL과 Key를 먼저 입력하세요.';
+    msg.innerHTML=i18n('URL Key 먼저');
     return;
   }
   msg.style.color='var(--muted)';
-  msg.innerHTML='🔍 진단 중...';
+  msg.innerHTML=i18n('진단 중');
 
   const results = [];
   const h = { 'apikey': key, 'Authorization': 'Bearer ' + key };
@@ -3344,19 +4231,375 @@ async function sbDiagnose(){
 }
 
 // ── INIT ──────────────────────────────────────────────────
-injectTypeStyles();
-refreshTypeSelect();
-refreshFilterBar();
-refreshTeamFilterBars();
-renderStats();
-renderContacts();
+function _crmInit(){
+  try {
+    injectTypeStyles();
+    refreshTypeSelect();
+    refreshFilterBar();
+    refreshTeamFilterBars();
+    renderStats();
+    renderContacts();
+    initLang();
+    _pinInit();
 
-// Supabase 연동 시 자동 동기화
-if(sbIsConnected()){
-  sbUpdateStatus('syncing', '불러오는 중...');
-  sbLoad();
+    // Supabase 연동 시 자동 동기화
+    if(sbIsConnected()){
+      sbUpdateStatus('syncing', i18n('불러오는 중...'));
+      sbLoad();
+    } else {
+      sbUpdateStatus('offline', i18n('로컬 저장 모드_sync'));
+    }
+  } catch(err) {
+    // 에러를 화면에 표시 (cross-origin "Script error." 대신 실제 내용 출력)
+    var msg = err && err.message ? err.message : String(err);
+    var stack = err && err.stack ? err.stack.slice(0, 300) : '';
+    var el = document.getElementById('_crmErrBox');
+    if(!el){
+      el = document.createElement('div');
+      el.id = '_crmErrBox';
+      el.style.cssText = 'position:fixed;bottom:60px;left:0;right:0;background:#c0392b;color:#fff;padding:10px 14px;font-size:12px;font-family:monospace;z-index:99999;white-space:pre-wrap;word-break:break-all';
+      document.body.appendChild(el);
+    }
+    el.textContent = '⚠ Init Error: ' + msg + (stack ? '\n' + stack : '');
+    console.error('CRM Init Error:', err);
+  }
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', _crmInit);
 } else {
-  sbUpdateStatus('offline', '로컬 저장 모드 · 🗄 클릭해서 Supabase 연동');
+  _crmInit();
+}
+
+
+// ══════════════════════════════════════════════════════════
+// PIN LOCK SYSTEM
+// ══════════════════════════════════════════════════════════
+const PIN_KEY          = 'crm_pin_hash';
+const PIN_FAIL_KEY     = 'crm_pin_fails';
+const PIN_LOCKED_UNTIL = 'crm_pin_locked_until';
+const PIN_AUTO_LOCK_KEY= 'crm_pin_auto_lock'; // 자동잠금 분 단위 (0=비활성)
+const AUTO_LOCK_MIN    = 10; // 기본 10분
+
+// SHA-256 해시 (SubtleCrypto, iOS 10+ 지원)
+// 순수 JS 해시 (crypto.subtle 불필요 — 환경 독립적, 동기 실행)
+// djb2 변형 + salt → 4자리 PIN 보호에 충분
+function _pinHash(pin){
+  var salt = 'RelaCRM_2025';
+  var str = salt + pin + salt.split('').reverse().join('');
+  var h = 5381;
+  for(var i = 0; i < str.length; i++){
+    h = ((h << 5) + h) ^ str.charCodeAt(i);
+    h = h >>> 0; // unsigned 32bit
+  }
+  return 'crm_' + ('00000000' + h.toString(16)).slice(-8);
+}
+
+// async 래퍼 — 기존 await 호출부 호환성 유지 (즉시 resolve)
+function _sha256(str){ return Promise.resolve(_pinHash(str)); }
+function _checkCrypto(){ return Promise.resolve(); }
+
+// ── 상태 변수
+var _pinBuffer    = '';   // 현재 입력중인 PIN
+var _pinUnlocked  = false;// 현재 잠금 해제 상태
+var _pinLastActive= Date.now();
+var _autoLockTimer= null;
+
+// ── 자동잠금 타이머
+function _pinResetAutoLock(){
+  _pinLastActive = Date.now();
+  var mins = parseInt(safeStorage.getItem(PIN_AUTO_LOCK_KEY)||'0');
+  if(!mins || !_pinUnlocked) return;
+  clearTimeout(_autoLockTimer);
+  _autoLockTimer = setTimeout(function(){
+    if(_pinUnlocked && _pinIsEnabled()){
+      _pinLockNow();
+    }
+  }, mins * 60 * 1000);
+}
+
+function _pinIsEnabled(){
+  return !!safeStorage.getItem(PIN_KEY);
+}
+
+function _pinLockNow(){
+  _pinUnlocked = false;
+  _pinBuffer = '';
+  _showPinOverlay('lock');
+}
+
+// ── 잠금 오버레이 표시
+function _showPinOverlay(mode){
+  var overlay = document.getElementById('pinOverlay');
+  if(!overlay) return;
+  overlay.classList.remove('hidden','hiding');
+  _pinBuffer = '';
+  _updatePinDots('pinDots', 0);
+  var msg = document.getElementById('pinMsg');
+  var sub = document.getElementById('pinSubtitle');
+  var forgotLink = document.getElementById('pinForgotLink');
+
+  // 잠금 상태 확인
+  var lockedUntil = parseInt(safeStorage.getItem(PIN_LOCKED_UNTIL)||'0');
+  if(lockedUntil > Date.now()){
+    var secs = Math.ceil((lockedUntil - Date.now())/1000);
+    _showPinLockedState(secs);
+    return;
+  }
+
+  if(sub) sub.textContent = i18n('PIN을 입력하세요');
+  if(msg){ msg.textContent=''; msg.className='pin-msg'; }
+  if(forgotLink) forgotLink.style.display = 'none';
+  var pad = document.getElementById('pinPad');
+  if(pad) pad.style.display = 'grid';
+}
+
+function _showPinLockedState(secs){
+  var pad = document.getElementById('pinPad');
+  var sub = document.getElementById('pinSubtitle');
+  var msg = document.getElementById('pinMsg');
+  var forgotLink = document.getElementById('pinForgotLink');
+  if(pad) pad.style.display = 'none';
+  if(sub) sub.textContent = '🔒 ' + i18n('잠금 상태');
+  if(forgotLink) forgotLink.style.display = 'block';
+
+  var mins = Math.ceil(secs/60);
+  if(msg){
+    msg.textContent = mins + i18n('분 후 다시 시도하세요');
+    msg.className = 'pin-msg err';
+  }
+
+  // 카운트다운
+  var interval = setInterval(function(){
+    var lockedUntil = parseInt(safeStorage.getItem(PIN_LOCKED_UNTIL)||'0');
+    var remaining = lockedUntil - Date.now();
+    if(remaining <= 0){
+      clearInterval(interval);
+      safeStorage.removeItem(PIN_LOCKED_UNTIL);
+      safeStorage.removeItem(PIN_FAIL_KEY);
+      _showPinOverlay('lock');
+    } else {
+      var m = Math.ceil(remaining/1000/60);
+      if(msg) msg.textContent = m + i18n('분 후 다시 시도하세요');
+    }
+  }, 10000);
+}
+
+// ── PIN 입력 처리 (잠금 화면)
+function _pinPress(d){
+  var lockedUntil = parseInt(safeStorage.getItem(PIN_LOCKED_UNTIL)||'0');
+  if(lockedUntil > Date.now()) return;
+  if(_pinBuffer.length >= 4) return;
+  _pinBuffer += d;
+  _updatePinDots('pinDots', _pinBuffer.length);
+  if(_pinBuffer.length === 4) _pinVerify();
+}
+
+function _pinBackspace(){
+  if(_pinBuffer.length > 0){
+    _pinBuffer = _pinBuffer.slice(0,-1);
+    _updatePinDots('pinDots', _pinBuffer.length);
+  }
+}
+
+async function _pinVerify(){
+  var hash = await _sha256(_pinBuffer);
+  var stored = safeStorage.getItem(PIN_KEY);
+  if(hash === stored){
+    // 성공
+    safeStorage.removeItem(PIN_FAIL_KEY);
+    safeStorage.removeItem(PIN_LOCKED_UNTIL);
+    _pinUnlocked = true;
+    _pinBuffer = '';
+    var overlay = document.getElementById('pinOverlay');
+    var msg = document.getElementById('pinMsg');
+    if(msg){ msg.textContent = '✓'; msg.className = 'pin-msg ok'; }
+    setTimeout(function(){
+      if(overlay){ overlay.classList.add('hiding'); }
+      setTimeout(function(){
+        if(overlay){ overlay.classList.add('hidden'); overlay.classList.remove('hiding'); }
+        _pinResetAutoLock();
+      }, 350);
+    }, 300);
+  } else {
+    // 실패
+    var fails = parseInt(safeStorage.getItem(PIN_FAIL_KEY)||'0') + 1;
+    safeStorage.setItem(PIN_FAIL_KEY, String(fails));
+    _pinBuffer = '';
+    _pinErrorAnim('pinDots');
+    var msg = document.getElementById('pinMsg');
+    var remaining = 5 - fails;
+    if(fails >= 5){
+      // 30분 잠금
+      var until = Date.now() + 30*60*1000;
+      safeStorage.setItem(PIN_LOCKED_UNTIL, String(until));
+      _showPinLockedState(30*60);
+    } else {
+      if(msg){
+        msg.textContent = i18n('PIN 오류') + ' · ' + remaining + i18n('회 남음');
+        msg.className = 'pin-msg err';
+      }
+      setTimeout(function(){
+        _updatePinDots('pinDots',0);
+        if(msg){ msg.textContent=''; msg.className='pin-msg'; }
+      }, 800);
+    }
+  }
+}
+
+function _pinForgot(){
+  if(!confirm(i18n('PIN 초기화 확인'))) return;
+  safeStorage.removeItem(PIN_KEY);
+  safeStorage.removeItem(PIN_FAIL_KEY);
+  safeStorage.removeItem(PIN_LOCKED_UNTIL);
+  _pinUnlocked = true;
+  var overlay = document.getElementById('pinOverlay');
+  if(overlay){ overlay.classList.add('hidden'); }
+  _updatePinToggle();
+}
+
+// ── PIN 설정 모달
+var _setupStep   = 'new';  // 'new' | 'confirm' | 'change_old'
+var _setupFirst  = '';
+var _setupBuffer = '';
+
+function openPinSetup(){
+  var hasPin = _pinIsEnabled();
+  _setupBuffer = '';
+  _setupFirst  = '';
+  var title = document.getElementById('pinSetupTitle');
+  var deleteRow = document.getElementById('pinSetupDeleteRow');
+  var setupMsg = document.getElementById('pinSetupMsg');
+  var sub = document.getElementById('pinSetupTitle');
+
+  if(hasPin){
+    _setupStep = 'change_old';
+    if(title) title.textContent = '🔐 ' + i18n('PIN 변경');
+    if(deleteRow) deleteRow.style.display = 'block';
+    if(setupMsg){ setupMsg.textContent = i18n('현재 PIN을 입력하세요'); setupMsg.className='pin-msg warn'; }
+  } else {
+    _setupStep = 'new';
+    if(title) title.textContent = '🔐 ' + i18n('PIN 설정');
+    if(deleteRow) deleteRow.style.display = 'none';
+    if(setupMsg){ setupMsg.textContent = i18n('새 PIN 4자리를 입력하세요'); setupMsg.className='pin-msg'; }
+  }
+  _updatePinDots('pinSetupDots', 0);
+  document.getElementById('pinSetupModal').classList.add('open');
+}
+
+function _setupPinPress(d){
+  if(_setupBuffer.length >= 4) return;
+  _setupBuffer += d;
+  _updatePinDots('pinSetupDots', _setupBuffer.length);
+  if(_setupBuffer.length === 4) _handleSetupFull();
+}
+function _setupPinBackspace(){
+  if(_setupBuffer.length > 0){
+    _setupBuffer = _setupBuffer.slice(0,-1);
+    _updatePinDots('pinSetupDots', _setupBuffer.length);
+  }
+}
+
+async function _handleSetupFull(){
+  var msg = document.getElementById('pinSetupMsg');
+
+  if(_setupStep === 'change_old'){
+    // 현재 PIN 확인
+    var hash = await _sha256(_setupBuffer);
+    if(hash !== safeStorage.getItem(PIN_KEY)){
+      _setupBuffer = '';
+      _pinErrorAnim('pinSetupDots');
+      if(msg){ msg.textContent = i18n('현재 PIN이 틀렸습니다'); msg.className='pin-msg err'; }
+      setTimeout(function(){ _updatePinDots('pinSetupDots',0); if(msg){msg.textContent=i18n('현재 PIN을 입력하세요');msg.className='pin-msg warn';} }, 900);
+    } else {
+      _setupStep = 'new';
+      _setupBuffer = '';
+      _updatePinDots('pinSetupDots',0);
+      if(msg){ msg.textContent = i18n('새 PIN 4자리를 입력하세요'); msg.className='pin-msg'; }
+    }
+    return;
+  }
+
+  if(_setupStep === 'new'){
+    _setupFirst = _setupBuffer;
+    _setupBuffer = '';
+    _setupStep = 'confirm';
+    _updatePinDots('pinSetupDots',0);
+    if(msg){ msg.textContent = i18n('PIN을 한 번 더 입력하세요'); msg.className='pin-msg warn'; }
+    return;
+  }
+
+  if(_setupStep === 'confirm'){
+    if(_setupBuffer !== _setupFirst){
+      _setupBuffer = '';
+      _setupFirst  = '';
+      _setupStep   = 'new';
+      _pinErrorAnim('pinSetupDots');
+      if(msg){ msg.textContent = i18n('PIN이 일치하지 않습니다'); msg.className='pin-msg err'; }
+      setTimeout(function(){ _updatePinDots('pinSetupDots',0); if(msg){msg.textContent=i18n('새 PIN 4자리를 입력하세요');msg.className='pin-msg';} }, 900);
+      return;
+    }
+    // 저장
+    var hash = await _sha256(_setupBuffer);
+    safeStorage.setItem(PIN_KEY, hash);
+    safeStorage.setItem(PIN_AUTO_LOCK_KEY, String(AUTO_LOCK_MIN));
+    _pinUnlocked = true;
+    if(msg){ msg.textContent = i18n('PIN이 설정되었습니다'); msg.className='pin-msg ok'; }
+    _updatePinToggle();
+    setTimeout(function(){ closeModal('pinSetupModal'); }, 900);
+  }
+}
+
+function _pinDelete(){
+  if(!confirm(i18n('PIN 잠금을 해제하시겠습니까?'))) return;
+  safeStorage.removeItem(PIN_KEY);
+  safeStorage.removeItem(PIN_FAIL_KEY);
+  safeStorage.removeItem(PIN_LOCKED_UNTIL);
+  safeStorage.removeItem(PIN_AUTO_LOCK_KEY);
+  _updatePinToggle();
+  closeModal('pinSetupModal');
+}
+
+// ── 도우미 함수
+function _updatePinDots(containerId, filled){
+  for(var i=0;i<4;i++){
+    var d = document.getElementById(containerId === 'pinDots' ? 'pd'+i : 'psd'+i);
+    if(d){ d.className = 'pin-dot' + (i<filled?' filled':''); }
+  }
+}
+
+function _pinErrorAnim(containerId){
+  for(var i=0;i<4;i++){
+    var d = document.getElementById(containerId === 'pinDots' ? 'pd'+i : 'psd'+i);
+    if(d){ d.className = 'pin-dot filled error'; }
+  }
+}
+
+function _updatePinToggle(){
+  var btn = document.getElementById('pinToggleBtn');
+  if(btn) btn.className = 'pin-toggle' + (_pinIsEnabled() ? ' on' : '');
+}
+
+// ── 활동 감지 → 자동잠금 리셋
+['click','touchstart','keydown'].forEach(function(ev){
+  document.addEventListener(ev, function(){ if(_pinUnlocked) _pinResetAutoLock(); }, {passive:true});
+});
+
+// ── PIN 체크 초기화 (앱 시작 시)
+function _pinInit(){
+  // 이전 버전(SHA-256/fallback)으로 저장된 PIN은 새 해시와 맞지 않으므로 클리어
+  var storedPin = safeStorage.getItem(PIN_KEY);
+  if(storedPin && !storedPin.startsWith('crm_')){
+    safeStorage.removeItem(PIN_KEY);
+    safeStorage.removeItem(PIN_FAIL_KEY);
+    safeStorage.removeItem(PIN_LOCKED_UNTIL);
+  }
+  _updatePinToggle();
+  if(_pinIsEnabled()){
+    _showPinOverlay('lock');
+  } else {
+    _pinUnlocked = true;
+  }
 }
 
 function openHelpModal(){
@@ -3369,10 +4612,13 @@ function openLicenseModal(){
 
 // 온보딩: 첫 실행 또는 미스킵 시 표시
 (function(){
-  const skip = localStorage.getItem('crm_onboarding_skip');
-  if(!skip){
-    document.getElementById('onboardingModal').classList.add('open');
-  }
+  try {
+    var skip = safeStorage.getItem('crm_onboarding_skip');
+    if(!skip){
+      var om = document.getElementById('onboardingModal');
+      if(om) om.classList.add('open');
+    }
+  } catch(e) { console.warn('onboarding check error:', e); }
 })();
 </script>
 <!-- ── 사용 가이드 모달 ─────────────────────────────── -->
@@ -3440,7 +4686,7 @@ function openLicenseModal(){
 
     </div>
     <div class="modal-actions" style="margin-top:16px">
-      <button class="btn btn-primary" onclick="closeModal('helpModal')">확인</button>
+      <button class="btn btn-primary" onclick="closeModal('helpModal')" data-i18n="확인">확인</button>
     </div>
   </div>
 </div>
@@ -3476,7 +4722,7 @@ function openLicenseModal(){
       </div>
     </div>
     <div class="modal-actions" style="margin-top:16px">
-      <button class="btn btn-primary" onclick="closeModal('licenseModal')">확인</button>
+      <button class="btn btn-primary" onclick="closeModal('licenseModal')" data-i18n="확인">확인</button>
     </div>
   </div>
 </div>
@@ -3516,13 +4762,76 @@ function openLicenseModal(){
 
     <div style="display:flex;gap:10px;justify-content:center">
       <button class="btn btn-outline" onclick="openHelpModal();closeModal('onboardingModal')">❓ 자세한 가이드 보기</button>
-      <button class="btn btn-primary" onclick="closeModal('onboardingModal')" style="padding:10px 32px">시작하기 →</button>
+      <button class="btn btn-primary" onclick="closeModal('onboardingModal')" style="padding:10px 32px" data-i18n="시작하기 →">시작하기 →</button>
     </div>
     <div style="margin-top:12px">
       <label style="font-size:11px;color:var(--muted);cursor:pointer">
         <input type="checkbox" id="onboardingSkip" style="accent-color:var(--accent);vertical-align:middle;margin-right:4px">
         다시 보지 않기
       </label>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── PIN LOCK OVERLAY ────────────────────────────────── -->
+<div id="pinOverlay" class="hidden">
+  <div class="pin-logo">▸ RelaCRM</div>
+  <div class="pin-subtitle" id="pinSubtitle">PIN을 입력하세요</div>
+  <div class="pin-dots" id="pinDots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-pad" id="pinPad">
+    <button class="pin-btn" onclick="_pinPress('1')">1</button>
+    <button class="pin-btn" onclick="_pinPress('2')">2</button>
+    <button class="pin-btn" onclick="_pinPress('3')">3</button>
+    <button class="pin-btn" onclick="_pinPress('4')">4</button>
+    <button class="pin-btn" onclick="_pinPress('5')">5</button>
+    <button class="pin-btn" onclick="_pinPress('6')">6</button>
+    <button class="pin-btn" onclick="_pinPress('7')">7</button>
+    <button class="pin-btn" onclick="_pinPress('8')">8</button>
+    <button class="pin-btn" onclick="_pinPress('9')">9</button>
+    <button class="pin-btn empty"></button>
+    <button class="pin-btn" onclick="_pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="_pinBackspace()">⌫</button>
+  </div>
+  <div class="pin-msg" id="pinMsg"></div>
+  <div class="pin-link" id="pinForgotLink" onclick="_pinForgot()" style="display:none">PIN을 잊으셨나요? (데이터 초기화)</div>
+</div>
+
+<!-- PIN 설정 모달 -->
+<div class="modal-overlay" id="pinSetupModal">
+  <div class="modal" style="max-width:340px">
+    <button class="modal-close" onclick="closeModal('pinSetupModal')">✕</button>
+    <div class="modal-title" id="pinSetupTitle">🔐 PIN 설정</div>
+    <div style="padding:0 4px">
+      <div id="pinSetupDots" style="display:flex;gap:14px;justify-content:center;margin:20px 0">
+        <div class="pin-dot" id="psd0"></div>
+        <div class="pin-dot" id="psd1"></div>
+        <div class="pin-dot" id="psd2"></div>
+        <div class="pin-dot" id="psd3"></div>
+      </div>
+      <div class="pin-msg" id="pinSetupMsg" style="text-align:center;margin-bottom:12px"></div>
+      <div class="pin-pad" style="margin:0 auto 16px">
+        <button class="pin-btn" onclick="_setupPinPress('1')">1</button>
+        <button class="pin-btn" onclick="_setupPinPress('2')">2</button>
+        <button class="pin-btn" onclick="_setupPinPress('3')">3</button>
+        <button class="pin-btn" onclick="_setupPinPress('4')">4</button>
+        <button class="pin-btn" onclick="_setupPinPress('5')">5</button>
+        <button class="pin-btn" onclick="_setupPinPress('6')">6</button>
+        <button class="pin-btn" onclick="_setupPinPress('7')">7</button>
+        <button class="pin-btn" onclick="_setupPinPress('8')">8</button>
+        <button class="pin-btn" onclick="_setupPinPress('9')">9</button>
+        <button class="pin-btn empty"></button>
+        <button class="pin-btn" onclick="_setupPinPress('0')">0</button>
+        <button class="pin-btn del" onclick="_setupPinBackspace()">⌫</button>
+      </div>
+      <div id="pinSetupDeleteRow" style="display:none;margin-top:8px">
+        <button class="btn btn-outline" style="width:100%;color:var(--accent2);border-color:var(--accent2)" onclick="_pinDelete()">🔓 PIN 잠금 해제</button>
+      </div>
     </div>
   </div>
 </div>
