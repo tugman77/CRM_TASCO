@@ -589,6 +589,7 @@
   </div>
   <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> <span data-i18n="연락처">연락처</span> <span class="today-badge" id="todayContacts" style="display:none"></span></button>
   <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> <span data-i18n="전체 활동">전체 활동</span> <span class="today-badge" id="todayActivities" style="display:none"></span></button>
+  <button class="sidebar-btn" id="navAdmin" onclick="nav('admin')" style="display:none"><span>📊</span> <span data-i18n="입력자 현황">입력자 현황</span></button>
   <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> <span data-i18n="활동 유형 관리">활동 유형 관리</span></button>
   <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> <span data-i18n="Supabase 연동">Supabase 연동</span></button>
   <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:IBM Plex Mono,monospace;line-height:1.5"></div>
@@ -653,7 +654,44 @@
   </div>
 
   <!-- Activities View -->
-  <div class="content" id="activitiesView" style="display:none">
+  <div class="content" 
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- 관리자 전용: 입력자 현황 뷰                     -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="adminView" style="display:none">
+  <div class="content" style="max-width:900px">
+    <div class="section-title" style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <span>👑 입력자 현황</span>
+      <span style="font-size:12px;color:var(--muted);font-weight:400">팀원별 입력 통계</span>
+      <button onclick="renderAdminView()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--muted);cursor:pointer;font-size:12px">🔄 새로고침</button>
+    </div>
+
+    <!-- 요약 카드 -->
+    <div id="adminStatCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px"></div>
+
+    <!-- 팀원별 상세 테이블 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px">
+        <span>팀원별 입력 현황</span>
+        <span id="adminTablePeriod" style="font-size:11px;color:var(--muted);font-weight:400"></span>
+      </div>
+      <div id="adminUserTable" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- 최근 입력 활동 목록 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:16px">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px">
+        <span>최근 입력 활동</span>
+        <select id="adminFilterUser" onchange="renderAdminView()" style="margin-left:auto;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;outline:none">
+          <option value="">전체 팀원</option>
+        </select>
+      </div>
+      <div id="adminRecentList" style="padding:12px"></div>
+    </div>
+  </div>
+</div>
+id="activitiesView" style="display:none">
     <div class="section-title" data-i18n="전체 활동">전체 활동</div>
     <div class="section-sub" id="actsSub" data-i18n="모든 활동 내역"></div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
@@ -903,7 +941,9 @@ create table if not exists crm_users (id text primary key, name text unique not 
 alter table crm_users enable row level security;
 create policy "allow all" on crm_users for all using (true) with check (true);
 -- activities에 입력자 컬럼 추가
-alter table activities add column if not exists created_by text default '';</div>
+alter table activities add column if not exists created_by text default '';
+-- contacts에 입력자 컬럼 추가
+alter table contacts add column if not exists created_by text default '';</div>
       <button class="btn btn-outline btn-sm" style="margin-top:6px;width:100%" onclick="
         var _sqlTxt=document.getElementById('sbSqlBlock').textContent;
         if(navigator.clipboard&&window.isSecureContext){
@@ -1290,6 +1330,8 @@ function _afterLogin(){
   _updateMobUserTab();
   var mb=document.getElementById('userMgmtBtn');
   if(mb) mb.style.display=(_curUser&&_curUser.role==='admin')?'':'none';
+  var na=document.getElementById('navAdmin');
+  if(na) na.style.display=(_curUser&&_curUser.role==='admin')?'':'none';
   _crmInit();
 }
 
@@ -1460,6 +1502,178 @@ async function _changeMyPw(){
 }
 
 function _curUserName(){return _curUser?_curUser.name:'';}
+
+// ══════════════════════════════════════════════════════
+// 관리자 전용 : 입력자 현황 뷰
+// ══════════════════════════════════════════════════════
+function renderAdminView(){
+  if(!_curUser || _curUser.role!=='admin') return;
+
+  // ── 팀원별 집계
+  var userStats = {}; // { name: { contacts:N, activities:N, lastDate:'' } }
+
+  contacts.forEach(function(c){
+    var who = c.createdBy || '(미설정)';
+    if(!userStats[who]) userStats[who] = {contacts:0, activities:0, lastDate:''};
+    userStats[who].contacts++;
+    if(c.createdAt && c.createdAt > (userStats[who].lastDate||''))
+      userStats[who].lastDate = c.createdAt;
+  });
+
+  activities.forEach(function(a){
+    var who = a.createdBy || '(미설정)';
+    if(!userStats[who]) userStats[who] = {contacts:0, activities:0, lastDate:''};
+    userStats[who].activities++;
+    if(a.date && a.date > (userStats[who].lastDate||''))
+      userStats[who].lastDate = a.date;
+  });
+
+  var users = Object.keys(userStats).sort(function(a,b){
+    return (userStats[b].contacts + userStats[b].activities)
+         - (userStats[a].contacts + userStats[a].activities);
+  });
+
+  // ── 요약 카드
+  var totalC = contacts.length;
+  var totalA = activities.length;
+  var taggedC = contacts.filter(function(c){return c.createdBy;}).length;
+  var taggedA = activities.filter(function(a){return a.createdBy;}).length;
+  var memberCount = users.filter(function(u){return u!=='(미설정)';}).length;
+
+  var cards = [
+    { icon:'👥', label:'활동 팀원', value: memberCount+'명', color:'var(--accent)' },
+    { icon:'🏢', label:'전체 연락처', value: totalC.toLocaleString(), sub: taggedC+'개 입력자 확인', color:'var(--accent3)' },
+    { icon:'📋', label:'전체 활동', value: totalA.toLocaleString(), sub: taggedA+'개 입력자 확인', color:'#a855f7' },
+    { icon:'📊', label:'입력자 태깅률', value: totalC+totalA>0 ? Math.round((taggedC+taggedA)/(totalC+totalA)*100)+'%':'—', color:'var(--accent)' },
+  ];
+
+  document.getElementById('adminStatCards').innerHTML = cards.map(function(c){
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px">'
+      +'<div style="font-size:20px;margin-bottom:6px">'+c.icon+'</div>'
+      +'<div style="font-size:22px;font-weight:700;color:'+c.color+'">'+c.value+'</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+c.label+'</div>'
+      +(c.sub?'<div style="font-size:10px;color:var(--border);margin-top:3px">'+c.sub+'</div>':'')
+      +'</div>';
+  }).join('');
+
+  // ── 팀원별 테이블
+  var tableHtml = '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    +'<thead><tr style="border-bottom:2px solid var(--border)">'
+    +'<th style="padding:10px 16px;text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase">팀원</th>'
+    +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">연락처</th>'
+    +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">활동</th>'
+    +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">합계</th>'
+    +'<th style="padding:10px 16px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">최근 입력일</th>'
+    +'</tr></thead><tbody>';
+
+  users.forEach(function(name, idx){
+    var s = userStats[name];
+    var total = s.contacts + s.activities;
+    var maxTotal = userStats[users[0]].contacts + userStats[users[0]].activities;
+    var pct = maxTotal > 0 ? Math.round(total/maxTotal*100) : 0;
+    var col = _userColor(name);
+    var init = (name||'?')[0];
+    var lastDate = s.lastDate ? new Date(s.lastDate).toLocaleDateString('ko-KR') : '—';
+    var isUnset = name === '(미설정)';
+
+    tableHtml += '<tr style="border-bottom:1px solid var(--border);'+(idx%2===0?'':'background:rgba(255,255,255,.02)')+'">'
+      +'<td style="padding:12px 16px">'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+          +(isUnset
+            ? '<div style="width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:12px">?</div>'
+            : '<div style="width:28px;height:28px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">'+init+'</div>'
+          )
+          +'<div>'
+            +'<div style="font-weight:500'+(isUnset?';color:var(--muted)':'')+'">'+(isUnset?'입력자 미설정':name)+'</div>'
+            +'<div style="width:'+pct+'px;max-width:120px;height:3px;background:'+col+';border-radius:2px;margin-top:4px;opacity:.7"></div>'
+          +'</div>'
+        +'</div>'
+      +'</td>'
+      +'<td style="padding:12px;text-align:right;font-weight:600;color:var(--accent3)">'+s.contacts.toLocaleString()+'</td>'
+      +'<td style="padding:12px;text-align:right;font-weight:600;color:#a855f7">'+s.activities.toLocaleString()+'</td>'
+      +'<td style="padding:12px;text-align:right;font-weight:700">'+total.toLocaleString()+'</td>'
+      +'<td style="padding:12px 16px;text-align:right;font-size:11px;color:var(--muted)">'+lastDate+'</td>'
+      +'</tr>';
+  });
+
+  if(!users.length){
+    tableHtml += '<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);font-size:13px">'
+      +'아직 데이터가 없습니다.</td></tr>';
+  }
+  tableHtml += '</tbody></table>';
+  document.getElementById('adminUserTable').innerHTML = tableHtml;
+  document.getElementById('adminTablePeriod').textContent = '전체 기간';
+
+  // ── 팀원 필터 셀렉트 업데이트
+  var sel = document.getElementById('adminFilterUser');
+  if(sel){
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">전체 팀원</option>'
+      + users.filter(function(u){return u!=='(미설정)';}).map(function(u){
+          return '<option value="'+u+'"'+(cur===u?' selected':'')+'>'+u+'</option>';
+        }).join('');
+  }
+
+  // ── 최근 입력 활동 목록
+  _renderAdminRecentList();
+}
+
+function _renderAdminRecentList(){
+  var filterUser = (document.getElementById('adminFilterUser')||{}).value || '';
+  var listEl = document.getElementById('adminRecentList');
+  if(!listEl) return;
+
+  // 연락처 + 활동 통합, 최신순 50개
+  var items = [];
+  contacts.forEach(function(c){
+    if(filterUser && c.createdBy !== filterUser) return;
+    items.push({
+      type:'contact', date: c.createdAt||'', who: c.createdBy||'(미설정)',
+      label: (c.last||'')+(c.first||''), sub: c.company||'', id: c.id
+    });
+  });
+  activities.forEach(function(a){
+    if(filterUser && a.createdBy !== filterUser) return;
+    var con = contacts.find(function(c){return c.id===a.contactId;});
+    items.push({
+      type:'activity', date: a.date||a.createdAt||'', who: a.createdBy||'(미설정)',
+      label: a.title||a.content||'활동', sub: con?(con.last||'')+(con.first||''):'',
+      actType: a.type, id: a.id
+    });
+  });
+
+  items.sort(function(a,b){ return b.date.localeCompare(a.date); });
+  items = items.slice(0,50);
+
+  if(!items.length){
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">표시할 항목이 없습니다.</div>';
+    return;
+  }
+
+  listEl.innerHTML = items.map(function(item){
+    var col = _userColor(item.who);
+    var init = (item.who||'?')[0];
+    var typeIcon = item.type==='contact' ? '🏢' : (_typeIcon(item.actType)||'📋');
+    var dateStr = item.date ? item.date.slice(0,10) : '—';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border)">'
+      +'<div style="width:26px;height:26px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">'+init+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+typeIcon+' '+item.label+'</div>'
+        +(item.sub?'<div style="font-size:11px;color:var(--muted)">'+item.sub+'</div>':'')
+      +'</div>'
+      +'<div style="text-align:right;flex-shrink:0">'
+        +'<div style="font-size:11px;font-weight:600;color:'+col+'">'+item.who+'</div>'
+        +'<div style="font-size:10px;color:var(--border)">'+dateStr+'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function _typeIcon(type){
+  var icons = {call:'📞',meeting:'🤝',email:'📧',order:'🛒',quote:'📄',visit:'🚗',other:'📌'};
+  return icons[type]||'📌';
+}
+
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 로그인 진단 함수
@@ -1856,6 +2070,7 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PIN이 설정되었습니다',
     'PIN 잠금을 해제하시겠습니까?':'PIN 잠금을 해제하시겠습니까?\n데이터는 유지됩니다.',
     'PIN 잠금':'PIN 잠금',
+    '입력자 현황':'입력자 현황',
     '사용자 관리':'사용자 관리',
     '계정':'계정',
     'AI 분석 중 안내':'Claude AI가 연락처 정보를 추출하고 있습니다',
@@ -2032,6 +2247,7 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PIN set successfully',
     'PIN 잠금을 해제하시겠습니까?':'Disable PIN lock?\nYour data will be kept.',
     'PIN 잠금':'PIN Lock',
+    '입력자 현황':'Input Stats',
     '사용자 관리':'User Management',
     '계정':'Account',
     'AI 분석 중 안내':'Claude AI is extracting contact info',
@@ -2208,6 +2424,7 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PINを設定しました',
     'PIN 잠금을 해제하시겠습니까?':'PINロックを解除しますか？',
     'PIN 잠금':'PINロック',
+    '입력자 현황':'入力者状況',
     '사용자 관리':'ユーザー管理',
     '계정':'アカウント',
     'AI 분석 중 안내':'Claude AIが連絡先情報を抽出しています',
@@ -2385,6 +2602,7 @@ const I18N = {
     'PIN이 설정되었습니다':'✓ PIN码已设置',
     'PIN 잠금을 해제하시겠습니까?':'解除PIN锁定？数据将保留。',
     'PIN 잠금':'PIN锁定',
+    '입력자 현황':'输入统计',
     '사용자 관리':'用户管理',
     '계정':'账户',
     'AI 분석 중 안내':'Claude AI正在提取联系人信息',
@@ -2926,7 +3144,8 @@ function contactToSbRow(c){
     position: c.position||'', last: c.last||'', first: c.first||'',
     email: c.email||'', office: c.office||'', mobile: c.mobile||'',
     extra: c.extra||'', address: c.address||'', memo: c.memo||'',
-    created_at: c.createdAt || new Date().toISOString()
+    created_at: c.createdAt || new Date().toISOString(),
+    created_by: c.createdBy||''
   };
 }
 function sbRowToContact(r){
@@ -2934,7 +3153,7 @@ function sbRowToContact(r){
     id: r.id, company: r.company, dept: r.dept, position: r.position,
     last: r.last, first: r.first, email: r.email, office: r.office,
     mobile: r.mobile, extra: r.extra, address: r.address, memo: r.memo,
-    createdAt: r.created_at
+    createdAt: r.created_at, createdBy: r.created_by||''
   };
 }
 function activityToSbRow(a){
@@ -3049,10 +3268,14 @@ function fmtMoney(s){ return Number((s||'').toString().replace(/[^0-9]/g,'')||0)
 function nav(p){
   document.getElementById('contactsView').style.display   = p==='contacts'   ? '' : 'none';
   document.getElementById('activitiesView').style.display = p==='activities' ? '' : 'none';
+  var adminViewEl = document.getElementById('adminView');
+  if(adminViewEl) adminViewEl.style.display = p==='admin' ? '' : 'none';
   document.getElementById('detailView').classList.remove('open');
   // PC 사이드바
   document.getElementById('navContacts').classList.toggle('active', p==='contacts');
   document.getElementById('navActivities').classList.toggle('active', p==='activities');
+  var navAdmin = document.getElementById('navAdmin');
+  if(navAdmin) navAdmin.classList.toggle('active', p==='admin');
   // 모바일 탭바
   const mTabC=document.getElementById('mTabContacts'), mTabA=document.getElementById('mTabActivities');
   if(mTabC) mTabC.classList.toggle('active', p==='contacts');
@@ -3064,6 +3287,7 @@ function nav(p){
   currentCid = null;
   if(p==='contacts')   renderContacts();
   if(p==='activities') renderAllActs();
+  if(p==='admin')      renderAdminView();
 }
 function backToList(){
   document.getElementById('detailView').classList.remove('open');
@@ -3812,6 +4036,10 @@ function showDetail(id){
         <button class="btn btn-danger btn-sm" onclick="delContact('${id}')">🗑</button>
       </div>
     </div>
+    ${(c.createdBy||c.createdAt)?`<div style="font-size:11px;color:var(--muted);padding:6px 0 0;display:flex;gap:12px;flex-wrap:wrap">
+      ${c.createdBy?`<span>✍ 입력: <b style="color:var(--text)">${c.createdBy}</b></span>`:''}
+      ${c.createdAt?`<span style="opacity:.6">📅 ${new Date(c.createdAt).toLocaleDateString('ko-KR')}</span>`:''}
+    </div>`:''}
     <div class="info-grid">
       ${info.map(i=>`<div class="info-card${i.cls?' '+i.cls:''}"><div class="info-card-label">${i.l}</div><div class="info-card-value">${i.v}</div></div>`).join('')}
     </div>
@@ -3935,7 +4163,7 @@ function saveContact(){
     address:addr, memo:document.getElementById('f_memo').value.trim()};
   if(editCid){ const i=contacts.findIndex(x=>x.id===editCid); contacts[i]={...contacts[i],...data}; persist({cId:editCid}); closeModal('contactModal'); showDetail(editCid); }
   else { const _newCid = uid();
-    contacts.unshift({id:_newCid,createdAt:new Date().toISOString(),...data});
+    contacts.unshift({id:_newCid,createdAt:new Date().toISOString(),createdBy:_curUserName(),...data});
     persist({cId:_newCid}); closeModal('contactModal'); renderContacts(); }
 }
 function delContact(id){
