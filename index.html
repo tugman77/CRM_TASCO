@@ -1230,20 +1230,38 @@ async function _doLogin(){
   if(!name){msg.textContent='이름을 입력하세요.';return;}
   if(!pw){msg.textContent='비밀번호를 입력하세요.';return;}
   if(!sbIsConnected()){msg.textContent='먼저 Supabase를 연동해주세요.';return;}
-  btn.disabled=true;msg.textContent='확인 중...';msg.className='login-msg';
+  btn.disabled=true;
+  msg.style.color='';
+  msg.textContent='확인 중...';msg.className='login-msg';
   try{
     var enc=encodeURIComponent(name);
+    var myHash=_pwHash(pw);
+    // is_active 필터 없이 조회 (boolean 타입 이슈 우회)
     var res=await fetch(
-      sbUrl+'/rest/v1/crm_users?select=*&name=eq.'+enc+'&is_active=eq.true&limit=1',
+      sbUrl+'/rest/v1/crm_users?select=*&name=eq.'+enc+'&limit=1',
       {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}}
     );
-    if(!res.ok) throw new Error('서버 오류 ('+res.status+')');
+    if(!res.ok){
+      var errBody=await res.text().catch(function(){return '';});
+      throw new Error('서버 오류 ('+res.status+') — '+errBody.slice(0,80));
+    }
     var rows=await res.json();
-    if(!rows.length){msg.textContent='등록되지 않은 사용자입니다.';btn.disabled=false;return;}
-    if(rows[0].pw_hash!==_pwHash(pw)){msg.textContent='비밀번호가 틀렸습니다.';btn.disabled=false;return;}
-    _curUser={id:rows[0].id,name:rows[0].name,role:rows[0].role};
+    if(!rows.length){
+      msg.textContent='등록되지 않은 사용자입니다.';
+      btn.disabled=false;return;
+    }
+    var user=rows[0];
+    if(user.is_active===false||user.is_active==='false'){
+      msg.textContent='비활성화된 계정입니다. 관리자에게 문의하세요.';
+      btn.disabled=false;return;
+    }
+    if(user.pw_hash!==myHash){
+      msg.textContent='비밀번호가 틀렸습니다.';
+      btn.disabled=false;return;
+    }
+    _curUser={id:user.id,name:user.name,role:user.role};
     safeStorage.setItem('crm_session',JSON.stringify(_curUser));
-    fetch(sbUrl+'/rest/v1/crm_users?id=eq.'+rows[0].id,{
+    fetch(sbUrl+'/rest/v1/crm_users?id=eq.'+user.id,{
       method:'PATCH',
       headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
       body:JSON.stringify({last_login:new Date().toISOString()})
@@ -1253,7 +1271,11 @@ async function _doLogin(){
       document.getElementById('loginOverlay').classList.add('hidden');
       _afterLogin();
     },600);
-  }catch(e){msg.textContent='오류: '+e.message;btn.disabled=false;}
+  }catch(e){
+    msg.textContent='오류: '+e.message;
+    msg.style.color='var(--accent2)';
+    btn.disabled=false;
+  }
 }
 
 function _afterLogin(){
@@ -1432,6 +1454,85 @@ async function _changeMyPw(){
 
 function _curUserName(){return _curUser?_curUser.name:'';}
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 로그인 진단 함수
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function _runLoginDiag(){
+  var out=document.getElementById('loginDiagResult');
+  out.textContent='진단 중...\n';
+  var log=function(s){out.textContent+=s+'\n';};
+
+  // 1. Supabase 연결 상태
+  log('① Supabase 연결: '+(sbIsConnected()?'✓ 연결됨':'✗ 미연결'));
+  if(!sbIsConnected()){log('→ Supabase 연동 설정을 먼저 해주세요.');return;}
+  log('   URL: '+sbUrl.slice(0,40)+'...');
+
+  // 2. crm_users 테이블 존재 여부
+  try{
+    var r1=await fetch(sbUrl+'/rest/v1/crm_users?select=id,name,role,is_active&limit=10',
+      {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+    if(!r1.ok){
+      log('② crm_users 테이블: ✗ 없음 ('+r1.status+')');
+      log('→ Supabase SQL Editor에서 SQL을 실행해주세요.');
+      log('   (모달 하단 "SQL 복사" 버튼 → SQL Editor 붙여넣기)');
+      return;
+    }
+    var users=await r1.json();
+    log('② crm_users 테이블: ✓ 존재 ('+users.length+'명)');
+
+    if(!users.length){
+      log('   → 계정이 없습니다. admin 계정을 생성합니다...');
+      await _resetAdminAccount();
+      return;
+    }
+
+    // 3. admin 계정 존재 여부
+    var admin=users.find(function(u){return u.name==='admin';});
+    if(!admin){
+      log('③ admin 계정: ✗ 없음');
+      log('   현재 등록된 계정: '+users.map(function(u){return u.name;}).join(', '));
+      log('→ 아래 "admin 초기화" 버튼으로 계정을 생성하세요.');
+    } else {
+      log('③ admin 계정: ✓ 존재');
+      log('   is_active = '+JSON.stringify(admin.is_active));
+      log('   role = '+admin.role);
+
+      // 4. 비밀번호 해시 확인
+      var r2=await fetch(sbUrl+'/rest/v1/crm_users?select=pw_hash&name=eq.admin&limit=1',
+        {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+      var hr=await r2.json();
+      if(hr.length){
+        var storedHash=hr[0].pw_hash;
+        var expected=_pwHash('admin1234');
+        log('④ 비밀번호 해시 확인:');
+        log('   저장된 값: '+storedHash);
+        log('   admin1234 해시: '+expected);
+        if(storedHash===expected){
+          log('   ✓ 일치 — 비밀번호 admin1234로 로그인 가능');
+        } else {
+          log('   ✗ 불일치 — 비밀번호가 변경되었거나 다른 방식으로 저장됨');
+          log('→ 아래 "admin 초기화" 버튼으로 비밀번호를 재설정하세요.');
+        }
+      }
+    }
+
+    // 초기화 버튼 표시
+    var diagArea=document.getElementById('loginDiagArea');
+    if(diagArea&&!document.getElementById('resetAdminBtn')){
+      var btn=document.createElement('button');
+      btn.id='resetAdminBtn';
+      btn.textContent='🔑 admin 계정 초기화 (PW: admin1234)';
+      btn.style.cssText='width:100%;margin-top:8px;padding:8px;background:var(--accent);border:none;'+
+        'border-radius:8px;color:#fff;font-size:12px;cursor:pointer;font-family:IBM Plex Mono,monospace';
+      btn.onclick=_resetAdminAccount;
+      diagArea.appendChild(btn);
+    }
+  }catch(e){
+    log('오류: '+e.message);
+  }
+}
+
+
 // ── 모바일 계정 탭 메뉴
 function _mobileUserMenu(){
   if(!_curUser){
@@ -1510,25 +1611,80 @@ async function _initFirstAdmin(){
   try{
     var res=await fetch(sbUrl+'/rest/v1/crm_users?select=id&limit=1',
       {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
-    if(!res.ok) return;
+    if(!res.ok){
+      // 테이블 없음 → SQL 미실행 안내
+      var msg=document.getElementById('loginMsg');
+      if(msg){
+        msg.innerHTML='⚠ crm_users 테이블이 없습니다.<br>'+
+          '<span style="font-size:11px">Supabase SQL Editor에서 SQL을 다시 실행해주세요.</span>';
+        msg.className='login-msg';
+        msg.style.color='var(--accent4)';
+      }
+      return;
+    }
     var rows=await res.json();
     if(rows.length>0) return; // 이미 사용자 있음
     // 최초 관리자 생성: admin / admin1234
-    await fetch(sbUrl+'/rest/v1/crm_users',{
+    var createRes=await fetch(sbUrl+'/rest/v1/crm_users',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
       body:JSON.stringify([{id:'admin_init',name:'admin',pw_hash:_pwHash('admin1234'),
         role:'admin',is_active:true,created_at:new Date().toISOString()}])
     });
-    // 로그인 화면에 초기 계정 안내
     var msg=document.getElementById('loginMsg');
     if(msg){
-      msg.innerHTML='🎉 초기 관리자 계정이 생성되었습니다<br>'+
-        '<span style="font-family:monospace;font-size:11px;color:var(--accent)">ID: admin / PW: admin1234</span><br>'+
-        '<span style="font-size:10px;color:var(--accent2)">로그인 후 즉시 비밀번호를 변경하세요!</span>';
-      msg.className='login-msg ok';
+      if(createRes.ok){
+        msg.innerHTML='🎉 관리자 계정이 생성되었습니다!<br>'+
+          '<span style="font-family:monospace;font-size:13px;color:var(--accent);font-weight:700">ID: admin</span><br>'+
+          '<span style="font-family:monospace;font-size:13px;color:var(--accent);font-weight:700">PW: admin1234</span><br>'+
+          '<span style="font-size:10px;color:var(--accent2)">로그인 후 즉시 비밀번호를 변경하세요!</span>';
+        msg.className='login-msg ok';
+        msg.style.color='';
+        // 이름 자동 입력
+        var nameEl=document.getElementById('loginName');
+        if(nameEl) nameEl.value='admin';
+      } else {
+        var errTxt=await createRes.text().catch(function(){return '';});
+        msg.innerHTML='⚠ 관리자 계정 생성 실패 ('+createRes.status+')<br>'+
+          '<span style="font-size:10px">'+errTxt.slice(0,100)+'</span>';
+        msg.className='login-msg';
+        msg.style.color='var(--accent2)';
+      }
     }
-  }catch(e){ console.warn('_initFirstAdmin 오류:',e); }
+  }catch(e){
+    console.warn('_initFirstAdmin 오류:',e);
+    var msg=document.getElementById('loginMsg');
+    if(msg){ msg.textContent='오류: '+e.message; msg.style.color='var(--accent2)'; }
+  }
+}
+
+// 수동으로 admin 계정 재생성 (로그인 화면에서 호출)
+async function _resetAdminAccount(){
+  if(!sbIsConnected()){alert('Supabase 연동 후 사용 가능합니다.');return;}
+  if(!confirm('admin 계정을 admin1234 비밀번호로 초기화합니까?')) return;
+  try{
+    // upsert (있으면 업데이트, 없으면 삽입)
+    var res=await fetch(sbUrl+'/rest/v1/crm_users',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,
+               'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify([{id:'admin_init',name:'admin',pw_hash:_pwHash('admin1234'),
+        role:'admin',is_active:true,created_at:new Date().toISOString()}])
+    });
+    var msg=document.getElementById('loginMsg');
+    if(res.ok){
+      msg.innerHTML='✓ admin 계정이 초기화되었습니다!<br>'+
+        '<span style="font-family:monospace;font-size:13px;color:var(--accent);font-weight:700">ID: admin / PW: admin1234</span>';
+      msg.className='login-msg ok'; msg.style.color='';
+      document.getElementById('loginName').value='admin';
+      document.getElementById('loginPw').value='';
+      document.getElementById('loginPw').focus();
+    } else {
+      var t=await res.text().catch(function(){return '';});
+      msg.textContent='실패: '+t.slice(0,100);
+      msg.style.color='var(--accent2)';
+    }
+  }catch(e){ alert('오류: '+e.message); }
 }
 
 
@@ -5147,8 +5303,10 @@ function _appStart(){
   if(_restoreSession()){
     document.getElementById('loginOverlay').classList.add('hidden');
     _afterLogin();
+    return;
   }
-  // 세션 없으면 로그인 화면 유지
+  // 세션 없으면 로그인 화면 유지 + admin 계정 자동 생성 체크
+  _initFirstAdmin();
 }
 
 if(document.readyState === 'loading'){
@@ -5749,6 +5907,12 @@ function openLicenseModal(){
     <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--border);text-align:center;font-family:IBM Plex Mono,monospace">
       계정 문의: 관리자에게 요청하세요
     </div>
+    <div id="loginDiagArea" style="margin-top:10px;display:none">
+      <button onclick="_runLoginDiag()" style="width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:IBM Plex Mono,monospace">🔧 연결 진단 실행</button>
+      <div id="loginDiagResult" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7;font-family:IBM Plex Mono,monospace;white-space:pre-wrap;word-break:break-all"></div>
+    </div>
+    <button onclick="var a=document.getElementById('loginDiagArea');a.style.display=a.style.display==='none'?'block':'none'"
+      style="width:100%;margin-top:8px;background:none;border:none;color:var(--border);font-size:10px;cursor:pointer;font-family:IBM Plex Mono,monospace">▸ 로그인 문제 해결</button>
   </div>
 </div>
 
