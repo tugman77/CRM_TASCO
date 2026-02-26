@@ -1272,7 +1272,14 @@ async function _doLogin(){
       _afterLogin();
     },600);
   }catch(e){
-    msg.textContent='오류: '+e.message;
+    var errMsg=e.message||'';
+    if(errMsg.indexOf('404')>=0){
+      msg.innerHTML='⚠ crm_users 테이블이 없습니다.<br>'+
+        '<span style="font-size:11px">Supabase SQL Editor에서 SQL을 실행해주세요.<br>'+
+        '(▸ 로그인 문제 해결 → 진단 실행)</span>';
+    } else {
+      msg.textContent='오류: '+errMsg;
+    }
     msg.style.color='var(--accent2)';
     btn.disabled=false;
   }
@@ -1459,6 +1466,7 @@ function _curUserName(){return _curUser?_curUser.name:'';}
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function _runLoginDiag(){
   var out=document.getElementById('loginDiagResult');
+  out.style.display='block';
   out.textContent='진단 중...\n';
   var log=function(s){out.textContent+=s+'\n';};
 
@@ -5163,8 +5171,8 @@ function sbSaveSettings(){
     // 로그인 화면으로 복귀 (첫 관리자 계정 필요 안내)
     var ov=document.getElementById('loginOverlay');
     if(ov) ov.classList.remove('hidden');
-    var sub=ov?ov.querySelector('.login-sub'):null;
-    if(sub) sub.textContent='연동 완료! 관리자 계정으로 로그인하세요';
+    // Supabase 상태 바 갱신
+    _updateSbStatusBar();
     // 초기 관리자 계정 자동 생성 (최초 1회)
     _initFirstAdmin();
   }, 800);
@@ -5279,25 +5287,9 @@ function _crmInit(){
 
 // ── 앱 시작 진입점: 로그인 화면 먼저
 function _appStart(){
-  // Supabase 미연동이면 연동 안내 후 로그인 화면
+  _updateSbStatusBar();
   if(!sbIsConnected()){
-    var ov=document.getElementById('loginOverlay');
-    if(ov){
-      var note=ov.querySelector('.login-sub');
-      if(note) note.textContent='Supabase 연동 후 사용 가능합니다';
-      // Supabase 연동 버튼 임시 추가
-      var card=ov.querySelector('.login-card');
-      if(card&&!document.getElementById('quickSbBtn')){
-        var btn=document.createElement('button');
-        btn.id='quickSbBtn';
-        btn.className='login-btn';
-        btn.style.cssText='margin-top:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted)';
-        btn.textContent='🗄 Supabase 연동 설정';
-        btn.onclick=function(){ ov.classList.add('hidden'); openGsModal(); };
-        card.appendChild(btn);
-      }
-    }
-    return;
+    return; // 로그인 화면 유지 — sbStatusBar가 "미연결" 표시
   }
   // 세션 복원 시도
   if(_restoreSession()){
@@ -5307,6 +5299,23 @@ function _appStart(){
   }
   // 세션 없으면 로그인 화면 유지 + admin 계정 자동 생성 체크
   _initFirstAdmin();
+}
+
+// Supabase 연결 상태 바 업데이트
+function _updateSbStatusBar(){
+  var dot=document.getElementById('sbStatusDot');
+  var txt=document.getElementById('sbStatusText');
+  if(!dot||!txt) return;
+  if(sbIsConnected()){
+    dot.textContent='●'; dot.style.color='var(--accent3)';
+    var shortUrl=sbUrl.replace('https://','').split('.')[0];
+    txt.textContent='Supabase 연결됨: '+shortUrl+'.supabase.co';
+    txt.style.color='var(--accent3)';
+  } else {
+    dot.textContent='○'; dot.style.color='var(--accent2)';
+    txt.textContent='Supabase 미연결 — 여기를 눌러 설정';
+    txt.style.color='var(--accent2)';
+  }
 }
 
 if(document.readyState === 'loading'){
@@ -5885,7 +5894,19 @@ function openLicenseModal(){
 <div id="loginOverlay">
   <div class="login-card">
     <div class="login-logo">▸ Rela<span style="font-weight:400;color:var(--text)">CRM</span></div>
-    <div class="login-sub">스마트 고객관리 시스템</div>
+    <div class="login-sub" id="loginSubtitle">스마트 고객관리 시스템</div>
+
+    <!-- Supabase 연결 상태 바 (항상 노출) -->
+    <div id="sbStatusBar" onclick="document.getElementById('loginOverlay').classList.add('hidden');openGsModal();"
+      style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;
+             border:1px solid var(--border);margin-bottom:16px;cursor:pointer;
+             background:var(--surface2);transition:border-color .15s"
+      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <span id="sbStatusDot" style="font-size:11px">○</span>
+      <span id="sbStatusText" style="font-size:12px;color:var(--muted);flex:1">Supabase 연동 확인 중...</span>
+      <span style="font-size:10px;color:var(--muted)">설정 ›</span>
+    </div>
+
     <div class="login-field">
       <label>사용자 이름</label>
       <input class="login-input" id="loginName" type="text" placeholder="이름 입력"
@@ -5904,15 +5925,30 @@ function openLicenseModal(){
     </div>
     <button class="login-btn" id="loginBtn" onclick="_doLogin()">로그인</button>
     <div class="login-msg" id="loginMsg"></div>
-    <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--border);text-align:center;font-family:IBM Plex Mono,monospace">
-      계정 문의: 관리자에게 요청하세요
+
+    <!-- 문제 해결 영역 -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <button onclick="var a=document.getElementById('loginFixArea');a.style.display=a.style.display==='none'?'block':'none'"
+        style="width:100%;background:none;border:none;color:var(--border);font-size:11px;cursor:pointer;font-family:IBM Plex Mono,monospace;text-align:center;padding:4px">
+        ▸ 로그인 문제 해결
+      </button>
+      <div id="loginFixArea" style="display:none;margin-top:10px">
+        <button onclick="_runLoginDiag()"
+          style="width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;
+                 color:var(--muted);font-size:12px;cursor:pointer;font-family:IBM Plex Mono,monospace;margin-bottom:6px">
+          🔧 연결 진단 실행
+        </button>
+        <button onclick="_resetAdminAccount()"
+          style="width:100%;padding:9px;background:none;border:1px solid var(--accent2);border-radius:8px;
+                 color:var(--accent2);font-size:12px;cursor:pointer;font-family:IBM Plex Mono,monospace;margin-bottom:6px">
+          🔑 admin 계정 초기화 (PW: admin1234)
+        </button>
+        <div id="loginDiagResult"
+          style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.8;
+                 font-family:IBM Plex Mono,monospace;white-space:pre-wrap;word-break:break-all;
+                 background:var(--bg);padding:10px;border-radius:6px;display:none"></div>
+      </div>
     </div>
-    <div id="loginDiagArea" style="margin-top:10px;display:none">
-      <button onclick="_runLoginDiag()" style="width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:IBM Plex Mono,monospace">🔧 연결 진단 실행</button>
-      <div id="loginDiagResult" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7;font-family:IBM Plex Mono,monospace;white-space:pre-wrap;word-break:break-all"></div>
-    </div>
-    <button onclick="var a=document.getElementById('loginDiagArea');a.style.display=a.style.display==='none'?'block':'none'"
-      style="width:100%;margin-top:8px;background:none;border:none;color:var(--border);font-size:10px;cursor:pointer;font-family:IBM Plex Mono,monospace">▸ 로그인 문제 해결</button>
   </div>
 </div>
 
