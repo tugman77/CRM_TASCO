@@ -116,7 +116,7 @@
   @media (max-width: 768px) {
   /* 사용자 관리 모달 모바일 */
   .user-row {
-    grid-template-columns: 28px 1fr 60px 50px 34px;
+    grid-template-columns: 28px 1fr 60px 50px 34px 34px;
     gap: 6px;
     font-size: 12px;
   }
@@ -548,7 +548,7 @@
   }
   /* 사용자 관리 모달 */
   .user-row {
-    display:grid; grid-template-columns:30px 1fr 72px 62px 38px;
+    display:grid; grid-template-columns:30px 1fr 72px 62px 38px 38px;
     gap:8px; align-items:center; padding:9px 0;
     border-bottom:1px solid var(--border); font-size:13px;
   }
@@ -1438,7 +1438,15 @@ async function _loadUserList(){
           btn.onclick=function(){_toggleUser(uid,active);};
         })(u.id, u.is_active);
       }
-      row.appendChild(av); row.appendChild(info); row.appendChild(rb); row.appendChild(st); row.appendChild(btn);
+      // 삭제 버튼 (본인 및 마지막 관리자는 비활성)
+      var delBtn=document.createElement(isSelf?'span':'button');
+      if(!isSelf){
+        delBtn.textContent='🗑';
+        delBtn.title='계정 삭제 (기존 로그 유지)';
+        delBtn.style.cssText='background:none;border:1px solid var(--accent2);border-radius:5px;padding:3px 7px;color:var(--accent2);cursor:pointer;font-size:11px';
+        (function(uid,uname){ delBtn.onclick=function(){_deleteUser(uid,uname);}; })(u.id,u.name);
+      }
+      row.appendChild(av); row.appendChild(info); row.appendChild(rb); row.appendChild(st); row.appendChild(btn); row.appendChild(delBtn||document.createElement('span'));
       div.appendChild(row);
     });
   }catch(e){div.innerHTML='<div style="color:var(--accent2);padding:8px;font-size:12px">오류: '+e.message+'</div>';}
@@ -1477,6 +1485,51 @@ async function _toggleUser(id,isActive){
     await _loadUserList();
   }catch(e){alert('오류: '+e.message);}
 }
+
+// ── 사용자 삭제 (기존 로그 created_by 값은 유지)
+async function _deleteUser(id, name){
+  // 마지막 관리자 보호 체크
+  try{
+    var res=await fetch(sbUrl+'/rest/v1/crm_users?select=id,role&is_active=eq.true',
+      {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+    var all=res.ok?await res.json():[];
+    var admins=all.filter(function(u){return u.role==='admin';});
+    var target=all.find(function(u){return u.id===id;});
+    if(target&&target.role==='admin'&&admins.length<=1){
+      alert('마지막 관리자 계정은 삭제할 수 없습니다.\n다른 관리자를 먼저 지정해주세요.');
+      return;
+    }
+  }catch(e){ /* 체크 실패 시 그냥 진행 */ }
+
+  if(!confirm(
+    '[ '+name+' ] 계정을 삭제합니까?\n\n'+
+    '✓ 계정(로그인 정보)은 삭제됩니다.\n'+
+    '✓ 이 사용자가 입력한 연락처/활동 기록은 그대로 유지됩니다.\n'+
+    '  (입력자 이름 "'+name+'"은 기록에 계속 표시됩니다.)'
+  )) return;
+
+  try{
+    var delRes=await fetch(sbUrl+'/rest/v1/crm_users?id=eq.'+encodeURIComponent(id),{
+      method:'DELETE',
+      headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'}
+    });
+    if(!delRes.ok){
+      var t=await delRes.text().catch(function(){return '';});
+      throw new Error('삭제 실패 ('+delRes.status+'): '+t.slice(0,80));
+    }
+    var msg=document.getElementById('userMgmtMsg');
+    if(msg){
+      msg.textContent='✓ '+name+' 계정이 삭제되었습니다. 기존 로그는 유지됩니다.';
+      msg.style.color='var(--accent3)';
+    }
+    await _loadUserList();
+  }catch(e){
+    var msg=document.getElementById('userMgmtMsg');
+    if(msg){ msg.textContent='오류: '+e.message; msg.style.color='var(--accent2)'; }
+    else alert('오류: '+e.message);
+  }
+}
+
 
 async function _changeMyPw(){
   var cur=(document.getElementById('pwChangeCur').value||'');
