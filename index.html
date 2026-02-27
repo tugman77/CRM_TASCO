@@ -242,7 +242,14 @@
   .tl-detail.open { display: block; }
   .tl-who { font-size: 11px; color: var(--accent); margin: 6px 0 4px; cursor: pointer; }
   .tl-who:hover { text-decoration: underline; }
-  .tl-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .tl-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.8;
+    word-break: break-word;
+    white-space: pre-wrap;   /* 줄바꿈/공백 그대로 표시 */
+    padding: 6px 0 4px;
+  }
   .tl-amount { font-size: 12px; color: var(--accent3); font-family: 'IBM Plex Mono', monospace; margin-top: 4px; font-weight: 600; }
   .tl-actions { display: flex; gap: 4px; margin-top: 8px; justify-content: flex-end; }
   .tl-act-btn { background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-size: 11px; padding: 3px 8px; border-radius: 5px; font-family: 'Noto Sans KR', sans-serif; transition: all 0.1s; }
@@ -3834,7 +3841,7 @@
         <div class="tl-detail">
           ${whoHtml}
           ${a.title?`<div style="font-size:13px;font-weight:600;margin-bottom:4px">${a.title}</div>`:''}
-          ${a.content?`<div class="tl-text">${a.content}</div>`:''}
+          ${a.content?`<div class="tl-text">${a.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`:''}
           ${a.amount?`<div class="tl-amount">₩ ${fmtMoney(a.amount)}</div>`:''}
           ${a.createdBy?`<div class="tl-creator">✍ ${a.createdBy}</div>`:''}
           <div class="tl-actions">
