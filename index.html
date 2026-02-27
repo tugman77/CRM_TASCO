@@ -2867,7 +2867,7 @@
   }
   
   // ── upsert (분할 전송)
-  async function sbUpsert(table, rows){
+  async function sbUpsert(table, rows, _retried){
     if(!rows.length) return;
     const h = { 'Content-Type':'application/json', 'apikey':sbKey,
                  'Authorization':'Bearer '+sbKey, 'Prefer':'resolution=merge-duplicates,return=minimal' };
@@ -2877,7 +2877,16 @@
         method:'POST', headers:h,
         body: JSON.stringify(rows.slice(i,i+CHUNK))
       });
-      if(!res.ok){ const e=await res.text(); throw new Error(`[${table}] upsert 실패 (${res.status}): ${e.slice(0,120)}`); }
+      if(!res.ok){
+        const e = await res.text();
+        // PGRST204: 컬럼 없음 → created_by 제거 후 1회 재시도
+        if(!_retried && e.indexOf('PGRST204')>=0 && e.indexOf('created_by')>=0){
+          console.warn('[sbUpsert] created_by 컬럼 없음 → 제외 후 재시도 (SQL 실행 필요)');
+          const fallback = rows.map(function(r){ var o=Object.assign({},r); delete o.created_by; return o; });
+          return sbUpsert(table, fallback, true);
+        }
+        throw new Error('['+table+'] upsert 실패 ('+res.status+'): '+e.slice(0,120));
+      }
     }
   }
   
@@ -3013,7 +3022,18 @@
   
     } catch(err){
       console.error('[sbSave] 오류:', err);
-      sbUpdateStatus('error', i18n('저장 실패')+': '+err.message);
+      var msg = err.message||'';
+      if(msg.indexOf('PGRST204')>=0 && msg.indexOf('created_by')>=0){
+        sbUpdateStatus('error',
+          '⚠ DB 컬럼 누락 — Supabase SQL Editor에서 아래 SQL을 실행하세요:\n' +
+          'alter table contacts add column if not exists created_by text default \'\';\n' +
+          'alter table activities add column if not exists created_by text default \'\';'
+        );
+      } else if(msg.indexOf('Failed to fetch')>=0||msg.indexOf('network')>=0){
+        sbUpdateStatus('error', '⚠ 네트워크 오류 — 인터넷 연결을 확인하세요.');
+      } else {
+        sbUpdateStatus('error', i18n('저장 실패')+': '+msg.slice(0,80));
+      }
     } finally {
       sbSyncing=false;
       if(sbPendingSave){ sbPendingSave=false; sbSave(); }
