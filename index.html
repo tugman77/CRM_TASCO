@@ -1861,7 +1861,13 @@
   
     var overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;z-index:4999;background:rgba(0,0,0,.5)';
-    overlay.onclick=function(){ sheet.remove(); overlay.remove(); };
+    var _sheetDownOnOverlay = false;
+    overlay.addEventListener('mousedown', function(e){ _sheetDownOnOverlay = (e.target === overlay); });
+    overlay.addEventListener('touchstart', function(e){ _sheetDownOnOverlay = (e.target === overlay); }, {passive:true});
+    overlay.addEventListener('click', function(e){
+      if(_sheetDownOnOverlay && e.target === overlay){ sheet.remove(); overlay.remove(); }
+      _sheetDownOnOverlay = false;
+    });
   
     document.body.appendChild(overlay);
     document.body.appendChild(sheet);
@@ -4590,7 +4596,21 @@ function showDetail(id){
       if(chk && chk.checked) safeStorage.setItem('crm_onboarding_skip','1');
     }
   }
-  document.querySelectorAll('.modal-overlay').forEach(o=>{ o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }); });
+  document.querySelectorAll('.modal-overlay').forEach(function(o){
+    var _downOnOverlay = false;
+    // mousedown 시작점 기록 — 모달 내부에서 드래그 시작 시 닫힘 방지
+    o.addEventListener('mousedown', function(e){
+      _downOnOverlay = (e.target === o);
+    });
+    o.addEventListener('touchstart', function(e){
+      _downOnOverlay = (e.target === o);
+    }, {passive:true});
+    // mouseup/click 시 시작점이 overlay 자신인 경우만 닫음
+    o.addEventListener('click', function(e){
+      if(_downOnOverlay && e.target === o) o.classList.remove('open');
+      _downOnOverlay = false;
+    });
+  });
   
   function renderStats(){
     const today = new Date();
