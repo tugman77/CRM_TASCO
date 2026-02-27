@@ -1307,10 +1307,14 @@
       },600);
     }catch(e){
       var errMsg=e.message||'';
-      if(errMsg.indexOf('404')>=0){
+      if(errMsg.toLowerCase().indexOf('fetch')>=0||errMsg.toLowerCase().indexOf('network')>=0||errMsg.indexOf('Failed')>=0){
+        msg.innerHTML='⚠ 네트워크 오류 — Supabase에 연결할 수 없습니다.<br>'+
+          '<span style="font-size:11px">인터넷 연결 및 Supabase URL/Key를 다시 확인해주세요.</span>';
+      } else if(errMsg.indexOf('404')>=0){
         msg.innerHTML='⚠ crm_users 테이블이 없습니다.<br>'+
-          '<span style="font-size:11px">Supabase SQL Editor에서 SQL을 실행해주세요.<br>'+
-          '(▸ 로그인 문제 해결 → 진단 실행)</span>';
+          '<span style="font-size:11px">▸ 로그인 문제 해결 → 진단 실행</span>';
+      } else if(errMsg.indexOf('401')>=0){
+        msg.innerHTML='⚠ API Key 오류 (401) — anon key를 확인해주세요.';
       } else {
         msg.textContent='오류: '+errMsg;
       }
@@ -1877,54 +1881,75 @@
   // ── 최초 관리자 계정 자동 생성 (crm_users 비어있을 때)
   async function _initFirstAdmin(){
     if(!sbIsConnected()) return;
+    // 타이밍 이슈 방지: URL/Key 재확인
+    var url=safeStorage.getItem('crm_sb_url')||sbUrl;
+    var key=safeStorage.getItem('crm_sb_key')||sbKey;
+    if(!url||!key) return;
+
+    // 재시도 헬퍼
+    async function _fetchWithRetry(fetchFn, maxTry){
+      for(var t=0; t<maxTry; t++){
+        try{ return await fetchFn(); }
+        catch(e){
+          if(t===maxTry-1) throw e;
+          await new Promise(function(r){setTimeout(r,1200*(t+1));});
+        }
+      }
+    }
+
     try{
-      var res=await fetch(sbUrl+'/rest/v1/crm_users?select=id&limit=1',
-        {headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey}});
+      var res=await _fetchWithRetry(function(){
+        return fetch(url+'/rest/v1/crm_users?select=id&limit=1',
+          {headers:{'apikey':key,'Authorization':'Bearer '+key}});
+      }, 3);
+
       if(!res.ok){
-        // 테이블 없음 → SQL 미실행 안내
-        var msg=document.getElementById('loginMsg');
-        if(msg){
-          msg.innerHTML='⚠ crm_users 테이블이 없습니다.<br>'+
-            '<span style="font-size:11px">Supabase SQL Editor에서 SQL을 다시 실행해주세요.</span>';
-          msg.className='login-msg';
-          msg.style.color='var(--accent4)';
+        var status=res.status;
+        if(status===404||status===400){
+          // crm_users 테이블 없음
+          _setLoginMsg('⚠ crm_users 테이블이 없습니다. SQL Editor에서 SQL을 실행해주세요.','warn');
+        } else if(status===401){
+          _setLoginMsg('⚠ API Key가 잘못되었습니다. Supabase 설정을 확인해주세요.','warn');
         }
         return;
       }
+
       var rows=await res.json();
       if(rows.length>0) return; // 이미 사용자 있음
+
       // 최초 관리자 생성: admin / admin1234
-      var createRes=await fetch(sbUrl+'/rest/v1/crm_users',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','apikey':sbKey,'Authorization':'Bearer '+sbKey,'Prefer':'return=minimal'},
-        body:JSON.stringify([{id:'admin_init',name:'admin',pw_hash:_pwHash('admin1234'),
-          role:'admin',is_active:true,created_at:new Date().toISOString()}])
-      });
-      var msg=document.getElementById('loginMsg');
-      if(msg){
-        if(createRes.ok){
-          msg.innerHTML='🎉 관리자 계정이 생성되었습니다!<br>'+
-            '<span style="font-family:monospace;font-size:13px;color:var(--accent);font-weight:700">ID: admin</span><br>'+
-            '<span style="font-family:monospace;font-size:13px;color:var(--accent);font-weight:700">PW: admin1234</span><br>'+
-            '<span style="font-size:10px;color:var(--accent2)">로그인 후 즉시 비밀번호를 변경하세요!</span>';
-          msg.className='login-msg ok';
-          msg.style.color='';
-          // 이름 자동 입력
-          var nameEl=document.getElementById('loginName');
-          if(nameEl) nameEl.value='admin';
-        } else {
-          var errTxt=await createRes.text().catch(function(){return '';});
-          msg.innerHTML='⚠ 관리자 계정 생성 실패 ('+createRes.status+')<br>'+
-            '<span style="font-size:10px">'+errTxt.slice(0,100)+'</span>';
-          msg.className='login-msg';
-          msg.style.color='var(--accent2)';
-        }
+      var createRes=await _fetchWithRetry(function(){
+        return fetch(url+'/rest/v1/crm_users',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','apikey':key,
+                   'Authorization':'Bearer '+key,'Prefer':'return=minimal'},
+          body:JSON.stringify([{id:'admin_init',name:'admin',pw_hash:_pwHash('admin1234'),
+            role:'admin',is_active:true,created_at:new Date().toISOString()}])
+        });
+      }, 3);
+
+      if(createRes.ok){
+        _setLoginMsg('🎉 관리자 계정 생성! ID: admin / PW: admin1234','ok');
+        var nameEl=document.getElementById('loginName');
+        if(nameEl) nameEl.value='admin';
+      } else {
+        var errTxt=await createRes.text().catch(function(){return '';});
+        _setLoginMsg('⚠ 관리자 계정 생성 실패 ('+createRes.status+') '+errTxt.slice(0,60),'warn');
       }
     }catch(e){
-      console.warn('_initFirstAdmin 오류:',e);
-      var msg=document.getElementById('loginMsg');
-      if(msg){ msg.textContent='오류: '+e.message; msg.style.color='var(--accent2)'; }
+      // Failed to fetch = 네트워크 오류 (CORS, 오프라인 등)
+      // 로그인 화면에 오류 표시하지 않음 — 사용자가 직접 로그인 시도하면 됨
+      console.warn('_initFirstAdmin 오류:', e.message);
     }
+  }
+
+  // 로그인 메시지 헬퍼
+  function _setLoginMsg(text, type){
+    var msg=document.getElementById('loginMsg');
+    if(!msg) return;
+    msg.textContent=text;
+    msg.className='login-msg'+(type==='ok'?' ok':'');
+    msg.style.color=type==='warn'?'var(--accent2)':type==='ok'?'':'';
   }
   
   // 수동으로 admin 계정 재생성 (로그인 화면에서 호출)
@@ -5585,8 +5610,8 @@ function showDetail(id){
       _afterLogin();
       return;
     }
-    // 세션 없으면 로그인 화면 유지 + admin 계정 자동 생성 체크
-    _initFirstAdmin();
+    // 세션 없으면 로그인 화면 유지 + admin 계정 자동 생성 체크 (500ms 후)
+    setTimeout(_initFirstAdmin, 500);
   }
   
   // Supabase 연결 상태 바 업데이트
