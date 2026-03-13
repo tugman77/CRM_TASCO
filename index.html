@@ -601,6 +601,22 @@
     to   { transform: translateY(0); }
   }
 
+
+  @media (max-width: 639px) {
+    .company-name {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      max-width: 140px;
+    }
+    .company-badges {
+      flex-shrink: 0;
+    }
+    .company-header {
+      flex-wrap: nowrap !important;
+    }
+  }
+
   /* ════════════════════════════════════════════
      ☀️  LIGHT THEME — 완전 재작성
      ════════════════════════════════════════════ */
@@ -925,6 +941,8 @@
       <div class="filter-bar" id="teamFilterBar"></div>
     </div>
     <div id="mainGrid"></div>
+    <!-- 활동 검색 결과 -->
+    <div id="actSearchResults" style="display:none;margin-top:20px;padding-top:16px;border-top:2px solid var(--border)"></div>
   </div>
 
   <!-- Detail View -->
@@ -3981,32 +3999,120 @@
   }
   
   function renderContacts(){
-    // 검색어/필터 변경 감지 → 오프셋 리셋
     const _newQ = (document.getElementById('searchInput')||{}).value||'';
     if(typeof _lastRenderQ !== 'undefined' && _lastRenderQ !== _newQ) _vsOffset = 0;
     _lastRenderQ = _newQ;
     const q = _newQ.trim();
-  
-    // Supabase 연결 + 검색어 있을 때 → 서버사이드 검색
-    if(sbIsConnected() && q.length >= 2){
+
+    // 검색어 없으면 활동검색 결과 숨기기
+    var actSearchEl = document.getElementById('actSearchResults');
+    if(actSearchEl) actSearchEl.style.display = 'none';
+
+    if(!q){
+      document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',contacts.length);
+      if(viewMode==='list')  { renderFlatList(contacts); return; }
+      if(viewMode==='glist') { renderGroupList(contacts); return; }
+      renderGroupView(contacts);
+      return;
+    }
+
+    if(q.length < 2) return;
+
+    // 한글 검색 → 로컬 우선 (성+이름 합쳐진 이름 매칭)
+    // 영문/숫자 → Supabase 우선
+    if(sbIsConnected() && !/[가-힣]/.test(q)){
       _sbSearch(q); return;
     }
-  
-    // 로컬 필터 (검색어 없음 or 로컬모드)
-    let list = q
-      ? contacts.filter(c=>{ const s=((c.company||'')+(c.last||'')+(c.first||'')+(c.email||'')+(c.mobile||'')+(c.office||'')+(c.position||'')+(c.memo||'')+(c.dept||'')+(c.extra||'')).toLowerCase(); return s.includes(q.toLowerCase()); })
-      : contacts;
-  
+
+    // 로컬 연락처 필터
+    const ql = q.toLowerCase();
+    let list = contacts.filter(c=>{
+      const fullname = (c.last||'')+(c.first||'');
+      const s = ((c.company||'')+fullname+(c.email||'')+(c.mobile||'')+(c.office||'')+(c.position||'')+(c.memo||'')+(c.dept||'')+(c.extra||'')).toLowerCase();
+      return s.includes(ql);
+    });
+
     // 팀 필터
     if(teamFilter.size){
       const cos = getCosByTeam(teamFilter);
       if(cos) list = list.filter(c => cos.includes(c.company||''));
     }
-    document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',list.length);
-    if(viewMode==='list')  { renderFlatList(list); return; }
-    if(viewMode==='glist') { renderGroupList(list); return; }
-    renderGroupView(list);
+
+    document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',list.length) + (list.length===0?' — 연락처 없음':'');
+    if(viewMode==='list')  { renderFlatList(list); }
+    else if(viewMode==='glist') { renderGroupList(list); }
+    else { renderGroupView(list); }
+
+    // 활동 내역 검색
+    _renderActSearch(q);
   }
+
+  function _renderActSearch(q){
+    var el = document.getElementById('actSearchResults');
+    if(!el) return;
+    if(!q || q.length < 2){ el.style.display='none'; return; }
+
+    var ql = q.toLowerCase();
+
+    // 활동 중 title 또는 content에 검색어 포함
+    var hits = activities.filter(function(a){
+      var t = (a.title||'').toLowerCase();
+      var c = (a.content||'').toLowerCase();
+      return t.includes(ql) || c.includes(ql);
+    });
+
+    if(!hits.length){
+      el.style.display = 'none';
+      return;
+    }
+
+    el.style.display = '';
+
+    var typeLabel = {order:'📦 발주',quote:'📄 견적',visit:'🤝 방문',call:'📞 통화',mail:'📮 발송',other:'📌 기타'};
+
+    // 검색어 하이라이트
+    function _hl(s, q){
+      if(!s) return '';
+      var re = new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+      return s.replace(re,'<mark style="background:rgba(255,200,0,0.45);border-radius:2px;padding:0 1px">$1</mark>');
+    }
+
+    // 날짜 내림차순 정렬
+    var sorted = hits.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+
+    var rows = sorted.slice(0,30).map(function(a){
+      var con = contacts.find(function(c){ return c.id===a.contactId; });
+      var conName = con ? ((con.last||'')+(con.first||'')) : '—';
+      var conCo   = con ? (con.company||'') : '';
+      var tlabel  = typeLabel[a.type]||'📌 기타';
+      var titleHl = _hl(a.title||'', q);
+      // content에서 검색어 주변 발췌 (앞뒤 20자)
+      var snippet = '';
+      var ci = (a.content||'').toLowerCase().indexOf(ql);
+      if(ci >= 0){
+        var raw = a.content||'';
+        var s2 = Math.max(0, ci-20), e2 = Math.min(raw.length, ci+ql.length+20);
+        snippet = (s2>0?'…':'')+_hl(raw.slice(s2,e2),q)+(e2<raw.length?'…':'');
+      }
+      return '<div onclick="(function(){nav(\'contacts\');setTimeout(function(){showDetail(\''+a.contactId+'\');},80);})()" '
+        +'style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;transition:background .15s" '
+        +'onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'var(--surface)\'">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+          +'<span style="font-size:11px;color:var(--muted);font-family:IBM Plex Mono,monospace;flex-shrink:0">'+(a.date||'')+'</span>'
+          +'<span style="font-weight:700;flex-shrink:0;font-size:12px">'+tlabel+'</span>'
+          +'<span style="flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+titleHl+'</span>'
+          +'<span style="font-size:11px;color:var(--accent);flex-shrink:0;font-weight:600">'+conName+(conCo?' · '+conCo:'')+'</span>'
+        +'</div>'
+        +(snippet?'<div style="font-size:11px;color:var(--muted);margin-top:4px;padding-left:4px;border-left:2px solid var(--border)">'+snippet+'</div>':'')
+        +'</div>';
+    }).join('');
+
+    var more = hits.length > 30 ? '<div style="font-size:11px;color:var(--muted);text-align:center;padding:6px">... 외 '+(hits.length-30)+'건 더 있습니다</div>' : '';
+
+    el.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">📋 활동 내역 ('+hits.length+'건)</div>'
+      +'<div style="display:flex;flex-direction:column;gap:5px">'+rows+more+'</div>';
+  }
+
   
   // 서버사이드 검색 (Supabase ilike)
   let _sbSearchTimer = null;
@@ -4077,7 +4183,13 @@
               ${coActs.length?`<span>📋 ${coActs.length}${i18n('건')}</span>`:''}
             </div>
           </div>
-          <div class="company-badges">${types.map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${typeCount[t]||0}</span>`).join('')}</div>
+          <div class="company-badges">${(()=>{
+            // 카운트 많은 순 정렬 → 모바일 2개, 데스크탑 5개
+            const sorted = types.slice().sort((a,b)=>(typeCount[b]||0)-(typeCount[a]||0));
+            const isMobile = window.innerWidth < 640;
+            const limit = isMobile ? 2 : 5;
+            return sorted.slice(0,limit).map(t=>`<span class="activity-badge ${TB[t]}">${TE[t]} ${typeCount[t]||0}</span>`).join('');
+          })()}</div>
           <span class="company-toggle">▾</span>
         </div>
         <div class="company-body">
