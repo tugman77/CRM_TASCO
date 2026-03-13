@@ -6578,9 +6578,20 @@ function showDetail(id){
         var tm = rest.match(TITLE_RE);
         var titleStr = tm ? tm[tm.length-1].trim() : rest.trim();
 
-        var r = { date:date, type:typeId, title:titleStr, content:'', amount:amount };
-        results.push(r);
-        lastResult = r; pendingContent = [];
+        // ── 중복 합치기: 같은 날짜+유형+제목이 이미 있으면 그쪽을 lastResult로 연결
+        var existing = results.find(function(x){
+          return x.date===date && x.type===typeId && x.title.trim()===titleStr.trim();
+        });
+        if(existing){
+          // 이미 있는 항목에 content를 추가로 받을 준비
+          lastResult = existing;
+          pendingContent = existing.content ? existing.content.split('\n') : [];
+        } else {
+          var r = { date:date, type:typeId, title:titleStr, content:'', amount:amount };
+          results.push(r);
+          lastResult = r;
+          pendingContent = [];
+        }
 
       } else if(lastResult){
         pendingContent.push(line);
@@ -6599,8 +6610,9 @@ function showDetail(id){
     var bulkCount = document.getElementById('memoBulkCount');
     if(!previewEl) return;
 
-    var hasCon = !!_memoTargetCid;
-    var total  = _memoParsed.length;
+    var hasCon  = !!_memoTargetCid;
+    var total   = _memoParsed.length;
+    var active  = _memoParsed.filter(function(r){ return !r.excluded; }).length;
 
     if(!total){
       previewEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:13px">'
@@ -6612,44 +6624,74 @@ function showDetail(id){
 
     var con = hasCon ? (contacts.find(function(c){return c.id===_memoTargetCid;})||{}) : {};
     var conName = ((con.last||'')+(con.first||''));
-    if(countEl) countEl.textContent = '총 '+total+'건'+(hasCon?' → '+conName+'님':'  ⚠ 담당자 미선택');
-    if(saveBtn) saveBtn.style.display = hasCon?'':'none';
-    if(bulkCount) bulkCount.textContent = total;
+    if(countEl) countEl.textContent = active+'건 선택'+(total!==active?' ('+(total-active)+'건 제외)':'')+(hasCon?' → '+conName+'님':'  ⚠ 담당자 미선택');
+    if(saveBtn) saveBtn.style.display = (hasCon && active>0)?'':'none';
+    if(bulkCount) bulkCount.textContent = active;
 
     var typeLabel = {order:'📦 발주',quote:'📄 견적',visit:'🤝 방문',call:'📞 통화',mail:'📮 발송',other:'📌 기타'};
     var sorted = _memoParsed.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
 
-    previewEl.innerHTML = sorted.map(function(r){
+    previewEl.innerHTML = sorted.map(function(r, i){
+      // 원본 인덱스 찾기
+      var origIdx = _memoParsed.indexOf(r);
+      var excluded = !!r.excluded;
       var tlabel = typeLabel[r.type]||'📌 기타';
-      var bc = hasCon?'var(--accent)':'var(--border)';
-      var bg = hasCon?'rgba(79,124,255,0.05)':'var(--surface2)';
-      var amtStr = r.amount ? '<span style="color:var(--accent3);font-weight:600;font-size:11px;flex-shrink:0">'+Number(r.amount).toLocaleString()+'원</span>' : '';
-      return '<div style="border:1px solid '+bc+';border-radius:8px;padding:9px 12px;background:'+bg+';font-size:12px">'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:'+(r.content?'5':'0')+'px">'
-          +'<span style="font-size:11px;color:var(--muted);font-family:IBM Plex Mono,monospace;flex-shrink:0">'+r.date+'</span>'
-          +'<span style="font-weight:700;flex-shrink:0">'+tlabel+'</span>'
+
+      var bc  = excluded ? 'var(--border)'
+              : hasCon   ? 'var(--accent)' : 'var(--border)';
+      var bg  = excluded ? 'var(--surface2)'
+              : hasCon   ? 'rgba(79,124,255,0.05)' : 'var(--surface2)';
+      var opacity   = excluded ? '0.38' : '1';
+      var textDecor = excluded ? 'line-through' : 'none';
+      var cursor    = 'pointer';
+      var checkIcon = excluded
+        ? '<span style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--muted)">✕</span>'
+        : '<span style="width:18px;height:18px;border-radius:50%;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:#fff">✓</span>';
+
+      var amtStr = r.amount ? '<span style="color:var(--accent3);font-weight:600;font-size:11px;flex-shrink:0;text-decoration:'+textDecor+'">'+Number(r.amount).toLocaleString()+'원</span>' : '';
+
+      return '<div onclick="memoToggleItem('+origIdx+')" style="border:1px solid '+bc+';border-radius:8px;padding:9px 12px;background:'+bg+';font-size:12px;opacity:'+opacity+';cursor:'+cursor+';transition:opacity .15s,border-color .15s,background .15s;user-select:none" title="'+(excluded?'클릭하여 포함':'클릭하여 제외')+'">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:'+(r.content&&!excluded?'5':'0')+'px">'
+          +checkIcon
+          +'<span style="font-size:11px;color:var(--muted);font-family:IBM Plex Mono,monospace;flex-shrink:0;text-decoration:'+textDecor+'">'+r.date+'</span>'
+          +'<span style="font-weight:700;flex-shrink:0;text-decoration:'+textDecor+'">'+tlabel+'</span>'
           +amtStr
-          +'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);min-width:0">'+_escHtml(r.title)+'</span>'
+          +'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);min-width:0;text-decoration:'+textDecor+'">'+_escHtml(r.title)+'</span>'
         +'</div>'
-        +(r.content?'<div style="color:var(--muted);white-space:pre-wrap;font-size:11px;line-height:1.6;padding:4px 0 0 8px;border-left:2px solid var(--border)">'+_escHtml(r.content)+'</div>':'')
+        +(!excluded && r.content?'<div style="color:var(--muted);white-space:pre-wrap;font-size:11px;line-height:1.6;padding:4px 0 0 8px;border-left:2px solid var(--border)">'+_escHtml(r.content)+'</div>':'')
         +'</div>';
     }).join('');
   }
+
+  function memoToggleItem(idx){
+    if(!_memoParsed[idx]) return;
+    _memoParsed[idx].excluded = !_memoParsed[idx].excluded;
+    _memoRenderPreview();
+  }
+
 
   function _escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   function memoBulkSaveAll(){
     if(!_memoTargetCid){ alert('담당자를 먼저 선택해주세요.'); return; }
-    var toSave = _memoParsed;
+    var toSave = _memoParsed.filter(function(r){ return !r.excluded; });
     if(!toSave.length){ alert('저장할 활동이 없습니다.'); return; }
 
     var dupCount = 0;
     toSave.forEach(function(r){
+      // 기존 저장된 활동과 중복 체크 (파싱 단계에서 이미 내부 중복은 합쳐짐)
       var dup = activities.find(function(a){
         return a.contactId===_memoTargetCid && a.date===r.date && a.type===r.type
           && (a.title||'').trim()===(r.title||'').trim();
       });
-      if(dup){ dupCount++; return; }
+      if(dup){
+        // content가 새로 추가된 경우 기존 항목 업데이트
+        if(!dup.content && r.content){
+          dup.content = r.content;
+          markActivityDirty(dup.id);
+        }
+        dupCount++; return;
+      }
       var newId = uid();
       activities.push({
         id:newId, contactId:_memoTargetCid, type:r.type, date:r.date,
