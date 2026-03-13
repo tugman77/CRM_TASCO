@@ -3994,7 +3994,7 @@
   
     // 로컬 필터 (검색어 없음 or 로컬모드)
     let list = q
-      ? contacts.filter(c=>{ const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase(); return s.includes(q.toLowerCase()); })
+      ? contacts.filter(c=>{ const s=((c.company||'')+(c.last||'')+(c.first||'')+(c.email||'')+(c.mobile||'')+(c.office||'')+(c.position||'')+(c.memo||'')+(c.dept||'')+(c.extra||'')).toLowerCase(); return s.includes(q.toLowerCase()); })
       : contacts;
   
     // 팀 필터
@@ -4031,7 +4031,7 @@
       console.warn('[sbSearch] 실패, 로컬 검색으로 폴백:', e.message);
       // 로컬 폴백
       const ql = q.toLowerCase();
-      let list = contacts.filter(c=>{ const s=(c.company+c.last+c.first+c.email+c.mobile+c.office).toLowerCase(); return s.includes(ql); });
+      let list = contacts.filter(c=>{ const s=((c.company||'')+(c.last||'')+(c.first||'')+(c.email||'')+(c.mobile||'')+(c.office||'')+(c.position||'')+(c.memo||'')+(c.dept||'')+(c.extra||'')).toLowerCase(); return s.includes(ql); });
       document.getElementById('viewSub').textContent = i18n('총 N명').replace('{n}',list.length);
       if(viewMode==='list')  { renderFlatList(list); return; }
       if(viewMode==='glist') { renderGroupList(list); return; }
