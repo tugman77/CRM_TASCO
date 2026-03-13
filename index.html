@@ -10,7 +10,7 @@
 <meta property="og:description" content="명함·PDF·CSV를 AI로 자동 분석해 연락처를 저장하는 스마트 고객관리 시스템">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root, [data-theme="dark"] {
     --bg: #0f1117;
     --surface: #1a1d27;
     --surface2: #22263a;
@@ -22,6 +22,30 @@
     --text: #e8eaf6;
     --muted: #7986cb;
     --danger: #ef5350;
+    --theme-icon: '🌙';
+    --modal-bg: rgba(0,0,0,0.55);
+    --input-bg: #0f1117;
+    --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --timeline-dot: var(--accent);
+  }
+
+  [data-theme="light"] {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface2: #eef1f8;
+    --border: #d0d8ef;
+    --accent: #3b6ef5;
+    --accent2: #e05555;
+    --accent3: #22b85c;
+    --accent4: #e67e10;
+    --text: #1a1d2e;
+    --muted: #5a6490;
+    --danger: #e53935;
+    --theme-icon: '☀️';
+    --modal-bg: rgba(0,0,0,0.35);
+    --input-bg: #f9faff;
+    --card-shadow: 0 2px 16px rgba(60,80,180,0.08);
+    --timeline-dot: var(--accent);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
@@ -576,6 +600,147 @@
     from { transform: translateY(100%); }
     to   { transform: translateY(0); }
   }
+
+  /* ── Light theme overrides ── */
+  [data-theme="light"] body {
+    background: var(--bg);
+    color: var(--text);
+  }
+  [data-theme="light"] .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    box-shadow: 2px 0 12px rgba(60,80,180,0.06);
+  }
+  [data-theme="light"] .sidebar-btn { color: var(--text); }
+  [data-theme="light"] .sidebar-btn:hover { background: var(--surface2); }
+  [data-theme="light"] .topbar { background: var(--surface); border-color: var(--border); }
+  [data-theme="light"] .search-wrap input {
+    background: var(--input-bg);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  [data-theme="light"] .modal {
+    background: var(--surface);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border);
+  }
+  [data-theme="light"] .modal-overlay { background: var(--modal-bg); }
+  [data-theme="light"] input,
+  [data-theme="light"] textarea,
+  [data-theme="light"] select {
+    background: var(--input-bg) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+  }
+  [data-theme="light"] input::placeholder,
+  [data-theme="light"] textarea::placeholder { color: var(--muted); }
+  /* 카드/패널 */
+  [data-theme="light"] #contactsView,
+  [data-theme="light"] #activitiesView,
+  [data-theme="light"] #adminView,
+  [data-theme="light"] .main { background: var(--bg); }
+  /* 타임라인 */
+  [data-theme="light"] .tl-summary { color: var(--text); }
+  [data-theme="light"] .tl-text { color: var(--text); }
+  /* 스크롤바 */
+  [data-theme="light"] ::-webkit-scrollbar-track { background: var(--surface2); }
+  [data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--border); }
+  /* 테마 토글 버튼 */
+  .theme-toggle-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .theme-toggle-btn:hover {
+    background: var(--surface2);
+    border-color: var(--accent);
+  }
+  /* 라이트에서 하드코딩 배경색 대응 */
+  [data-theme="light"] [style*="background:#0f1117"],
+  [data-theme="light"] [style*="background: #0f1117"] {
+    background: var(--input-bg) !important;
+  }
+  [data-theme="light"] [style*="background:#1a1d27"],
+  [data-theme="light"] [style*="background: #1a1d27"] {
+    background: var(--surface) !important;
+  }
+  [data-theme="light"] [style*="background:#22263a"],
+  [data-theme="light"] [style*="background: #22263a"] {
+    background: var(--surface2) !important;
+  }
+  [data-theme="light"] [style*="color:#e8eaf6"],
+  [data-theme="light"] [style*="color: #e8eaf6"] {
+    color: var(--text) !important;
+  }
+  [data-theme="light"] [style*="color:#7986cb"],
+  [data-theme="light"] [style*="color: #7986cb"] {
+    color: var(--muted) !important;
+  }
+  [data-theme="light"] [style*="background:var(--surface2)"] {
+    background: var(--surface2) !important;
+  }
+
+  /* ── Light theme: contact card, detail panel ── */
+  [data-theme="light"] .contact-card {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: var(--card-shadow);
+  }
+  [data-theme="light"] .contact-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(59,110,245,0.12);
+  }
+  [data-theme="light"] #detailView {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+  }
+  [data-theme="light"] .detail-header { background: var(--surface); }
+  [data-theme="light"] .tl-item { border-color: var(--border); }
+  [data-theme="light"] .tl-summary { background: var(--surface2); }
+  [data-theme="light"] .tl-summary:hover { background: var(--border); }
+  [data-theme="light"] .tl-detail { background: var(--surface); }
+  /* 모달 오버레이 */
+  [data-theme="light"] .modal-overlay { background: rgba(30,40,80,0.32); }
+  /* 필터 탭 */
+  [data-theme="light"] .filter-tab { color: var(--muted); }
+  [data-theme="light"] .filter-tab.active { color: var(--accent); border-color: var(--accent); }
+  /* 바텀 탭바 (모바일) */
+  [data-theme="light"] .mobile-tabbar {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 12px rgba(60,80,180,0.07);
+  }
+  [data-theme="light"] .m-tab { color: var(--muted); }
+  [data-theme="light"] .m-tab.active { color: var(--accent); }
+  /* 드로어 (모바일 사이드바) */
+  [data-theme="light"] .mobile-drawer { background: var(--surface); }
+  [data-theme="light"] .drawer-overlay { background: rgba(30,40,80,0.35); }
+  /* 전체 활동 뷰 */
+  [data-theme="light"] #activitiesView { background: var(--bg); }
+  /* 데이터 입력 필드 강화 */
+  [data-theme="light"] input[type="text"],
+  [data-theme="light"] input[type="date"],
+  [data-theme="light"] input[type="number"],
+  [data-theme="light"] input[type="password"],
+  [data-theme="light"] input[type="email"],
+  [data-theme="light"] textarea,
+  [data-theme="light"] select {
+    background: var(--input-bg) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+  }
+  /* 토글 행 스타일 정렬 */
+  #themeToggleRow { border-radius: 8px; transition: background 0.15s; }
+  #themeToggleRow:hover { background: var(--surface2); }
 </style>
 </head>
 <body>
@@ -596,7 +761,8 @@
   </div>
   <button class="sidebar-btn active" id="navContacts" onclick="nav('contacts')"><span>🏢</span> <span data-i18n="연락처">연락처</span> <span class="today-badge" id="todayContacts" style="display:none"></span></button>
   <button class="sidebar-btn" id="navActivities" onclick="nav('activities')"><span>📋</span> <span data-i18n="전체 활동">전체 활동</span> <span class="today-badge" id="todayActivities" style="display:none"></span></button>
-  <button class="sidebar-btn" id="navAdmin" onclick="nav('admin')" style="display:none"><span>📊</span> <span data-i18n="입력자 현황">입력자 현황</span></button>
+  <button class="sidebar-btn" id="navAdmin" onclick="nav('admin')" style="display:none"><span>📊</span> <span data-i18n="입력내역">입력내역</span></button>
+  <button class="sidebar-btn" id="navMemo" onclick="openMemoParser()"><span>📝</span> <span data-i18n="스마트 메모">스마트 메모</span></button>
   <button class="sidebar-btn" onclick="openTypeModal()"><span>🏷</span> <span data-i18n="활동 유형 관리">활동 유형 관리</span></button>
   <button class="sidebar-btn" onclick="openGsModal()"><span>🗄</span> <span data-i18n="Supabase 연동">Supabase 연동</span></button>
   <div id="gsSyncStatus" style="font-size:10px;padding:6px 20px;color:var(--muted);font-family:IBM Plex Mono,monospace;line-height:1.5"></div>
@@ -605,6 +771,12 @@
     <div style="border-top:1px solid var(--border);margin:8px 0 10px;opacity:.4"></div>
     <button class="sidebar-btn" onclick="openHelpModal()" style="font-size:11px;color:var(--muted)"><span>❓</span> <span data-i18n="사용 가이드">사용 가이드</span></button>
     <button class="sidebar-btn" onclick="openLicenseModal()" style="font-size:11px;color:var(--muted)"><span>📄</span> <span data-i18n="라이선스 정보">라이선스 정보</span></button>
+    <div class="pin-setting-row" id="themeToggleRow" style="cursor:pointer" onclick="toggleTheme()" title="다크/라이트 테마 전환">
+      <span id="themeToggleLabel">🌙 <span data-i18n="다크 모드">다크 모드</span></span>
+      <div id="themeToggleSwitch" style="width:36px;height:20px;border-radius:10px;background:var(--accent);position:relative;transition:background 0.2s;flex-shrink:0">
+        <div id="themeToggleKnob" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:18px;transition:left 0.2s"></div>
+      </div>
+    </div>
     <div class="pin-setting-row">
       <span>🔐 <span data-i18n="PIN 잠금">PIN 잠금</span></span>
       <button class="pin-toggle" id="pinToggleBtn" onclick="openPinSetup()" title="PIN 설정/변경"></button>
@@ -671,13 +843,13 @@
     <div id="allActsContent"></div>
   </div>
 
-  <!-- 관리자 전용: 입력자 현황 뷰 -->
+  <!-- 관리자 전용: 입력내역 뷰 -->
   <div id="adminView" style="display:none">
     <div class="content" style="max-width:900px">
       <div class="section-title" style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <span>👑 입력자 현황</span>
-        <span style="font-size:12px;color:var(--muted);font-weight:400">팀원별 입력 통계</span>
-        <button onclick="renderAdminView()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--muted);cursor:pointer;font-size:12px">🔄 새로고침</button>
+        <span>📋 입력내역</span>
+        <span style="font-size:12px;color:var(--muted);font-weight:400">팀원별 입력내역</span>
+        <button onclick="renderAdminView()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--muted);cursor:pointer;font-size:12px" data-i18n="🔄 새로고침">🔄 새로고침</button>
       </div>
   
       <!-- 요약 카드 -->
@@ -686,7 +858,7 @@
       <!-- 팀원별 상세 테이블 -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px">
-          <span>팀원별 입력 현황</span>
+          <span data-i18n="팀원별 입력내역">팀원별 입력내역</span>
           <span id="adminTablePeriod" style="font-size:11px;color:var(--muted);font-weight:400"></span>
         </div>
         <div id="adminUserTable" style="overflow-x:auto"></div>
@@ -695,9 +867,9 @@
       <!-- 최근 입력 활동 목록 -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:16px">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px">
-          <span>최근 입력 활동</span>
+          <span data-i18n="최근 입력 활동">최근 입력 활동</span>
           <select id="adminFilterUser" onchange="renderAdminView()" style="margin-left:auto;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;outline:none">
-            <option value="">전체 팀원</option>
+            <option value="" data-i18n="전체 팀원">전체 팀원</option>
           </select>
         </div>
         <div id="adminRecentList" style="padding:12px"></div>
@@ -1562,7 +1734,7 @@
   function _curUserName(){return _curUser?_curUser.name:'';}
   
   // ══════════════════════════════════════════════════════
-  // 관리자 전용 : 입력자 현황 뷰
+  // 관리자 전용 : 입력내역 뷰
   // ══════════════════════════════════════════════════════
   function renderAdminView(){
     if(!_curUser || _curUser.role!=='admin') return;
@@ -1571,7 +1743,7 @@
     var userStats = {}; // { name: { contacts:N, activities:N, lastDate:'' } }
   
     contacts.forEach(function(c){
-      var who = c.createdBy || '(미설정)';
+      var who = c.createdBy || i18n('미설정');
       if(!userStats[who]) userStats[who] = {contacts:0, activities:0, lastDate:''};
       userStats[who].contacts++;
       if(c.createdAt && c.createdAt > (userStats[who].lastDate||''))
@@ -1579,7 +1751,7 @@
     });
   
     activities.forEach(function(a){
-      var who = a.createdBy || '(미설정)';
+      var who = a.createdBy || i18n('미설정');
       if(!userStats[who]) userStats[who] = {contacts:0, activities:0, lastDate:''};
       userStats[who].activities++;
       if(a.date && a.date > (userStats[who].lastDate||''))
@@ -1596,13 +1768,13 @@
     var totalA = activities.length;
     var taggedC = contacts.filter(function(c){return c.createdBy;}).length;
     var taggedA = activities.filter(function(a){return a.createdBy;}).length;
-    var memberCount = users.filter(function(u){return u!=='(미설정)';}).length;
+    var memberCount = users.filter(function(u){return u!==i18n('미설정');}).length;
   
     var cards = [
-      { icon:'👥', label:'활동 팀원', value: memberCount+'명', color:'var(--accent)' },
-      { icon:'🏢', label:'전체 연락처', value: totalC.toLocaleString(), sub: taggedC+'개 입력자 확인', color:'var(--accent3)' },
-      { icon:'📋', label:'전체 활동', value: totalA.toLocaleString(), sub: taggedA+'개 입력자 확인', color:'#a855f7' },
-      { icon:'📊', label:'입력자 태깅률', value: totalC+totalA>0 ? Math.round((taggedC+taggedA)/(totalC+totalA)*100)+'%':'—', color:'var(--accent)' },
+      { icon:'👥', label:i18n('활동 팀원'), value: memberCount+'명', color:'var(--accent)' },
+      { icon:'🏢', label:i18n('전체 연락처'), value: totalC.toLocaleString(), sub: taggedC+i18n('개 입력자 확인'), color:'var(--accent3)' },
+      { icon:'📋', label:i18n('전체 활동_admin'), value: totalA.toLocaleString(), sub: taggedA+i18n('개 입력자 확인'), color:'#a855f7' },
+      { icon:'📊', label:i18n('입력자 태깅률'), value: totalC+totalA>0 ? Math.round((taggedC+taggedA)/(totalC+totalA)*100)+'%':'—', color:'var(--accent)' },
     ];
   
     document.getElementById('adminStatCards').innerHTML = cards.map(function(c){
@@ -1617,11 +1789,11 @@
     // ── 팀원별 테이블
     var tableHtml = '<table style="width:100%;border-collapse:collapse;font-size:13px">'
       +'<thead><tr style="border-bottom:2px solid var(--border)">'
-      +'<th style="padding:10px 16px;text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase">팀원</th>'
-      +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">연락처</th>'
-      +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">활동</th>'
-      +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">합계</th>'
-      +'<th style="padding:10px 16px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">최근 입력일</th>'
+      +'<th style="padding:10px 16px;text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase">'+ i18n('팀원') +'</th>'
+      +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">'+ i18n('연락처') +'</th>'
+      +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">'+ i18n('활동') +'</th>'
+      +'<th style="padding:10px 12px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">'+ i18n('합계') +'</th>'
+      +'<th style="padding:10px 16px;text-align:right;color:var(--muted);font-weight:600;font-size:11px">'+ i18n('최근 입력일') +'</th>'
       +'</tr></thead><tbody>';
   
     users.forEach(function(name, idx){
@@ -1632,7 +1804,7 @@
       var col = _userColor(name);
       var init = (name||'?')[0];
       var lastDate = s.lastDate ? new Date(s.lastDate).toLocaleDateString('ko-KR') : '—';
-      var isUnset = name === '(미설정)';
+      var isUnset = name === i18n('미설정');
   
       tableHtml += '<tr style="border-bottom:1px solid var(--border);'+(idx%2===0?'':'background:rgba(255,255,255,.02)')+'">'
         +'<td style="padding:12px 16px">'
@@ -1642,7 +1814,7 @@
               : '<div style="width:28px;height:28px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">'+init+'</div>'
             )
             +'<div>'
-              +'<div style="font-weight:500'+(isUnset?';color:var(--muted)':'')+'">'+(isUnset?'입력자 미설정':name)+'</div>'
+              +'<div style="font-weight:500'+(isUnset?';color:var(--muted)':'')+'">'+(isUnset?i18n('입력자 미설정'):name)+'</div>'
               +'<div style="width:'+pct+'px;max-width:120px;height:3px;background:'+col+';border-radius:2px;margin-top:4px;opacity:.7"></div>'
             +'</div>'
           +'</div>'
@@ -1656,18 +1828,18 @@
   
     if(!users.length){
       tableHtml += '<tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted);font-size:13px">'
-        +'아직 데이터가 없습니다.</td></tr>';
+        +i18n('아직 데이터가 없습니다')+'</td></tr>';
     }
     tableHtml += '</tbody></table>';
     document.getElementById('adminUserTable').innerHTML = tableHtml;
-    document.getElementById('adminTablePeriod').textContent = '전체 기간';
+    document.getElementById('adminTablePeriod').textContent = i18n('전체 기간');
   
     // ── 팀원 필터 셀렉트 업데이트
     var sel = document.getElementById('adminFilterUser');
     if(sel){
       var cur = sel.value;
-      sel.innerHTML = '<option value="">전체 팀원</option>'
-        + users.filter(function(u){return u!=='(미설정)';}).map(function(u){
+      sel.innerHTML = '<option value="">'+ i18n('전체 팀원') +'</option>'
+        + users.filter(function(u){return u!==i18n('미설정');}).map(function(u){
             return '<option value="'+u+'"'+(cur===u?' selected':'')+'>'+u+'</option>';
           }).join('');
     }
@@ -1680,53 +1852,102 @@
     var filterUser = (document.getElementById('adminFilterUser')||{}).value || '';
     var listEl = document.getElementById('adminRecentList');
     if(!listEl) return;
-  
-    // 연락처 + 활동 통합, 최신순 50개
+
     var items = [];
     contacts.forEach(function(c){
       if(filterUser && c.createdBy !== filterUser) return;
       items.push({
-        type:'contact', date: c.createdAt||'', who: c.createdBy||'(미설정)',
-        label: (c.last||'')+(c.first||''), sub: c.company||'', id: c.id
+        type:'contact', date: c.createdAt||'', who: c.createdBy||i18n('미설정'),
+        label: (c.last||'')+(c.first||''), sub: c.company||'',
+        id: c.id, contactId: c.id, createdAt: c.createdAt||''
       });
     });
     activities.forEach(function(a){
       if(filterUser && a.createdBy !== filterUser) return;
       var con = contacts.find(function(c){return c.id===a.contactId;});
       items.push({
-        type:'activity', date: a.date||a.createdAt||'', who: a.createdBy||'(미설정)',
-        label: a.title||a.content||'활동', sub: con?(con.last||'')+(con.first||''):'',
-        actType: a.type, id: a.id
+        type:'activity', date: a.date||a.createdAt||'', who: a.createdBy||i18n('미설정'),
+        label: a.title||(a.content?a.content.slice(0,40):i18n('활동')),
+        sub: con?((con.last||'')+(con.first||'')):'',
+        actType: a.type, id: a.id, contactId: a.contactId,
+        createdAt: a.createdAt||''
       });
     });
-  
+
     items.sort(function(a,b){ return b.date.localeCompare(a.date); });
     items = items.slice(0,50);
-  
+
     if(!items.length){
-      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">표시할 항목이 없습니다.</div>';
+      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">' + i18n('표시할 항목이 없습니다') + '</div>';
       return;
     }
-  
+
     listEl.innerHTML = items.map(function(item){
       var col = _userColor(item.who);
       var init = (item.who||'?')[0];
-      var typeIcon = item.type==='contact' ? '🏢' : (_typeIcon(item.actType)||'📋');
-      var dateStr = item.date ? item.date.slice(0,10) : '—';
-      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border)">'
-        +'<div style="width:26px;height:26px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">'+init+'</div>'
-        +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+typeIcon+' '+item.label+'</div>'
-          +(item.sub?'<div style="font-size:11px;color:var(--muted)">'+item.sub+'</div>':'')
-        +'</div>'
-        +'<div style="text-align:right;flex-shrink:0">'
-          +'<div style="font-size:11px;font-weight:600;color:'+col+'">'+item.who+'</div>'
-          +'<div style="font-size:10px;color:var(--border)">'+dateStr+'</div>'
-        +'</div>'
-      +'</div>';
+      var typeIcon = item.type==='contact' ? '\uD83C\uDFE2' : (_typeIcon(item.actType)||'\uD83D\uDCCB');
+      var actDate   = item.date    ? item.date.slice(0,10)    : '';
+      var inputDate = item.createdAt ? item.createdAt.slice(0,10) : actDate;
+      var canNav = !!item.contactId;
+
+      var dateHtml = item.type === 'activity'
+        ? '<div style="font-size:12px;color:var(--text);font-family:IBM Plex Mono,monospace;margin-top:2px">' + actDate + '</div>'
+          + (inputDate && inputDate !== actDate
+              ? '<div style="font-size:10px;color:var(--muted)">\uc785\ub825 ' + inputDate + '</div>'
+              : '')
+        : '<div style="font-size:12px;color:var(--text);font-family:IBM Plex Mono,monospace;margin-top:2px">' + inputDate + '</div>';
+
+      var rowStyle = 'display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--border);border-radius:8px;transition:background .15s'
+        + (canNav ? ';cursor:pointer' : '');
+      var hoverOn  = canNav ? 'this.style.background=\'var(--surface2)\'' : '';
+      var hoverOff = canNav ? 'this.style.background=\'\'': '';
+      var navAttr  = canNav ? 'onclick="_adminNavToItem(\'' + item.contactId + '\',\'' + item.id + '\',\'' + item.type + '\')"' : '';
+
+      return '<div ' + navAttr + ' style="' + rowStyle + '"'
+        + (hoverOn  ? ' onmouseover="' + hoverOn  + '"' : '')
+        + (hoverOff ? ' onmouseout="'  + hoverOff + '"' : '') + '>'
+        + '<div style="width:30px;height:30px;border-radius:50%;background:' + col + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">' + init + '</div>'
+        + '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + typeIcon + ' ' + item.label + '</div>'
+          + (item.sub ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + item.sub + '</div>' : '')
+        + '</div>'
+        + '<div style="text-align:right;flex-shrink:0;min-width:90px">'
+          + '<div style="font-size:12px;font-weight:600;color:' + col + '">' + item.who + '</div>'
+          + dateHtml
+        + '</div>'
+        + '</div>';
     }).join('');
   }
-  
+
+  function _adminNavToItem(contactId, itemId, itemType){
+    if(!contactId) return;
+    nav('contacts');
+    setTimeout(function(){
+      showDetail(contactId);
+      if(itemType === 'activity'){
+        setTimeout(function(){
+          var tlItems = document.querySelectorAll('#detailActsList .timeline-item');
+          tlItems.forEach(function(el){
+            var hasItem = el.innerHTML.indexOf(itemId) >= 0;
+            if(!hasItem) return;
+            var detail  = el.querySelector('.tl-detail');
+            var chevron = el.querySelector('.tl-chevron');
+            if(detail && !detail.classList.contains('open')){
+              detail.classList.add('open');
+              if(chevron) chevron.style.transform = 'rotate(90deg)';
+            }
+            el.scrollIntoView({behavior:'smooth', block:'center'});
+            el.style.background = 'rgba(79,124,255,0.15)';
+            el.style.borderRadius = '8px';
+            el.style.transition = 'background 1s';
+            setTimeout(function(){ el.style.background = ''; }, 1800);
+          });
+        }, 350);
+      }
+    }, 80);
+  }
+
+
   function _typeIcon(type){
     var icons = {call:'📞',meeting:'🤝',email:'📧',order:'🛒',quote:'📄',visit:'🚗',other:'📌'};
     return icons[type]||'📌';
@@ -2155,7 +2376,7 @@
       'PIN이 설정되었습니다':'✓ PIN이 설정되었습니다',
       'PIN 잠금을 해제하시겠습니까?':'PIN 잠금을 해제하시겠습니까?\n데이터는 유지됩니다.',
       'PIN 잠금':'PIN 잠금',
-      '입력자 현황':'입력자 현황',
+      '입력내역':'입력내역',
       '사용자 관리':'사용자 관리',
       '계정':'계정',
       'AI 분석 중 안내':'Claude AI가 연락처 정보를 추출하고 있습니다',
@@ -2206,6 +2427,27 @@
       '주소 안내':'ℹ 등록된 회사 주소가 적용됩니다. 변경하면 회사 전체에 반영됩니다.',
       '유형 *':'유형 *',
       '이메일 th':'이메일',
+      '다크 모드':'다크 모드',
+      '라이트 모드':'라이트 모드',
+      '스마트 메모':'스마트 메모',
+      '스마트 메모 설명':'활동 내역을 붙여넣으면 자동으로 분석해서 담당자별 활동으로 등록합니다.',
+      '전체 활동_admin':'전체 활동',
+      '미설정':'(미설정)',
+      '입력자 미설정':'입력자 미설정',
+      '아직 데이터가 없습니다':'아직 데이터가 없습니다.',
+      '표시할 항목이 없습니다':'표시할 항목이 없습니다.',
+      '팀원별 입력내역':'팀원별 입력내역',
+      '최근 입력 활동':'최근 입력 활동',
+      '팀원':'팀원',
+      '합계':'합계',
+      '최근 입력일':'최근 입력일',
+      '활동 팀원':'활동 팀원',
+      '입력자 태깅률':'입력자 태깅률',
+      '개 입력자 확인':'개 입력자 확인',
+      '전체 기간':'전체 기간',
+      '전체 팀원':'전체 팀원',
+      '🔄 새로고침':'🔄 새로고침',
+      '입력 ':'입력 ',
     },
     en: {
       '스마트 고객관리 시스템':'Smart CRM System',
@@ -2332,7 +2574,7 @@
       'PIN이 설정되었습니다':'✓ PIN set successfully',
       'PIN 잠금을 해제하시겠습니까?':'Disable PIN lock?\nYour data will be kept.',
       'PIN 잠금':'PIN Lock',
-      '입력자 현황':'Input Stats',
+      '입력내역':'Input Stats',
       '사용자 관리':'User Management',
       '계정':'Account',
       'AI 분석 중 안내':'Claude AI is extracting contact info',
@@ -2382,6 +2624,27 @@
       '주소 안내':'ℹ Saved company address applied. Changes will reflect across the company.',
       '유형 *':'Type *',
       '이메일 th':'Email',
+      '다크 모드':'Dark Mode',
+      '라이트 모드':'Light Mode',
+      '스마트 메모':'Smart Memo',
+      '스마트 메모 설명':'Paste activity notes to auto-parse and register them by contact.',
+      '활동 팀원':'Active Members',
+      '전체 활동_admin':'Total Activities',
+      '입력자 태깅률':'Entry Tag Rate',
+      '개 입력자 확인':' with author',
+      '팀원':'Member',
+      '합계':'Total',
+      '최근 입력일':'Last Entry',
+      '미설정':'(Unset)',
+      '입력자 미설정':'Author unset',
+      '아직 데이터가 없습니다':'No data yet.',
+      '전체 기간':'All Time',
+      '전체 팀원':'All Members',
+      '표시할 항목이 없습니다':'Nothing to display.',
+      '팀원별 입력내역':'Input by Member',
+      '최근 입력 활동':'Recent Input Activity',
+      '🔄 새로고침':'🔄 Refresh',
+      '입력 ':'entered ',
     },
     ja: {
       '스마트 고객관리 시스템':'スマート顧客管理',
@@ -2509,7 +2772,7 @@
       'PIN이 설정되었습니다':'✓ PINを設定しました',
       'PIN 잠금을 해제하시겠습니까?':'PINロックを解除しますか？',
       'PIN 잠금':'PINロック',
-      '입력자 현황':'入力者状況',
+      '입력내역':'入力者状況',
       '사용자 관리':'ユーザー管理',
       '계정':'アカウント',
       'AI 분석 중 안내':'Claude AIが連絡先情報を抽出しています',
@@ -2560,6 +2823,27 @@
       '주소 안내':'ℹ 登録済みの会社住所が適用されます。変更すると全社員に反映されます。',
       '유형 *':'種別 *',
       '이메일 th':'メール',
+      '다크 모드':'ダークモード',
+      '라이트 모드':'ライトモード',
+      '스마트 메모':'スマートメモ',
+      '스마트 메모 설명':'活動記録を貼り付けると自動で解析し、担当者別に登録します。',
+      '활동 팀원':'アクティブメンバー',
+      '전체 활동_admin':'全活動',
+      '입력자 태깅률':'入力者タグ率',
+      '개 입력자 확인':'件確認済',
+      '팀원':'メンバー',
+      '합계':'合計',
+      '최근 입력일':'最終入力日',
+      '미설정':'(未設定)',
+      '입력자 미설정':'入力者未設定',
+      '아직 데이터가 없습니다':'データがありません。',
+      '전체 기간':'全期間',
+      '전체 팀원':'全メンバー',
+      '표시할 항목이 없습니다':'表示するものがありません。',
+      '팀원별 입력내역':'メンバー別入力履歴',
+      '최근 입력 활동':'最近の入力活動',
+      '🔄 새로고침':'🔄 更新',
+      '입력 ':'入力日 ',
     },
     zh: {
       '스마트 고객관리 시스템':'智能客户管理',
@@ -2687,7 +2971,7 @@
       'PIN이 설정되었습니다':'✓ PIN码已设置',
       'PIN 잠금을 해제하시겠습니까?':'解除PIN锁定？数据将保留。',
       'PIN 잠금':'PIN锁定',
-      '입력자 현황':'输入统计',
+      '입력내역':'输入统计',
       '사용자 관리':'用户管理',
       '계정':'账户',
       'AI 분석 중 안내':'Claude AI正在提取联系人信息',
@@ -2738,6 +3022,27 @@
       '주소 안내':'ℹ 已应用注册的公司地址。修改后将反映到整个公司。',
       '유형 *':'类型 *',
       '이메일 th':'邮箱',
+      '다크 모드':'深色模式',
+      '라이트 모드':'浅色模式',
+      '스마트 메모':'智能备忘',
+      '스마트 메모 설명':'粘贴活动记录，自动解析并按联系人分类录入。',
+      '활동 팀원':'活跃成员',
+      '전체 활동_admin':'全部活动',
+      '입력자 태깅률':'录入标注率',
+      '개 입력자 확인':'个已标注',
+      '팀원':'成员',
+      '합계':'合计',
+      '최근 입력일':'最近录入日',
+      '미설정':'(未设置)',
+      '입력자 미설정':'录入者未设置',
+      '아직 데이터가 없습니다':'暂无数据。',
+      '전체 기간':'全部时间',
+      '전체 팀원':'全部成员',
+      '표시할 항목이 없습니다':'无显示内容。',
+      '팀원별 입력내역':'按成员录入记录',
+      '최근 입력 활동':'最近录入活动',
+      '🔄 새로고침':'🔄 刷新',
+      '입력 ':'录入 ',
     },
   };
   // ── Safe localStorage (iOS Safari iframe / Private mode / SecurityError fallback) ──
@@ -2792,6 +3097,9 @@
     // 상세 뷰가 열려있으면 재렌더
     const dView = document.getElementById('detailView');
     if(dView && dView.classList.contains('open') && currentCid) showDetail(currentCid);
+    // admin 뷰가 열려있으면 재렌더
+    const adminView = document.getElementById('adminView');
+    if(adminView && adminView.style.display !== 'none') renderAdminView();
   }
   
   function initLang(){ setLang(_lang); }
@@ -5620,6 +5928,7 @@ function showDetail(id){
       renderStats();
       renderContacts();
       initLang();
+    initTheme();
       _pinInit();
   
       // Supabase 연동 시 자동 동기화
@@ -6033,7 +6342,358 @@ function showDetail(id){
       }
     } catch(e) { console.warn('onboarding check error:', e); }
   })();
-  </script>
+  
+  // ════════════════════════════════════════════════════
+  // 📝 스마트 메모 파서
+  // ════════════════════════════════════════════════════
+
+  var _memoParseTimer = null;
+  var _memoParsed = [];       // [{contactKey, date, type, title, content, amount, matched}]
+  var _memoContactMap = {};   // { "이름키" : contactId }
+
+  function openMemoParser(){
+    document.getElementById('memoParserModal').classList.add('open');
+  }
+
+  function memoParseDebounce(){
+    clearTimeout(_memoParseTimer);
+    _memoParseTimer = setTimeout(memoParseNow, 800);
+  }
+
+  // ── 날짜 파싱: YYYY.MM.DD / YYYY-MM-DD / YYYY/MM/DD
+  function _parseDate(s){
+    var m = s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+    if(!m) return null;
+    return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  }
+
+  // ── 유형 키워드 → type id 매핑
+  var _TYPE_KEYWORDS = [
+    { id:'order', words:['발주','주문','오더','order'] },
+    { id:'quote', words:['견적','估價','quote'] },
+    { id:'visit', words:['방문','visit','미팅','meeting'] },
+    { id:'call',  words:['통화','전화','call','연락'] },
+    { id:'mail',  words:['발송','메일','이메일','mail','email'] },
+    { id:'other', words:['기타','etc','other'] },
+  ];
+  function _detectType(s){
+    var lower = s.toLowerCase();
+    for(var i=0;i<_TYPE_KEYWORDS.length;i++){
+      var k = _TYPE_KEYWORDS[i];
+      for(var j=0;j<k.words.length;j++){
+        if(lower.indexOf(k.words[j])>=0) return k.id;
+      }
+    }
+    return 'other';
+  }
+
+  // ── 연락처 이름에서 핵심 인물명 추출 (슬래시, 공백 구분)
+  function _extractPersonNames(s){
+    // "송선용책임/김준식부장" → ["송선용", "김준식"]
+    var parts = s.split(/[\/,·]+/);
+    var names = [];
+    parts.forEach(function(p){
+      p = p.trim();
+      // 직책 제거: 2자 이상 한글이름만
+      var name = p.replace(/(책임|부장|차장|과장|대리|팀장|이사|상무|전무|사장|선임|수석|연구원|매니저|주임|사원|실장|소장|원장|고문|상무|전무|이사|본부장|국장|센터장|단장|부문장|파트장|리더)/g,'').trim();
+      if(name.length >= 2) names.push(name);
+    });
+    return names;
+  }
+
+  // ── 텍스트에서 섹션+라인 파싱
+  function memoParseNow(){
+    var raw = (document.getElementById('memoRawText')||{}).value || '';
+    if(!raw.trim()){ _memoParsed=[]; _memoRenderPreview(); return; }
+
+    var lines = raw.split('\n');
+    var results = [];
+    var currentSection = null;   // <LGE-가산> 같은 섹션 태그
+    var pendingContent = [];     // 날짜없는 상세내용 줄들 (상담 섹션)
+    var lastResult = null;
+
+    // 날짜로 시작하는 활동 라인 정규식
+    var actRe = /^(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})\s+(\S+)\s*(.*)/;
+    // 섹션 태그: <...> 로 둘러싸인 줄
+    var sectionRe = /^<([^>]+)>$/;
+
+    for(var li=0;li<lines.length;li++){
+      var line = lines[li].trim();
+      if(!line) continue;
+
+      // 섹션 헤더 ****거래**** / ****상담**** 등
+      if(/^\*{2,}.+\*{2,}$/.test(line)) continue;
+
+      // <LGE-가산> 형식 섹션 태그
+      var secMatch = line.match(sectionRe);
+      if(secMatch){ currentSection = secMatch[1]; continue; }
+
+      // 날짜 활동 라인
+      var actMatch = line.match(actRe);
+      if(actMatch){
+        var date = _parseDate(actMatch[1]);
+        if(!date) continue;
+
+        var rest = actMatch[2] + (actMatch[3] ? ' '+actMatch[3] : '');
+        var typeId = _detectType(actMatch[2]);
+        // 유형 키워드 이후 내용
+        var afterType = actMatch[3] || '';
+
+        // 금액 추출: 숫자+만 패턴
+        var amountMatch = afterType.match(/(\d[\d,]+만)/);
+        var amount = amountMatch ? amountMatch[1].replace('만','0000').replace(',','') : '';
+
+        // 담당자 이름 추출 (첫 번째 공백 단어에서)
+        // "송선용책임/김준식부장 내용..." 패턴
+        var nameMatch = afterType.match(/^([가-힣A-Za-z\/,\s·]{2,30?}?)\s{2,}(.*)$/);
+        if(!nameMatch) nameMatch = afterType.match(/^([가-힣\/,·]+(?:책임|부장|차장|과장|대리|팀장|이사|상무|전무|사장|선임|수석|연구원|주임|사원|실장|본부장|국장|파트장)?(?:\/[가-힣]+(?:책임|부장|차장|과장|대리|팀장|이사|상무|전무|사장|선임|수석|연구원|주임|사원|실장|본부장|국장|파트장)?)*)\s+(.*)/);
+        
+        var personStr = nameMatch ? nameMatch[1] : '';
+        var titleStr  = nameMatch ? nameMatch[2] : afterType;
+        var names = personStr ? _extractPersonNames(personStr) : [];
+
+        // 섹션 태그로부터 회사정보 파싱
+        var companyHint = currentSection || '';
+
+        var r = {
+          date: date,
+          type: typeId,
+          title: titleStr.trim(),
+          content: '',
+          amount: amount,
+          personStr: personStr.trim(),
+          names: names,
+          companyHint: companyHint,
+          contactKey: null,   // 매핑 후 채워짐
+          contactId: null,
+        };
+        results.push(r);
+        lastResult = r;
+        pendingContent = [];
+
+      } else if(lastResult){
+        // 날짜 없는 줄 = 이전 활동의 상세 내용
+        if(line.match(/^\d+\.|^[가-힣]\./) || line.startsWith(' ') || line.startsWith('\t') || /^[*\-·]/.test(line)){
+          pendingContent.push(line);
+          lastResult.content = pendingContent.join('\n');
+        }
+      }
+    }
+
+    _memoParsed = results;
+    _memoAutoMatch();
+    _memoRenderContactMap();
+    _memoRenderPreview();
+  }
+
+  // ── 파싱 결과와 contacts 자동 매핑
+  function _memoAutoMatch(){
+    _memoContactMap = {};
+    // 고유 이름 키 수집
+    _memoParsed.forEach(function(r){
+      r.names.forEach(function(n){ _memoContactMap[n] = _memoContactMap[n] || null; });
+      if(r.companyHint && !r.names.length) _memoContactMap['__company__'+r.companyHint] = null;
+    });
+
+    // contacts에서 매칭 시도
+    var keys = Object.keys(_memoContactMap);
+    keys.forEach(function(key){
+      if(key.startsWith('__company__')){
+        var comp = key.slice(11).toLowerCase();
+        var match = contacts.find(function(c){ return ((c.company||'').toLowerCase()).indexOf(comp)>=0; });
+        if(match) _memoContactMap[key] = match.id;
+        return;
+      }
+      // 이름 매칭: last+first 또는 포함 검색
+      var match = contacts.find(function(c){
+        var full = (c.last||'')+(c.first||'');
+        return full === key || full.indexOf(key)>=0 || key.indexOf(full)>=0;
+      });
+      if(match) _memoContactMap[key] = match.id;
+    });
+
+    // 파싱 결과에 contactId 반영
+    _memoParsed.forEach(function(r){
+      var cid = null;
+      for(var i=0;i<r.names.length;i++){
+        if(_memoContactMap[r.names[i]]){ cid = _memoContactMap[r.names[i]]; break; }
+      }
+      if(!cid && r.companyHint){ cid = _memoContactMap['__company__'+r.companyHint] || null; }
+      r.contactId = cid;
+      r.contactKey = r.names[0] || ('__company__'+r.companyHint) || null;
+    });
+  }
+
+  // ── 담당자 매핑 UI 렌더
+  function _memoRenderContactMap(){
+    var mapEl = document.getElementById('memoContactMapList');
+    var wrapEl = document.getElementById('memoContactMap');
+    if(!mapEl) return;
+    var keys = Object.keys(_memoContactMap).filter(function(k){ return !k.startsWith('__company__'); });
+    if(!keys.length){ wrapEl.style.display='none'; return; }
+    wrapEl.style.display = '';
+
+    mapEl.innerHTML = keys.map(function(name){
+      var cid = _memoContactMap[name] || '';
+      var opts = contacts.map(function(c){
+        var full = (c.last||'')+(c.first||'');
+        var comp = c.company ? ' ('+c.company+')' : '';
+        return '<option value="'+c.id+'"'+(c.id===cid?' selected':'')+'>'+full+comp+'</option>';
+      }).join('');
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+        +'<div style="font-size:13px;font-weight:600;min-width:70px;color:var(--text)">'+name+'</div>'
+        +'<select onchange="_memoUpdateMap(\''+name+'\',this.value)" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:12px">'
+        +'<option value="">— 담당자 선택 —</option>'
+        +opts+'</select></div>';
+    }).join('');
+  }
+
+  function _memoUpdateMap(name, cid){
+    _memoContactMap[name] = cid || null;
+    // 파싱 결과 contactId 재반영
+    _memoParsed.forEach(function(r){
+      if(r.names.indexOf(name)>=0){
+        r.contactId = cid || null;
+      }
+    });
+    _memoRenderPreview();
+  }
+
+  // ── 미리보기 렌더
+  function _memoRenderPreview(){
+    var previewEl = document.getElementById('memoPreview');
+    var countEl   = document.getElementById('memoParsedCount');
+    var saveBtn   = document.getElementById('memoBulkSave');
+    var bulkCount = document.getElementById('memoBulkCount');
+    if(!previewEl) return;
+
+    if(!_memoParsed.length){
+      previewEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">분석 결과가 여기에 표시됩니다.</div>';
+      if(countEl) countEl.textContent = '';
+      if(saveBtn) saveBtn.style.display = 'none';
+      return;
+    }
+
+    var matched = _memoParsed.filter(function(r){ return !!r.contactId; }).length;
+    if(countEl) countEl.textContent = '총 '+_memoParsed.length+'건 (매핑 '+matched+'건)';
+    if(saveBtn) saveBtn.style.display = '';
+    if(bulkCount) bulkCount.textContent = matched;
+
+    // 날짜 역순 정렬
+    var sorted = _memoParsed.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+    previewEl.innerHTML = sorted.map(function(r, idx){
+      var con = r.contactId ? contacts.find(function(c){ return c.id===r.contactId; }) : null;
+      var conName = con ? ((con.last||'')+(con.first||'')+(con.company?' ('+con.company+')':'')) : '—';
+      var typeLabel = {order:'📦 발주', quote:'📄 견적', visit:'🤝 방문', call:'📞 통화', mail:'📮 발송', other:'📌 기타'};
+      var tlabel = typeLabel[r.type] || '📌';
+      var hasCon = !!r.contactId;
+      var borderColor = hasCon ? 'var(--accent)' : 'var(--border)';
+      var bgColor = hasCon ? 'rgba(79,124,255,0.06)' : 'var(--surface2)';
+
+      return '<div style="border:1px solid '+borderColor+';border-radius:8px;padding:10px 12px;background:'+bgColor+';font-size:12px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
+          +'<div style="display:flex;align-items:center;gap:8px">'
+            +'<span style="font-size:11px;font-family:IBM Plex Mono,monospace;color:var(--muted)">'+r.date+'</span>'
+            +'<span style="font-weight:600">'+tlabel+'</span>'
+            +(r.amount?'<span style="color:var(--accent3);font-weight:600">'+r.amount+'</span>':'')
+          +'</div>'
+          +'<span style="font-size:11px;color:'+(hasCon?'var(--accent)':'#e74c3c')+';font-weight:600">'+(hasCon?'✓ '+conName:'⚠ 미매핑')+'</span>'
+        +'</div>'
+        +'<div style="color:var(--text);line-height:1.5;word-break:break-all">'+_escHtml(r.title||r.content||'')+'</div>'
+        +(r.content && r.title?'<div style="margin-top:4px;color:var(--muted);white-space:pre-wrap;font-size:11px;line-height:1.5">'+_escHtml(r.content)+'</div>':'')
+        +'</div>';
+    }).join('');
+  }
+
+  function _escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── 전체 저장
+  function memoBulkSaveAll(){
+    var toSave = _memoParsed.filter(function(r){ return !!r.contactId; });
+    if(!toSave.length){ alert('매핑된 항목이 없습니다. 담당자를 먼저 선택해주세요.'); return; }
+
+    var dupCount = 0;
+    toSave.forEach(function(r){
+      // 중복 체크 (같은 날짜+유형+내용)
+      var dup = activities.find(function(a){
+        return a.contactId===r.contactId && a.date===r.date && a.type===r.type
+          && (a.title||'').trim() === (r.title||'').trim();
+      });
+      if(dup){ dupCount++; return; }
+
+      var newId = uid();
+      activities.push({
+        id: newId,
+        contactId: r.contactId,
+        type: r.type,
+        date: r.date,
+        title: r.title || '',
+        content: r.content || '',
+        amount: r.amount || '',
+        createdAt: new Date().toISOString(),
+        createdBy: _curUserName(),
+      });
+      markActivityDirty(newId);
+    });
+
+    persist();
+
+    var saved = toSave.length - dupCount;
+    var msg = saved+'건 저장 완료!'+(dupCount?' ('+dupCount+'건 중복 건너뜀)':'');
+    
+    // 저장 완료 피드백
+    var saveBtn = document.getElementById('memoBulkSave');
+    if(saveBtn){
+      var orig = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<button style="width:100%;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700">✅ '+msg+'</button>';
+      setTimeout(function(){ saveBtn.innerHTML = orig; }, 2500);
+    }
+
+    // 담당자 상세 화면으로 이동
+    var firstCid = toSave[0].contactId;
+    closeModal('memoParserModal');
+    setTimeout(function(){
+      nav('contacts');
+      setTimeout(function(){ showDetail(firstCid); }, 80);
+    }, 300);
+  }
+
+
+  // ════════════════════════════════════════════════
+  // 🎨 다크 / 라이트 테마 전환
+  // ════════════════════════════════════════════════
+  var _theme = 'dark';
+
+  function _applyTheme(t){
+    _theme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    safeStorage.setItem('crm_theme', t);
+
+    var isDark = (t === 'dark');
+    var label  = document.getElementById('themeToggleLabel');
+    var knob   = document.getElementById('themeToggleKnob');
+    var sw     = document.getElementById('themeToggleSwitch');
+
+    if(label){
+      label.innerHTML = isDark
+        ? '🌙 <span data-i18n="다크 모드">' + i18n('다크 모드') + '</span>'
+        : '☀️ <span data-i18n="라이트 모드">' + i18n('라이트 모드') + '</span>';
+    }
+    if(knob) knob.style.left  = isDark ? '18px' : '2px';
+    if(sw)   sw.style.background = isDark ? 'var(--accent)' : '#b0bec5';
+  }
+
+  function toggleTheme(){
+    _applyTheme(_theme === 'dark' ? 'light' : 'dark');
+  }
+
+  function initTheme(){
+    var saved = safeStorage.getItem('crm_theme') || 'dark';
+    _applyTheme(saved);
+  }
+
+</script>
   <!-- ── 사용 가이드 모달 ─────────────────────────────── -->
   <div class="modal-overlay" id="helpModal">
     <div class="modal" style="width:680px;max-height:88vh;overflow-y:auto">
@@ -6368,6 +7028,51 @@ function showDetail(id){
     </div>
   </div>
   
-  </body>
+  
+<!-- ═══ 스마트 메모 파서 모달 ═══ -->
+<div class="modal-overlay" id="memoParserModal">
+ <div class="modal" style="width:min(860px,96vw);max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+  <!-- 헤더 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
+   <div>
+    <div style="font-size:17px;font-weight:700">📝 <span data-i18n="스마트 메모">스마트 메모</span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px" data-i18n="스마트 메모 설명">활동 내역을 붙여넣으면 자동으로 분석해서 담당자별 활동으로 등록합니다.</div>
+   </div>
+   <button onclick="closeModal('memoParserModal')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px">✕</button>
+  </div>
+  <!-- 바디 (2단) -->
+  <div style="display:flex;flex:1;min-height:0;overflow:hidden">
+   <!-- 왼쪽: 입력 -->
+   <div style="flex:1;display:flex;flex-direction:column;padding:16px;border-right:1px solid var(--border);min-width:0">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600">📋 원본 텍스트 붙여넣기</div>
+    <textarea id="memoRawText" placeholder="활동 기록을 여기에 붙여넣으세요.&#10;&#10;예시)&#10;2026.02.24 방문 김철수/박부장 내용...&#10;2025.05.12 통화 김철수 견적요청...&#10;&#10;담당자 이름이 포함된 줄을 자동으로 파싱합니다." 
+     style="flex:1;resize:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text);font-family:inherit;line-height:1.7;outline:none"
+     oninput="memoParseDebounce()"></textarea>
+    <!-- 담당자 매핑 -->
+    <div id="memoContactMap" style="margin-top:12px;display:none">
+     <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px">👤 담당자 매핑</div>
+     <div id="memoContactMapList"></div>
+    </div>
+    <!-- 액션 버튼 -->
+    <div style="display:flex;gap:8px;margin-top:12px;flex-shrink:0">
+     <button onclick="memoParseNow()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">🔍 분석하기</button>
+     <button onclick="document.getElementById('memoRawText').value='';document.getElementById('memoPreview').innerHTML='';document.getElementById('memoContactMap').style.display='none';document.getElementById('memoBulkSave').style.display='none'" style="padding:10px 14px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">🗑 초기화</button>
+    </div>
+   </div>
+   <!-- 오른쪽: 미리보기 -->
+   <div style="flex:1;display:flex;flex-direction:column;padding:16px;min-width:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0">
+     <div style="font-size:12px;color:var(--muted);font-weight:600">✅ 파싱 결과 미리보기</div>
+     <div id="memoParsedCount" style="font-size:11px;color:var(--accent)"></div>
+    </div>
+    <div id="memoPreview" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+    <div id="memoBulkSave" style="display:none;margin-top:12px;flex-shrink:0">
+     <button onclick="memoBulkSaveAll()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">💾 전체 저장 (<span id="memoBulkCount">0</span>건)</button>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+</body>
   </html>
 </main>
